@@ -4,8 +4,10 @@ const UPSTREAM = "https://api-hdc.moph.go.th/v1/";
 
 export default async (req: Request) => {
   const url = new URL(req.url);
+  // Strip /api/hdc/ prefix; remainder is the upstream path
   const suffix = url.pathname.replace(/^\/api\/hdc\//, "");
-  const target = UPSTREAM + suffix + (url.search || "");
+  const query = url.search || "";
+  const target = UPSTREAM + suffix + query;
 
   const upstream = await fetch(target, {
     headers: {
