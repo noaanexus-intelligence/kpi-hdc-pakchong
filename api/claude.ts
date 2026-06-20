@@ -1,5 +1,7 @@
 export const config = { runtime: "edge" };
 
+declare const process: { env: Record<string, string | undefined> };
+
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 const CLAUDE_MODEL = "claude-sonnet-4-6";
 
