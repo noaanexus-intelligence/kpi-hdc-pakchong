@@ -233,24 +233,43 @@ async function getSnapshot(kind, path) {
   }
 }
 
-async function hdcGet(kind, path) {
-  let proxyError = null;
+// เปิดในเครื่องไทย (server.py) -> proxy เข้า HDC ได้ = ข้อมูลสด
+// เปิดออนไลน์ (Vercel) -> proxy เข้า HDC ไม่ได้และ "ช้ามาก" กว่าจะ timeout เป็น 502
+//   จึงข้าม proxy ไปอ่าน snapshot ตรงๆ ให้โหลดไว
+const IS_LOCAL = ["127.0.0.1", "localhost"].includes(location.hostname);
+
+async function fetchProxy(kind, path, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(localApiPath(kind, path), {
       cache: "no-store",
-      headers: {
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache"
-      }
+      signal: controller.signal,
+      headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
     });
-    if (response.ok) return await response.json();
-    proxyError = new Error(await response.text());
-  } catch (error) {
-    proxyError = error;
+    if (!response.ok) throw new Error(await response.text());
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
   }
+}
+
+async function hdcGet(kind, path) {
+  if (IS_LOCAL) {
+    // ในเครื่องไทย: เอาข้อมูลสดจาก proxy ก่อน, ถ้าล้มค่อย fallback snapshot
+    try {
+      return await fetchProxy(kind, path, 15000);
+    } catch (proxyError) {
+      const snapshot = await getSnapshot(kind, path);
+      if (snapshot) return snapshot;
+      throw proxyError;
+    }
+  }
+  // ออนไลน์: ใช้ snapshot ที่ดึงจากเครื่องไทยไว้ล่วงหน้า (ไว ไม่ต้องรอ proxy ที่ยังไงก็ล้ม)
   const snapshot = await getSnapshot(kind, path);
   if (snapshot) return snapshot;
-  throw proxyError;
+  // path ที่ไม่มีใน snapshot (เช่นเปลี่ยนปี/รายงานนอกชุด) -> ลอง proxy แบบมี timeout สั้น
+  return await fetchProxy(kind, path, 8000);
 }
 
 function optionText(item) {
