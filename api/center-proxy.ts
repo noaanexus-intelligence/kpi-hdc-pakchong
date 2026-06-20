@@ -2,31 +2,43 @@ export const config = { runtime: "edge" };
 
 const UPSTREAM = "https://api-center-hdc.moph.go.th/v1/";
 
-export default async (req: Request) => {
-  const url = new URL(req.url);
-  // Strip /api/center/ prefix; remainder is the upstream path
-  const suffix = url.pathname.replace(/^\/api\/center\//, "");
-  const query = url.search || "";
-  const target = UPSTREAM + suffix + query;
-
-  const upstream = await fetch(target, {
-    headers: {
-      domain: "nma",
-      "User-Agent": "HDC-Pakchong-local/1.0",
-      Accept: "application/json,text/plain,*/*",
-      "Cache-Control": "no-cache",
-      Pragma: "no-cache",
-    },
-    signal: AbortSignal.timeout(60_000),
-  });
-
-  const body = await upstream.arrayBuffer();
+function cors(body: BodyInit | null, status: number, contentType: string) {
   return new Response(body, {
-    status: upstream.status,
+    status,
     headers: {
-      "Content-Type": upstream.headers.get("Content-Type") ?? "application/json",
+      "Content-Type": contentType,
       "Access-Control-Allow-Origin": "*",
       "Cache-Control": "no-store",
     },
   });
+}
+
+export default async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, OPTIONS" },
+    });
+  }
+
+  const url = new URL(req.url);
+  const suffix = url.pathname.replace(/^\/api\/center\//, "");
+  const target = UPSTREAM + suffix + (url.search || "");
+
+  try {
+    const upstream = await fetch(target, {
+      headers: {
+        domain: "nma",
+        "User-Agent": "HDC-Pakchong/1.0",
+        Accept: "application/json,*/*",
+        "Cache-Control": "no-cache",
+      },
+    });
+    const body = await upstream.arrayBuffer();
+    const ct = upstream.headers.get("Content-Type") ?? "application/json";
+    return cors(body, upstream.status, ct);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return cors(JSON.stringify({ ok: false, error: msg }), 502, "application/json; charset=utf-8");
+  }
 };
