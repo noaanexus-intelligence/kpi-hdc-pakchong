@@ -209,16 +209,48 @@ function localApiPath(kind, path) {
   return `/api/${kind}/${path.replace(/^\/+/, "")}`;
 }
 
+// Snapshot fallback — เมื่อเรียก proxy ไม่ได้ (ออนไลน์บน Vercel เข้า HDC จาก IP ตปท.ไม่ได้)
+// อ่านข้อมูลที่ดึงไว้ล่วงหน้าจากเครื่อง IP ไทย (สร้างด้วย scripts/snapshot.mjs)
+let snapshotManifestPromise = null;
+function loadSnapshotManifest() {
+  if (!snapshotManifestPromise) {
+    snapshotManifestPromise = fetch("data/snapshot/manifest.json", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .catch(() => null);
+  }
+  return snapshotManifestPromise;
+}
+
+async function getSnapshot(kind, path) {
+  const manifest = await loadSnapshotManifest();
+  const file = manifest?.entries?.[`${kind} ${path}`];
+  if (!file) return null;
+  try {
+    const response = await fetch(`data/snapshot/${file}`, { cache: "no-store" });
+    return response.ok ? await response.json() : null;
+  } catch (_error) {
+    return null;
+  }
+}
+
 async function hdcGet(kind, path) {
-  const response = await fetch(localApiPath(kind, path), {
-    cache: "no-store",
-    headers: {
-      "Cache-Control": "no-cache",
-      "Pragma": "no-cache"
-    }
-  });
-  if (!response.ok) throw new Error(await response.text());
-  return response.json();
+  let proxyError = null;
+  try {
+    const response = await fetch(localApiPath(kind, path), {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache"
+      }
+    });
+    if (response.ok) return await response.json();
+    proxyError = new Error(await response.text());
+  } catch (error) {
+    proxyError = error;
+  }
+  const snapshot = await getSnapshot(kind, path);
+  if (snapshot) return snapshot;
+  throw proxyError;
 }
 
 function optionText(item) {
