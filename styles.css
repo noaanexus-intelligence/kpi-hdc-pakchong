@@ -922,6 +922,17 @@ main {
   box-shadow: var(--shadow);
 }
 
+.video-poster {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform .3s ease;
+}
+
+.video-thumb:hover .video-poster {
+  transform: scale(1.02);
+}
+
 .video-art {
   position: absolute;
   inset: 0;
