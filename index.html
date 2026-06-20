@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HDC Service - สาธารณสุขอำเภอปากช่อง</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23109d80'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='Arial,sans-serif' font-size='11' font-weight='700' fill='white'%3EHDC%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="HDC Service">
+      <img src="assets/images/new-hdc-logo.png" alt="HDC Health Data Center">
+    </a>
+
+    <button class="hamburger" type="button" aria-label="เปิดเมนู" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="main-nav" aria-label="เมนูหลัก">
+      <a class="nav-item active" href="#">
+        <span class="nav-icon" data-icon="home"></span>
+        <span>หน้าแรก</span>
+      </a>
+      <button class="nav-item has-menu report-toggle" type="button" aria-expanded="false">
+        <span class="nav-icon" data-icon="clipboard"></span>
+        <span>รายงานมาตรฐาน</span>
+        <span class="chevron"></span>
+      </button>
+      <a class="nav-item" href="#">
+        <span class="nav-icon" data-icon="gauge"></span>
+        <span>ตัวชี้วัด</span>
+        <span class="chevron"></span>
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon" data-icon="upload"></span>
+        <span>นำเข้า/ส่งออกข้อมูล</span>
+        <span class="chevron"></span>
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon" data-icon="audit"></span>
+        <span>การตรวจสอบข้อมูล</span>
+        <span class="chevron"></span>
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon" data-icon="exchange"></span>
+        <span>Data Exchange</span>
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon" data-icon="search"></span>
+        <span>ค้นหารายงาน</span>
+        <span class="chevron"></span>
+      </a>
+    </nav>
+
+    <div class="user-zone">
+      <div class="user-menu-label">เมนูผู้ใช้งาน <span>นครราชสีมา</span></div>
+      <button class="user-button" type="button">
+        <span class="avatar"></span>
+        <span>สสอ.ปากช่อง</span>
+        <span class="chevron"></span>
+      </button>
+      <button class="alert-button" type="button" aria-label="แจ้งเตือน">
+        <span class="nav-icon" data-icon="bell"></span>
+        <span>แจ้งเตือน</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="report-mega" id="reportMega" aria-hidden="true">
+    <aside class="report-art" aria-hidden="true">
+      <div class="doctor-scene scene-one">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="doctor-scene scene-two">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="doctor-scene scene-three">
+        <span></span><span></span><span></span>
+      </div>
+    </aside>
+    <button class="mega-close" type="button" aria-label="ปิดเมนู"></button>
+    <div class="mega-grid">
+      <section>
+        <h2>ข้อมูลทั่วไป</h2>
+        <a href="#"><span data-icon="chart"></span>ประชากร</a>
+        <a href="#"><span data-icon="chart"></span>จำนวนหน่วยงานสาธารณสุข</a>
+        <a href="#"><span data-icon="chart"></span>โรงเรียนและนักเรียน</a>
+      </section>
+      <section>
+        <h2>สถานะสุขภาพ</h2>
+        <a href="#"><span data-icon="pulse"></span>การป่วยด้วยโรคไม่ติดต่อที่สำคัญ</a>
+        <a href="#"><span data-icon="pulse"></span>สาเหตุการป่วย/ตาย</a>
+        <a href="#"><span data-icon="pulse"></span>โรคจากการประกอบอาชีพและสิ่งแวดล้อม</a>
+        <a href="#"><span data-icon="pulse"></span>การป่วยด้วยโรคจากมลพิษทางอากาศ</a>
+      </section>
+      <section>
+        <h2>การเข้าถึงบริการ</h2>
+        <a href="#"><span data-icon="hospital"></span>การใช้บริการสาธารณสุข</a>
+        <a href="#"><span data-icon="hospital"></span>การเข้าถึงระบบบริการสุขภาพจิต</a>
+        <a href="#"><span data-icon="hospital"></span>แพทย์แผนไทย</a>
+        <a href="#"><span data-icon="hospital"></span>แพทย์แผนจีน</a>
+        <a href="#"><span data-icon="hospital"></span>ทันตกรรม(บริการ)</a>
+        <a href="#"><span data-icon="hospital"></span>CMI</a>
+        <a href="#"><span data-icon="hospital"></span>สุขภาพประชากรข้ามชาติ</a>
+      </section>
+      <section>
+        <h2>ส่งเสริมป้องกัน</h2>
+        <a href="#"><span data-icon="shield"></span>อนามัยแม่และเด็ก</a>
+        <a href="#"><span data-icon="shield"></span>อนามัยโรงเรียน</a>
+        <a href="#"><span data-icon="shield"></span>คัดกรองมะเร็ง</a>
+      </section>
+      <section>
+        <h2>ข้อมูลตอบสนอง SERVICE PLAN</h2>
+        <div id="servicePlanMenu" class="mega-link-list" aria-live="polite">
+          <p class="mega-loading">กำลังโหลดเมนูจาก HDC...</p>
+        </div>
+      </section>
+      <section>
+        <h2>รายงานอำเภอปากช่อง</h2>
+        <a href="#"><span data-icon="file"></span>KPI Service Plan ระดับอำเภอ</a>
+        <a href="#"><span data-icon="file"></span>ผลงานหน่วยบริการในเครือข่าย</a>
+        <a href="#"><span data-icon="file"></span>คุณภาพข้อมูล 43 แฟ้ม</a>
+      </section>
+    </div>
+  </div>
+
+  <main>
+    <section class="title-banner">
+      <div class="agency-seal">
+        <img src="assets/images/moph.png" alt="ตรากระทรวงสาธารณสุข">
+      </div>
+      <div class="agency-copy">
+        <p>ระบบคลังข้อมูลด้านการแพทย์และสุขภาพ (HDC)</p>
+        <h1>สำนักงานสาธารณสุขอำเภอปากช่อง จังหวัดนครราชสีมา เขตสุขภาพที่ 9</h1>
+        <span>อำเภอปากช่อง จังหวัดนครราชสีมา</span>
+      </div>
+      <div class="royal-panel" aria-hidden="true">
+        <div class="portrait"></div>
+        <div class="royal-mark">๙</div>
+        <div>
+          <strong>สถิตในดวงใจตราบนิจนิรันดร์</strong>
+          <small>ขอน้อมรำลึกในพระมหากรุณาธิคุณเป็นล้นพ้น</small>
+        </div>
+      </div>
+      <div class="countdown">
+        <span>สิ้นปีงบประมาณ 2569</span>
+        <strong id="timeLeft">-</strong>
+      </div>
+    </section>
+
+    <section class="breadcrumb">
+      <span class="home-badge" data-icon="home"></span>
+      <span class="crumb-arrow"></span>
+      <strong>หน้าแรก</strong>
+    </section>
+
+    <section class="quick-tabs" aria-label="ลิงก์ด่วน">
+      <span class="rule"></span>
+      <button class="quick-card active" type="button" data-tab="news">
+        <span class="quick-icon orange" data-icon="megaphone"></span>
+        <span><strong>ประกาศ</strong><small>ข่าวสารและอัปเดต</small></span>
+      </button>
+      <button class="quick-card" type="button" data-tab="admins">
+        <span class="quick-icon blue" data-icon="users"></span>
+        <span><strong>ผู้ดูแลระบบ</strong><small>รายชื่อผู้ดูแลระบบ HDC</small></span>
+      </button>
+      <button class="quick-card" type="button" data-tab="manuals">
+        <span class="quick-icon green" data-icon="book"></span>
+        <span><strong>คู่มือ</strong><small>เอกสารการใช้งาน</small></span>
+        <span class="external"></span>
+      </button>
+      <span class="rule"></span>
+    </section>
+
+    <section class="content-grid">
+      <div class="updates">
+        <div class="section-title">
+          <span class="spark" data-icon="spark"></span>
+          <h2>HDC มีอะไรใหม่</h2>
+        </div>
+
+        <article class="notice-card tab-panel active" data-panel="news">
+          <div class="notice-date">
+            <span data-icon="calendar"></span>
+            <strong>19/06/69</strong>
+          </div>
+          <button class="collapse-button" type="button" aria-label="ย่อส่วน"></button>
+          <ul>
+            <li>เพิ่มศูนย์ข้อมูลและรายงานตัวชี้วัดสำหรับ สำนักงานสาธารณสุขอำเภอปากช่อง</li>
+            <li>เพิ่มกลุ่มรายงานมาตรฐานด้านบริการสุขภาพ อนามัยแม่และเด็ก และคุณภาพข้อมูล</li>
+            <li>ปรับหน้าแรกให้ใช้ข้อมูลหน่วยบริการในเครือข่ายอำเภอปากช่อง</li>
+          </ul>
+          <div class="notice-illustration" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+        </article>
+
+        <article class="notice-card tab-panel" data-panel="admins">
+          <div class="notice-date">
+            <span data-icon="users"></span>
+            <strong>ผู้ดูแลระบบ HDC</strong>
+          </div>
+          <ul>
+            <li>กลุ่มงานข้อมูลสารสนเทศ สำนักงานสาธารณสุขอำเภอปากช่อง</li>
+            <li>ผู้รับผิดชอบข้อมูล 43 แฟ้ม ระดับอำเภอ</li>
+            <li>ผู้ประสานงานหน่วยบริการในเครือข่าย CUP ปากช่อง</li>
+          </ul>
+        </article>
+
+        <article class="notice-card tab-panel" data-panel="manuals">
+          <div class="notice-date">
+            <span data-icon="book"></span>
+            <strong>คู่มือการใช้งาน</strong>
+          </div>
+          <ul>
+            <li>คู่มือการใช้งานรายงานมาตรฐานสำหรับเจ้าหน้าที่สาธารณสุข</li>
+            <li>คู่มือการตรวจสอบและติดตามคุณภาพข้อมูลรายหน่วยบริการ</li>
+            <li>คู่มือส่งออกข้อมูลเพื่อประกอบการประเมิน KPI ระดับอำเภอ</li>
+          </ul>
+        </article>
+
+        <div class="kpi-strip" aria-label="ตัวชี้วัดสำคัญ">
+          <article>
+            <span data-icon="hospital"></span>
+            <strong id="serviceUnitCount">-</strong>
+            <small>หน่วยบริการ</small>
+          </article>
+          <article>
+            <span data-icon="users"></span>
+            <strong id="kpiCatalogCount">-</strong>
+          <small>รายงานที่เชื่อมต่อ</small>
+          </article>
+          <article>
+            <span data-icon="chart"></span>
+            <strong id="kpiProcessedCount">-</strong>
+          <small>ดึงข้อมูลสำเร็จ</small>
+          </article>
+        </div>
+      </div>
+
+      <aside class="video-panel">
+        <div class="section-title compact">
+          <span class="play-badge" data-icon="play"></span>
+          <h2>แนะนำระบบ HDC</h2>
+        </div>
+        <a class="video-thumb" href="#" aria-label="วิดีโอแนะนำระบบ HDC">
+          <div class="video-art">
+            <span class="building"></span>
+            <span class="doctor-one"></span>
+            <span class="doctor-two"></span>
+            <span class="patient"></span>
+          </div>
+          <div class="video-text">
+            <strong>presentation hdc</strong>
+            <span>ICT MOPH</span>
+          </div>
+          <span class="youtube-play" data-icon="play"></span>
+        </a>
+        <div class="side-links">
+          <a href="#"><span data-icon="chart"></span>รายงานยอดนิยม</a>
+          <a href="#"><span data-icon="shield"></span>ติดตามคุณภาพข้อมูล</a>
+          <a href="#"><span data-icon="file"></span>เอกสารประกอบ KPI</a>
+        </div>
+      </aside>
+    </section>
+
+    <section class="kpi-data-panel" id="kpiDataPanel">
+      <div class="data-heading">
+        <span class="spark" data-icon="chart"></span>
+        <div>
+          <h2>ข้อมูล KPI/Service Plan รายหน่วยบริการ อำเภอปากช่อง</h2>
+          <p>ดึงข้อมูลสดจาก HDC Public จังหวัดนครราชสีมา กรองเฉพาะ 24 หน่วยบริการตามบัญชี สสอ.ปากช่อง</p>
+        </div>
+        <a class="source-badge" href="https://hdc.moph.go.th/nma/public/main" target="_blank" rel="noopener">HDC Public Realtime</a>
+      </div>
+
+      <div class="data-toolbar" aria-label="ตัวกรองข้อมูล KPI">
+        <label>
+          <span>ประเภทข้อมูล</span>
+          <select id="dataModeSelect">
+            <option value="standard">รายงานมาตรฐาน Service Plan</option>
+            <option value="kpi">ตัวชี้วัด KPI</option>
+          </select>
+        </label>
+        <label>
+          <span>หมวด/สาขา</span>
+          <select id="kpiCatalogSelect">
+            <option>กำลังโหลด...</option>
+          </select>
+        </label>
+        <label>
+          <span>ปีงบประมาณ</span>
+          <select id="kpiYearSelect">
+            <option>2569</option>
+          </select>
+        </label>
+        <label class="wide-field">
+          <span>รายงาน/ตัวชี้วัด</span>
+          <select id="kpiReportSelect">
+            <option>กำลังโหลด...</option>
+          </select>
+        </label>
+        <label class="wide-field">
+          <span>หน่วยบริการ</span>
+          <select id="serviceUnitSelect">
+            <option value="ALL">ทุกหน่วยบริการตามบัญชี สสอ.ปากช่อง</option>
+          </select>
+        </label>
+        <button class="data-button primary" type="button" id="loadKpiButton">โหลดข้อมูลรายหน่วย</button>
+        <button class="data-button" type="button" id="processAllKpiButton">ประมวลผลทั้งหมด</button>
+        <button class="data-button" type="button" id="checkServicePlanButton">ตรวจครบทุก Service Plan</button>
+        <button class="data-button ghost" type="button" id="exportKpiButton">ส่งออก CSV</button>
+      </div>
+
+      <div class="data-status" id="kpiStatus">กำลังเตรียมการเชื่อมต่อข้อมูล HDC...</div>
+
+      <div class="data-metrics" aria-label="สรุปผล KPI">
+        <article>
+          <span>หน่วยบริการที่พบ</span>
+          <strong id="metricUnits">-</strong>
+        </article>
+        <article>
+          <span>เป้าหมายรวม</span>
+          <strong id="metricTarget">-</strong>
+        </article>
+        <article>
+          <span>ผลงานรวม</span>
+          <strong id="metricResult">-</strong>
+        </article>
+        <article>
+          <span>ร้อยละเฉลี่ย</span>
+          <strong id="metricRatio">-</strong>
+        </article>
+      </div>
+
+      <div class="table-wrap">
+        <table class="kpi-table">
+          <thead>
+            <tr>
+              <th>รหัส</th>
+              <th>หน่วยบริการ</th>
+              <th>เป้าหมาย</th>
+              <th>ผลงาน</th>
+              <th>ร้อยละ</th>
+              <th>วันที่ประมวลผล</th>
+            </tr>
+          </thead>
+          <tbody id="kpiTableBody">
+            <tr><td colspan="6">กำลังโหลดข้อมูล...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="all-kpi-summary" id="allKpiSummary" hidden>
+        <h3>สรุปการประมวลผล KPI ทั้งหมด</h3>
+        <div class="table-wrap compact-table">
+          <table class="kpi-table">
+            <thead>
+              <tr>
+                <th>KPI</th>
+                <th>หน่วยบริการ</th>
+                <th>เป้าหมายรวม</th>
+                <th>ผลงานรวม</th>
+                <th>ร้อยละ</th>
+                <th>สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="allKpiTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="all-kpi-summary service-plan-coverage" id="servicePlanCoverage" hidden>
+        <div class="summary-heading-row">
+          <div>
+            <h3>ความครบถ้วนข้อมูลทุก Service Plan</h3>
+            <p>ตรวจจากรายการรายงานมาตรฐานของ HDC และข้อมูลรายหน่วยบริการอำเภอปากช่อง</p>
+          </div>
+          <strong id="coverageTotal">-</strong>
+        </div>
+        <div class="table-wrap compact-table">
+          <table class="kpi-table">
+            <thead>
+              <tr>
+                <th>Service Plan</th>
+                <th>รายงานทั้งหมด</th>
+                <th>มีข้อมูล</th>
+                <th>ไม่มีข้อมูล</th>
+                <th>ไม่สำเร็จ</th>
+                <th>สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="servicePlanCoverageBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="report-shortcuts">
+      <div class="shortcut-title">
+        <h2>กลุ่มรายงานมาตรฐาน</h2>
+        <p>รายงานสำคัญสำหรับติดตามข้อมูลสุขภาพระดับอำเภอปากช่อง</p>
+      </div>
+      <div class="shortcut-grid">
+        <a href="#"><span data-icon="chart"></span><strong>ข้อมูลทั่วไป</strong><small>ประชากรและหน่วยบริการ</small></a>
+        <a href="#"><span data-icon="pulse"></span><strong>สถานะสุขภาพ</strong><small>โรคสำคัญและการป่วยตาย</small></a>
+        <a href="#"><span data-icon="hospital"></span><strong>การเข้าถึงบริการ</strong><small>บริการสุขภาพและการรักษา</small></a>
+        <a href="#"><span data-icon="shield"></span><strong>ส่งเสริมป้องกัน</strong><small>แม่และเด็ก วัคซีน โรงเรียน</small></a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div>
+      <strong>HDC สำนักงานสาธารณสุขอำเภอปากช่อง</strong>
+      <span>ระบบคลังข้อมูลด้านการแพทย์และสุขภาพสำหรับติดตามผลงานระดับอำเภอ</span>
+    </div>
+    <span>Health Data Center Service</span>
+  </footer>
+
+  <section class="iq-chat" id="iqChat" aria-label="iQ AI Chat Bot">
+    <button class="iq-toggle" id="iqToggle" type="button" aria-expanded="false" aria-controls="iqPanel">
+      <span class="iq-mark">iQ</span>
+      <span class="iq-toggle-text">ถามข้อมูล KPI</span>
+    </button>
+    <div class="iq-panel" id="iqPanel" hidden>
+      <div class="iq-header">
+        <div>
+          <strong>iQ</strong>
+          <span>AI Chat Bot ข้อมูล HDC ปากช่อง</span>
+        </div>
+        <button class="iq-close" id="iqClose" type="button" data-iq-close aria-label="ปิด iQ">×</button>
+      </div>
+      <div class="iq-messages" id="iqMessages" aria-live="polite">
+        <div class="iq-message bot">สวัสดีครับ ผม iQ ขับเคลื่อนด้วย Claude AI — ถามได้เลยครับ เช่น "วิเคราะห์ข้อมูลตอนนี้", "หน่วยไหนต่ำสุด", "สรุป Service Plan"</div>
+      </div>
+      <form class="iq-form" id="iqForm">
+        <input id="iqInput" type="text" autocomplete="off" placeholder="ถาม iQ เช่น สรุปข้อมูลตอนนี้">
+        <button type="submit">ส่ง</button>
+      </form>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
