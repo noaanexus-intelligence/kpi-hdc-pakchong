@@ -1,0 +1,13 @@
+{
+  "name": "kpi-hdc-pakchong",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static HDC dashboard for Pak Chong — no bundler, no build step. package.json exists only for local TypeScript checking of api/*.ts.",
+  "scripts": {
+    "test": "tsc --noEmit",
+    "snapshot": "node scripts/snapshot.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
