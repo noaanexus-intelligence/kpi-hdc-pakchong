@@ -124,7 +124,7 @@ async function snapReportAndTrackCoverage(category, sub, report) {
     subcategory: optionText(sub),
     subcatalogId: sub.code,
     reportCode,
-    title: stripHtmlTags(report.report_name || report.title_name || report.report_names || reportCode),
+    title: stripHtmlTags(report.report_name || report.title_name || report.report_names || report.label || reportCode),
     status,
     rowCount,
     error,
