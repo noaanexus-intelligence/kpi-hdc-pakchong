@@ -1,25 +1,24 @@
 {
-  "generatedAt": "2026-06-21T07:52:17.988Z",
-  "catalogSnapshotGeneratedAt": "2026-06-21T04:52:11.969Z",
+  "generatedAt": "2026-06-21T10:26:15.099Z",
+  "catalogSnapshotGeneratedAt": "2026-06-21T10:24:30.172Z",
   "catalog": "รายงานมาตรฐาน / ข้อมูลตอบสนอง Service Plan",
   "counts": {
     "servicePlanBranches": 17,
     "subGroupsTotal": 23,
     "reportsOfficialTotal": 343,
-    "reportsInSnapshot": 115,
-    "reportsInCoverage": 145,
+    "reportsInSnapshot": 267,
+    "reportsInCoverage": 343,
     "reportsVisibleInUI": 343,
-    "reportsMissing": 198,
-    "reportsUpstreamError": 30,
-    "reportsNoFacilityData": 1,
+    "reportsMissing": 0,
+    "reportsUpstreamError": 76,
+    "reportsNoFacilityData": 11,
     "reportsHiddenByUI": 0,
-    "reportsOk": 114
+    "reportsOk": 256
   },
   "statusBreakdown": {
-    "missing_from_crawler": 198,
-    "ok": 114,
-    "upstream_error": 30,
-    "no_data": 1
+    "ok": 256,
+    "upstream_error": 76,
+    "no_data": 11
   },
   "reportCodeShapes": {
     "hex32": 297,
@@ -30,13 +29,13 @@
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาโรคหัวใจ และหลอดเลือด",
       "subcatalogId": "39fd60c25235db479930db85a0e97dd3",
       "officialReports": 13,
-      "inSnapshot": 1,
-      "inCoverage": 1,
+      "inSnapshot": 11,
+      "inCoverage": 13,
       "visibleUI": 13,
-      "missing": 12,
-      "upstreamError": 0,
+      "missing": 0,
+      "upstreamError": 2,
       "noFacilityData": 0,
-      "ok": 1
+      "ok": 11
     },
     {
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขามะเร็ง",
@@ -66,25 +65,25 @@
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาสุขภาพจิตและจิตเวช",
       "subcatalogId": "22710ed5db1ed6b12aab540a7b0753b3",
       "officialReports": 68,
-      "inSnapshot": 10,
-      "inCoverage": 20,
+      "inSnapshot": 21,
+      "inCoverage": 68,
       "visibleUI": 68,
-      "missing": 48,
-      "upstreamError": 10,
-      "noFacilityData": 1,
-      "ok": 9
+      "missing": 0,
+      "upstreamError": 47,
+      "noFacilityData": 8,
+      "ok": 13
     },
     {
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาสุขภาพช่องปาก",
       "subcatalogId": "db30e434e30565c12fbac44958e338d5",
       "officialReports": 61,
-      "inSnapshot": 18,
-      "inCoverage": 18,
+      "inSnapshot": 61,
+      "inCoverage": 61,
       "visibleUI": 61,
-      "missing": 43,
+      "missing": 0,
       "upstreamError": 0,
       "noFacilityData": 0,
-      "ok": 18
+      "ok": 61
     },
     {
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาตา",
@@ -102,25 +101,25 @@
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาไต",
       "subcatalogId": "e71a73a77b1474e63b71bccf727009ce",
       "officialReports": 20,
-      "inSnapshot": 4,
-      "inCoverage": 4,
+      "inSnapshot": 20,
+      "inCoverage": 20,
       "visibleUI": 20,
-      "missing": 16,
+      "missing": 0,
       "upstreamError": 0,
-      "noFacilityData": 0,
-      "ok": 4
+      "noFacilityData": 1,
+      "ok": 19
     },
     {
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาโรคไม่ติดต่อ (NCD DM,HT,CVD)",
       "subcatalogId": "b2b59e64c4e6c92d4b1ec16a599d882b",
       "officialReports": 47,
-      "inSnapshot": 9,
-      "inCoverage": 9,
+      "inSnapshot": 47,
+      "inCoverage": 47,
       "visibleUI": 47,
-      "missing": 38,
+      "missing": 0,
       "upstreamError": 0,
-      "noFacilityData": 0,
-      "ok": 9
+      "noFacilityData": 1,
+      "ok": 46
     },
     {
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาโรคปอดอุดกั้นเรื้อรัง(COPD)",
@@ -138,13 +137,13 @@
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขา RDU",
       "subcatalogId": "03b912ab9ccb4c07280a89bf05e5900e",
       "officialReports": 23,
-      "inSnapshot": 17,
-      "inCoverage": 21,
+      "inSnapshot": 19,
+      "inCoverage": 23,
       "visibleUI": 23,
-      "missing": 2,
+      "missing": 0,
       "upstreamError": 4,
       "noFacilityData": 0,
-      "ok": 17
+      "ok": 19
     },
     {
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขา Intermediate & Palliative Care",
@@ -162,13 +161,13 @@
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขายาเสพติด",
       "subcatalogId": "06b9ffbd9fa83f29fef3a7e7ba8119d6",
       "officialReports": 35,
-      "inSnapshot": 10,
-      "inCoverage": 10,
+      "inSnapshot": 29,
+      "inCoverage": 35,
       "visibleUI": 35,
-      "missing": 25,
-      "upstreamError": 0,
-      "noFacilityData": 0,
-      "ok": 10
+      "missing": 0,
+      "upstreamError": 6,
+      "noFacilityData": 1,
+      "ok": 28
     },
     {
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาอายุรกรรม",
@@ -186,13 +185,13 @@
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาแม่และเด็ก",
       "subcatalogId": "3dc2d92087cdc5b585eb8c0904691399",
       "officialReports": 14,
-      "inSnapshot": 0,
-      "inCoverage": 0,
+      "inSnapshot": 13,
+      "inCoverage": 14,
       "visibleUI": 14,
-      "missing": 14,
-      "upstreamError": 0,
+      "missing": 0,
+      "upstreamError": 1,
       "noFacilityData": 0,
-      "ok": 0
+      "ok": 13
     },
     {
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาออร์โธปิดิกส์",
@@ -379,7 +378,7 @@
     "gapReductionPercent": 100
   },
   "limitations": [
-    "Live recrawl of hdc.moph.go.th / api-hdc.moph.go.th / api-center-hdc.moph.go.th was attempted from this environment and blocked (HTTP 503 on every request) — matches the Thai-IP-only restriction documented in scripts/README.md. This audit therefore reconstructs the 'official' tree from the most recent committed data/snapshot/ (captured 2026-06-21T04:52:11.969Z by the existing Thai-IP scheduled task), not a fresh live call.",
+    "Live recrawl of hdc.moph.go.th / api-hdc.moph.go.th / api-center-hdc.moph.go.th was attempted from this environment and blocked (HTTP 503 on every request) — matches the Thai-IP-only restriction documented in scripts/README.md. This audit therefore reconstructs the 'official' tree from the most recent committed data/snapshot/ (captured 2026-06-21T10:24:30.172Z by the existing Thai-IP scheduled task), not a fresh live call.",
     "Because of the above, any branch, group, or report HDC added/removed after that snapshot run is invisible to this audit. The recursive-flatten bug in scripts/snapshot.mjs and script.js is now fixed in code (see fixVerification above), but coverage.json/snap_*.json themselves still reflect the LAST run made before the fix — reportsInSnapshot/reportsInCoverage/reportsMissing below will not drop until scripts/snapshot.mjs is re-run from a Thai IP (or via the Task Scheduler job) with the fix in place.",
     "depth/nesting: every one of the 17 Service Plan branches in the current snapshot is exactly 2 levels deep (branch -> group -> leaf report). The flattening code recurses to arbitrary depth defensively, but deeper nesting has not been observed and is unverified."
   ]
