@@ -1,30 +1,29 @@
 {
-  "generatedAt": "2026-06-21T07:29:04.490Z",
+  "generatedAt": "2026-06-21T07:52:17.988Z",
   "catalogSnapshotGeneratedAt": "2026-06-21T04:52:11.969Z",
   "catalog": "รายงานมาตรฐาน / ข้อมูลตอบสนอง Service Plan",
   "counts": {
     "servicePlanBranches": 17,
     "subGroupsTotal": 23,
-    "reportsOfficialTotal": 344,
-    "reportsInSnapshot": 116,
-    "reportsInCoverage": 146,
-    "reportsVisibleInUI": 140,
+    "reportsOfficialTotal": 343,
+    "reportsInSnapshot": 115,
+    "reportsInCoverage": 145,
+    "reportsVisibleInUI": 343,
     "reportsMissing": 198,
     "reportsUpstreamError": 30,
     "reportsNoFacilityData": 1,
-    "reportsHiddenByUI": 6,
-    "reportsOk": 109
+    "reportsHiddenByUI": 0,
+    "reportsOk": 114
   },
   "statusBreakdown": {
     "missing_from_crawler": 198,
-    "hidden_by_ui": 6,
-    "ok": 109,
+    "ok": 114,
     "upstream_error": 30,
     "no_data": 1
   },
   "reportCodeShapes": {
     "hex32": 297,
-    "other": 47
+    "other": 46
   },
   "perBranchTable": [
     {
@@ -33,23 +32,23 @@
       "officialReports": 13,
       "inSnapshot": 1,
       "inCoverage": 1,
-      "visibleUI": 0,
+      "visibleUI": 13,
       "missing": 12,
       "upstreamError": 0,
       "noFacilityData": 0,
-      "ok": 0
+      "ok": 1
     },
     {
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขามะเร็ง",
       "subcatalogId": "59acae7a68f02c8e2c0cb88dfc6df3b3",
-      "officialReports": 23,
-      "inSnapshot": 18,
-      "inCoverage": 23,
-      "visibleUI": 23,
+      "officialReports": 22,
+      "inSnapshot": 17,
+      "inCoverage": 22,
+      "visibleUI": 22,
       "missing": 0,
       "upstreamError": 5,
       "noFacilityData": 0,
-      "ok": 18
+      "ok": 17
     },
     {
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาทารกแรกเกิด",
@@ -69,7 +68,7 @@
       "officialReports": 68,
       "inSnapshot": 10,
       "inCoverage": 20,
-      "visibleUI": 20,
+      "visibleUI": 68,
       "missing": 48,
       "upstreamError": 10,
       "noFacilityData": 1,
@@ -81,11 +80,11 @@
       "officialReports": 61,
       "inSnapshot": 18,
       "inCoverage": 18,
-      "visibleUI": 17,
+      "visibleUI": 61,
       "missing": 43,
       "upstreamError": 0,
       "noFacilityData": 0,
-      "ok": 17
+      "ok": 18
     },
     {
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาตา",
@@ -105,7 +104,7 @@
       "officialReports": 20,
       "inSnapshot": 4,
       "inCoverage": 4,
-      "visibleUI": 4,
+      "visibleUI": 20,
       "missing": 16,
       "upstreamError": 0,
       "noFacilityData": 0,
@@ -117,11 +116,11 @@
       "officialReports": 47,
       "inSnapshot": 9,
       "inCoverage": 9,
-      "visibleUI": 5,
+      "visibleUI": 47,
       "missing": 38,
       "upstreamError": 0,
       "noFacilityData": 0,
-      "ok": 5
+      "ok": 9
     },
     {
       "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาโรคปอดอุดกั้นเรื้อรัง(COPD)",
@@ -141,7 +140,7 @@
       "officialReports": 23,
       "inSnapshot": 17,
       "inCoverage": 21,
-      "visibleUI": 21,
+      "visibleUI": 23,
       "missing": 2,
       "upstreamError": 4,
       "noFacilityData": 0,
@@ -165,7 +164,7 @@
       "officialReports": 35,
       "inSnapshot": 10,
       "inCoverage": 10,
-      "visibleUI": 10,
+      "visibleUI": 35,
       "missing": 25,
       "upstreamError": 0,
       "noFacilityData": 0,
@@ -189,7 +188,7 @@
       "officialReports": 14,
       "inSnapshot": 0,
       "inCoverage": 0,
-      "visibleUI": 0,
+      "visibleUI": 14,
       "missing": 14,
       "upstreamError": 0,
       "noFacilityData": 0,
@@ -232,9 +231,156 @@
       "ok": 6
     }
   ],
+  "fixVerification": {
+    "method": "Re-ran the OLD (top-level rows only) and NEW (recursive flattenReportTree, post-fix) report-discovery logic against the same already-cached data/snapshot/ system/subcatalog/reports trees — no live HDC call needed for this comparison, so it is unaffected by the Thai-IP network restriction. It proves the code fix closes the discovery gap. It does NOT mean coverage.json has fresh fetched KPI numbers for newly-discoverable reports yet — run scripts/snapshot.mjs from a Thai IP to actually fetch reports/province/data for them.",
+    "officialUniqueReportsTotal": 343,
+    "discoverableBeforeFixTotal": 139,
+    "discoverableAfterFixTotal": 343,
+    "missingBeforeFixTotal": 204,
+    "missingAfterFixTotal": 0,
+    "perBranch": [
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาโรคหัวใจ และหลอดเลือด",
+        "officialUniqueReports": 13,
+        "discoverableBeforeFix": 0,
+        "discoverableAfterFix": 13,
+        "missingBeforeFix": 13,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขามะเร็ง",
+        "officialUniqueReports": 22,
+        "discoverableBeforeFix": 22,
+        "discoverableAfterFix": 22,
+        "missingBeforeFix": 0,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาทารกแรกเกิด",
+        "officialUniqueReports": 3,
+        "discoverableBeforeFix": 3,
+        "discoverableAfterFix": 3,
+        "missingBeforeFix": 0,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาสุขภาพจิตและจิตเวช",
+        "officialUniqueReports": 68,
+        "discoverableBeforeFix": 20,
+        "discoverableAfterFix": 68,
+        "missingBeforeFix": 48,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาสุขภาพช่องปาก",
+        "officialUniqueReports": 61,
+        "discoverableBeforeFix": 17,
+        "discoverableAfterFix": 61,
+        "missingBeforeFix": 44,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาตา",
+        "officialUniqueReports": 5,
+        "discoverableBeforeFix": 5,
+        "discoverableAfterFix": 5,
+        "missingBeforeFix": 0,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาไต",
+        "officialUniqueReports": 20,
+        "discoverableBeforeFix": 4,
+        "discoverableAfterFix": 20,
+        "missingBeforeFix": 16,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาโรคไม่ติดต่อ (NCD DM,HT,CVD)",
+        "officialUniqueReports": 47,
+        "discoverableBeforeFix": 5,
+        "discoverableAfterFix": 47,
+        "missingBeforeFix": 42,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาโรคปอดอุดกั้นเรื้อรัง(COPD)",
+        "officialUniqueReports": 10,
+        "discoverableBeforeFix": 10,
+        "discoverableAfterFix": 10,
+        "missingBeforeFix": 0,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขา RDU",
+        "officialUniqueReports": 23,
+        "discoverableBeforeFix": 21,
+        "discoverableAfterFix": 23,
+        "missingBeforeFix": 2,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขา Intermediate & Palliative Care",
+        "officialUniqueReports": 5,
+        "discoverableBeforeFix": 5,
+        "discoverableAfterFix": 5,
+        "missingBeforeFix": 0,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขายาเสพติด",
+        "officialUniqueReports": 35,
+        "discoverableBeforeFix": 10,
+        "discoverableAfterFix": 35,
+        "missingBeforeFix": 25,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาอายุรกรรม",
+        "officialUniqueReports": 5,
+        "discoverableBeforeFix": 5,
+        "discoverableAfterFix": 5,
+        "missingBeforeFix": 0,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาแม่และเด็ก",
+        "officialUniqueReports": 14,
+        "discoverableBeforeFix": 0,
+        "discoverableAfterFix": 14,
+        "missingBeforeFix": 14,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขาออร์โธปิดิกส์",
+        "officialUniqueReports": 2,
+        "discoverableBeforeFix": 2,
+        "discoverableAfterFix": 2,
+        "missingBeforeFix": 0,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan 4 สาขาหลัก",
+        "officialUniqueReports": 2,
+        "discoverableBeforeFix": 2,
+        "discoverableAfterFix": 2,
+        "missingBeforeFix": 0,
+        "missingAfterFix": 0
+      },
+      {
+        "servicePlanBranch": "ข้อมูลเพื่อตอบสนอง Service Plan สาขากัญชา",
+        "officialUniqueReports": 8,
+        "discoverableBeforeFix": 8,
+        "discoverableAfterFix": 8,
+        "missingBeforeFix": 0,
+        "missingAfterFix": 0
+      }
+    ],
+    "gapReductionPercent": 100
+  },
   "limitations": [
     "Live recrawl of hdc.moph.go.th / api-hdc.moph.go.th / api-center-hdc.moph.go.th was attempted from this environment and blocked (HTTP 503 on every request) — matches the Thai-IP-only restriction documented in scripts/README.md. This audit therefore reconstructs the 'official' tree from the most recent committed data/snapshot/ (captured 2026-06-21T04:52:11.969Z by the existing Thai-IP scheduled task), not a fresh live call.",
-    "Because of the above, any branch, group, or report HDC added/removed after that snapshot run is invisible to this audit. Recommend re-running this script immediately after the next scripts/snapshot.mjs run (or from a Thai IP) to confirm these numbers before acting on them.",
+    "Because of the above, any branch, group, or report HDC added/removed after that snapshot run is invisible to this audit. The recursive-flatten bug in scripts/snapshot.mjs and script.js is now fixed in code (see fixVerification above), but coverage.json/snap_*.json themselves still reflect the LAST run made before the fix — reportsInSnapshot/reportsInCoverage/reportsMissing below will not drop until scripts/snapshot.mjs is re-run from a Thai IP (or via the Task Scheduler job) with the fix in place.",
     "depth/nesting: every one of the 17 Service Plan branches in the current snapshot is exactly 2 levels deep (branch -> group -> leaf report). The flattening code recurses to arbitrary depth defensively, but deeper nesting has not been observed and is unverified."
   ]
 }

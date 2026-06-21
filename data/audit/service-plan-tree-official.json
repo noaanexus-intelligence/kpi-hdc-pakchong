@@ -1,7 +1,7 @@
 {
   "source": "HDC official (reconstructed from data/snapshot/ — see limitations in service-plan-tree-summary.json)",
   "catalogSnapshotGeneratedAt": "2026-06-21T04:52:11.969Z",
-  "generatedAt": "2026-06-21T07:29:04.469Z",
+  "generatedAt": "2026-06-21T07:52:17.971Z",
   "catalog": "รายงานมาตรฐาน / ข้อมูลตอบสนอง Service Plan",
   "branches": [
     {
@@ -366,17 +366,6 @@
           "reportCode": "5c24968b81ff4eafb5c65b0f5ffc8f39",
           "subcatalogId": "59acae7a68f02c8e2c0cb88dfc6df3b3",
           "officialUrl": "https://hdc.moph.go.th/center/public/standard-report-detail/5c24968b81ff4eafb5c65b0f5ffc8f39?subcatalogId=59acae7a68f02c8e2c0cb88dfc6df3b3",
-          "path": [
-            "รายงานมาตรฐาน",
-            "ข้อมูลตอบสนอง Service Plan",
-            "ข้อมูลเพื่อตอบสนอง Service Plan สาขามะเร็ง"
-          ]
-        },
-        {
-          "reportName": "จำนวนผู้ป่วยโรคไวรัสตับอักเสบ ซีเรื้อรัง ที่ได้รับการวินิจฉัยว่าเป็น ตับแข็งรายใหม่",
-          "reportCode": "YfG056gNiNqTmNu",
-          "subcatalogId": "59acae7a68f02c8e2c0cb88dfc6df3b3",
-          "officialUrl": "https://hdc.moph.go.th/center/public/standard-report-detail/YfG056gNiNqTmNu?subcatalogId=59acae7a68f02c8e2c0cb88dfc6df3b3",
           "path": [
             "รายงานมาตรฐาน",
             "ข้อมูลตอบสนอง Service Plan",

@@ -524,9 +524,31 @@ function fillYearsForCatalog(catalog) {
   }
 }
 
+// system/subcatalog/reports ตอบเป็นต้นไม้ — node กลุ่มมี children ซ้อนรายงานอยู่ข้างใน
+// recurse ลงทุกชั้นไม่งั้นรายงานที่ซ้อนอยู่ใต้กลุ่มจะหายไปจาก dropdown ทั้งหมด
+// ต้องตรงกับ flattenReportTree ใน scripts/snapshot.mjs เพื่อให้ crawler กับหน้าเว็บเห็นชุดรายงานตรงกัน
+function flattenReportTree(rows, groupPath = []) {
+  const leaves = [];
+  for (const node of rows || []) {
+    if (node.report_code) leaves.push({ ...node, report_group: groupPath.join(" > ") || null });
+    if (Array.isArray(node.children) && node.children.length) {
+      const label = String(node.label || node.report_name || "").trim();
+      leaves.push(...flattenReportTree(node.children, label ? [...groupPath, label] : groupPath));
+    }
+  }
+  return leaves;
+}
+
 function normalizeReports(rows) {
-  return (rows || [])
-    .filter((report) => report.report_code)
+  const seen = new Set();
+  return flattenReportTree(rows)
+    .filter((report) => report.report_code && report.active !== false)
+    .filter((report) => {
+      const code = String(report.report_code).trim();
+      if (seen.has(code)) return false;
+      seen.add(code);
+      return true;
+    })
     .map((report) => ({
       ...report,
       report_name: report.report_name || report.report_names || report.title_name || report.label
@@ -544,7 +566,7 @@ async function loadKpiReports() {
   let sourceReportCount = 0;
   if (kpiState.mode === "standard") {
     const response = await hdcGet("center", `system/subcatalog/reports?subcatalogId=${encodeURIComponent(catalogId)}`);
-    sourceReportCount = (response.rows || []).length;
+    sourceReportCount = flattenReportTree(response.rows || []).length;
     kpiState.reports = normalizeReports(response.rows);
   } else {
     const year = kpiEls.year.value || "2026";

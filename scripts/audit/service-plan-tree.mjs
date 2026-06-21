@@ -11,6 +11,15 @@
 // existing scripts/snapshot.mjs pipeline, so it is used here as the most current obtainable
 // proxy for "HDC official" structure. See summary.json `limitations` for what this means.
 //
+// fixVerification in the summary: scripts/snapshot.mjs and script.js normalizeReports() were fixed
+// to recursively flatten `children` (previously top-level-only, silently dropping nested reports —
+// see the now-resolved missing_from_crawler entries below). That fix only changes *code*; it can't
+// retroactively refetch reports/province/data without a Thai IP. So fixVerification re-derives
+// "before vs after" discovery counts by re-running the OLD and NEW filter logic against the SAME
+// already-cached system/subcatalog/reports trees (no network call) — proving the fix closes the
+// discovery gap, while coverageStatus/rowCount for newly-discoverable reports still reflect the
+// last live snapshot run (pending the next Thai-IP run to actually fetch them).
+//
 // Run: node scripts/audit/service-plan-tree.mjs
 
 import { readFile, writeFile } from "node:fs/promises";
@@ -105,8 +114,8 @@ function classify(entry) {
         status: "missing_from_crawler",
         missingReason:
           `Nested under group "${entry.groupPath.join(" > ")}" in HDC's system/subcatalog/reports response. ` +
-          "scripts/snapshot.mjs (main(), reports filter) and script.js normalizeReports() both read response.rows top-level only and never recurse into `children`, so this report is never requested from HDC at all — it has no snapshot, no coverage entry, and never appears in the live report dropdown.",
-        suggestedFix: "crawler (scripts/snapshot.mjs) + UI (script.js normalizeReports/fetchStandardReports) — both need to recursively flatten `children` before filtering by report_code. Same bug, two call sites.",
+          "The top-level-only filtering bug in scripts/snapshot.mjs and script.js normalizeReports() is now fixed (both recursively flatten `children`), but data/snapshot/coverage.json itself has not been regenerated since the fix because api-hdc.moph.go.th/api-center-hdc.moph.go.th are not reachable from this environment (Thai-IP-only). This report will be fetched on the next scripts/snapshot.mjs run from a Thai IP — until then it has no real coverage entry.",
+        suggestedFix: "none in code — run scripts/snapshot.mjs from a Thai IP (or via the existing Task Scheduler job, see scripts/README.md) to populate real fetched data for this report.",
       };
     }
     return {
@@ -147,8 +156,8 @@ function classify(entry) {
   if (!entry.visibleInUI) {
     return {
       status: "hidden_by_ui",
-      missingReason: "Report has good facility data in snapshot/coverage but script.js does not surface it (e.g. nested under a group it doesn't flatten).",
-      suggestedFix: "UI — script.js normalizeReports/fetchStandardReports.",
+      missingReason: "Report has good facility data in snapshot/coverage but is explicitly marked active:false by HDC, so script.js normalizeReports() filters it out of the dropdown on purpose.",
+      suggestedFix: "none — intentional filtering on an inactive report; revisit only if HDC marks it active again.",
     };
   }
   return { status: "ok", missingReason: null, suggestedFix: null };
@@ -188,12 +197,41 @@ async function main() {
 
   const branches = [];
   const allLeavesFlat = []; // for summary/gap building
+  const fixVerificationPerBranch = [];
 
   for (const branchDef of branchDefs) {
     const branchKey = `center system/subcatalog/reports?subcatalogId=${branchDef.code}`;
     const { data: subResp, found: branchFetched } = await readSnap(manifest, branchKey);
     const rows = subResp?.rows || [];
-    const { leaves, groupLabels } = flattenReportTree(rows);
+    const { leaves: rawLeaves, groupLabels } = flattenReportTree(rows);
+
+    // HDC itself sometimes repeats the exact same reportCode as two separate tree nodes within one
+    // branch (observed in "สาขามะเร็ง") — dedupe so "official" counts unique reports, not tree nodes.
+    // Mirrors dedupeByReportCode() in scripts/snapshot.mjs / script.js.
+    const seenCodes = new Set();
+    const leaves = rawLeaves.filter((leaf) => {
+      if (seenCodes.has(leaf.reportCode)) return false;
+      seenCodes.add(leaf.reportCode);
+      return true;
+    });
+    const duplicateNodesInBranch = rawLeaves.length - leaves.length;
+
+    // fix verification: re-run the OLD (top-level-only) vs NEW (recursive) discovery logic against
+    // this same cached tree — no network call, proves the code fix without needing a live re-crawl.
+    const beforeFixCodes = new Set(
+      rows.filter((r) => r.report_code && r.active !== false).map((r) => String(r.report_code).trim())
+    );
+    const afterFixCodes = new Set(
+      leaves.filter((l) => !l.activeFalse).map((l) => l.reportCode)
+    );
+    fixVerificationPerBranch.push({
+      servicePlanBranch: branchDef.name,
+      officialUniqueReports: leaves.length,
+      discoverableBeforeFix: beforeFixCodes.size,
+      discoverableAfterFix: afterFixCodes.size,
+      missingBeforeFix: leaves.length - beforeFixCodes.size,
+      missingAfterFix: leaves.length - afterFixCodes.size,
+    });
 
     const reports = [];
     for (const leaf of leaves) {
@@ -202,7 +240,9 @@ async function main() {
       const covEntry = coverageByCode.get(leaf.reportCode) || null;
       const existsInCoverage = Boolean(covEntry);
       const existsInSnapshot = snapshottedCodes.has(leaf.reportCode);
-      const visibleInUI = leaf.depth === 0; // mirrors script.js normalizeReports(): top-level rows only
+      // script.js normalizeReports() now flattens `children` to any depth and filters active!==false
+      // (same logic as scripts/snapshot.mjs flattenReportTree) — depth no longer hides a report from the UI.
+      const visibleInUI = !leaf.activeFalse;
 
       let facilityShaped = null;
       if (existsInSnapshot && covEntry?.status === "no_data") {
@@ -250,10 +290,29 @@ async function main() {
       groupCount: groupLabels.size,
       reportCount: reports.length,
       topLevelDirectReportCount: rows.filter((r) => r.report_code).length,
+      duplicateNodesInBranch,
       children: [], // reserved: HDC has not nested a deeper subcatalog level under any of the 17 branches as of this snapshot
       reports,
     });
   }
+
+  const fixVerification = {
+    method:
+      "Re-ran the OLD (top-level rows only) and NEW (recursive flattenReportTree, post-fix) report-discovery " +
+      "logic against the same already-cached data/snapshot/ system/subcatalog/reports trees — no live HDC call " +
+      "needed for this comparison, so it is unaffected by the Thai-IP network restriction. It proves the code fix " +
+      "closes the discovery gap. It does NOT mean coverage.json has fresh fetched KPI numbers for newly-discoverable " +
+      "reports yet — run scripts/snapshot.mjs from a Thai IP to actually fetch reports/province/data for them.",
+    officialUniqueReportsTotal: fixVerificationPerBranch.reduce((s, b) => s + b.officialUniqueReports, 0),
+    discoverableBeforeFixTotal: fixVerificationPerBranch.reduce((s, b) => s + b.discoverableBeforeFix, 0),
+    discoverableAfterFixTotal: fixVerificationPerBranch.reduce((s, b) => s + b.discoverableAfterFix, 0),
+    missingBeforeFixTotal: fixVerificationPerBranch.reduce((s, b) => s + b.missingBeforeFix, 0),
+    missingAfterFixTotal: fixVerificationPerBranch.reduce((s, b) => s + b.missingAfterFix, 0),
+    perBranch: fixVerificationPerBranch,
+  };
+  fixVerification.gapReductionPercent = fixVerification.missingBeforeFixTotal === 0
+    ? 100
+    : Number((((fixVerification.missingBeforeFixTotal - fixVerification.missingAfterFixTotal) / fixVerification.missingBeforeFixTotal) * 100).toFixed(1));
 
   // ---- file 1: official tree (pure structure, no production-comparison fields) ----
   const officialTree = {
@@ -377,9 +436,10 @@ async function main() {
     statusBreakdown: statusCounts,
     reportCodeShapes,
     perBranchTable,
+    fixVerification,
     limitations: [
       "Live recrawl of hdc.moph.go.th / api-hdc.moph.go.th / api-center-hdc.moph.go.th was attempted from this environment and blocked (HTTP 503 on every request) — matches the Thai-IP-only restriction documented in scripts/README.md. This audit therefore reconstructs the 'official' tree from the most recent committed data/snapshot/ (captured " + manifest.generatedAt + " by the existing Thai-IP scheduled task), not a fresh live call.",
-      "Because of the above, any branch, group, or report HDC added/removed after that snapshot run is invisible to this audit. Recommend re-running this script immediately after the next scripts/snapshot.mjs run (or from a Thai IP) to confirm these numbers before acting on them.",
+      "Because of the above, any branch, group, or report HDC added/removed after that snapshot run is invisible to this audit. The recursive-flatten bug in scripts/snapshot.mjs and script.js is now fixed in code (see fixVerification above), but coverage.json/snap_*.json themselves still reflect the LAST run made before the fix — reportsInSnapshot/reportsInCoverage/reportsMissing below will not drop until scripts/snapshot.mjs is re-run from a Thai IP (or via the Task Scheduler job) with the fix in place.",
       "depth/nesting: every one of the 17 Service Plan branches in the current snapshot is exactly 2 levels deep (branch -> group -> leaf report). The flattening code recurses to arbitrary depth defensively, but deeper nesting has not been observed and is unverified.",
     ],
   };

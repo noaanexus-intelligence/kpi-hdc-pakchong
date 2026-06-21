@@ -8,6 +8,10 @@
 // พร้อมคำนวณสถานะ success/no_data/error ต่อรายงาน เขียนเป็น data/snapshot/coverage.json
 // (coverage.js ใช้แสดงผลบนหน้าเว็บ — อ่านไฟล์นี้เฉยๆ ไม่เรียก live proxy)
 //
+// system/subcatalog/reports ตอบเป็นต้นไม้ (node กลุ่มมี children ซ้อนรายงานอยู่ข้างใน) — เดิมโค้ด
+// อ่านแค่แถวบนสุด ทำให้รายงานที่ซ้อนอยู่ใต้กลุ่มหลุดไปทั้งหมด (พบจาก audit สาขา Service Plan,
+// ดู data/audit/service-plan-tree-summary.json) ตอนนี้ flattenReportTree() recurse ลงทุกชั้นแล้ว
+//
 // รัน: node scripts/snapshot.mjs   (ต้องรันบนเครื่องที่อยู่ในไทย)
 // จำกัดจำนวนหมวดตอนทดสอบได้ด้วย: HDC_CATEGORY_LIMIT=2 node scripts/snapshot.mjs
 
@@ -107,6 +111,35 @@ async function snap(kind, path) {
   return null;
 }
 
+// ---- flatten: ต้นไม้ system/subcatalog/reports มี node กลุ่ม (children) ซ้อนรายงานอยู่ข้างใน
+// เดิมโค้ดอ่านแค่แถวบนสุด (top-level) ทำให้รายงานที่ซ้อนอยู่ใต้กลุ่มหลุดไปทั้งหมด (ดู scripts/README.md)
+// recurse ลงทุกชั้นเพื่อไม่ให้รายงานที่ซ้อนอยู่หลุดหาย — ต้องตรงกับ flattenReportTree ใน script.js
+function flattenReportTree(rows, { groupPath = [], depth = 0 } = {}) {
+  const leaves = [];
+  for (const node of rows || []) {
+    const children = Array.isArray(node.children) ? node.children : null;
+    if (node.report_code) {
+      leaves.push({ ...node, groupPath: [...groupPath], depth });
+    }
+    if (children && children.length) {
+      const label = stripHtmlTags(node.label || node.report_name || "");
+      leaves.push(...flattenReportTree(children, { groupPath: [...groupPath, label].filter(Boolean), depth: depth + 1 }).leaves);
+    }
+  }
+  return { leaves };
+}
+
+// HDC ใช้ reportCode ซ้ำได้ในหลายตำแหน่งของ catalog เดียวกัน — กันไม่ให้ดึง/แสดงซ้ำ
+function dedupeByReportCode(reports) {
+  const seen = new Set();
+  return reports.filter((r) => {
+    const code = String(r.report_code ?? "").trim();
+    if (!code || seen.has(code)) return false;
+    seen.add(code);
+    return true;
+  });
+}
+
 // ---- coverage: สถานะ success/no_data/error ต่อรายงาน (ครบทุกหมวด ไม่ใช่แค่ Service Plan) ----
 const coverageReports = [];
 
@@ -134,6 +167,8 @@ async function snapReportAndTrackCoverage(category, sub, report) {
     subcatalogId: sub.code,
     reportCode,
     title: stripHtmlTags(report.report_name || report.title_name || report.report_names || report.label || reportCode),
+    groupPath: (report.groupPath || []).join(" > ") || null,
+    depth: report.depth ?? 0,
     status,
     rowCount,
     error,
@@ -203,7 +238,8 @@ async function main() {
     const subcatalogs = category.sub_menu || [];
     for (const sub of subcatalogs) {
       const reportsResp = await snap("center", `system/subcatalog/reports?subcatalogId=${encodeURIComponent(sub.code)}`);
-      const reports = (reportsResp?.rows || []).filter((r) => r.report_code && r.active !== false);
+      const { leaves } = flattenReportTree(reportsResp?.rows || []);
+      const reports = dedupeByReportCode(leaves.filter((r) => r.report_code && r.active !== false));
       reportTotal += reports.length;
       for (const report of reports) {
         await snapReportAndTrackCoverage(category, sub, report);
