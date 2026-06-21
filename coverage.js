@@ -36,9 +36,21 @@ function bgStatusClass(item) {
 
 function bgStatusText(item) {
   if (!item.total) return "ไม่มีรายงาน";
-  if (item.error > 0) return "มี error";
+  if (item.error > 0) return "HDC ต้นทางขัดข้อง";
   if (item.noData > 0) return "ขาดบางข้อ";
   return "ครบ";
+}
+
+// รวมการแปลงข้อความ error ดิบจาก HDC ต้นทาง (เช่น "HTTP 502") ให้อ่านเข้าใจง่ายขึ้นไว้ที่นี่ที่เดียว
+// ใช้ตรงนี้แทนการแสดง item.error ตรงๆ ทุกที่ที่โชว์ error log บนหน้าเว็บ
+function formatUpstreamError(error) {
+  if (error === "HTTP 502") {
+    return "HDC ต้นทางตอบ HTTP 502 — รอลองประมวลผลใหม่ภายหลัง";
+  }
+  if (error === "HTTP 500") {
+    return "HDC ต้นทางเกิดข้อผิดพลาดภายใน HTTP 500";
+  }
+  return `HDC ต้นทางตอบผิดพลาด — ${error || "ไม่ทราบสาเหตุ"}`;
 }
 
 function renderBackgroundCoverage(coverage) {
@@ -84,7 +96,7 @@ function renderBackgroundCoverage(coverage) {
         <td>${item.category || "-"}</td>
         <td>${item.reportCode}</td>
         <td>${item.title}</td>
-        <td>${item.error || "-"}</td>
+        <td>${formatUpstreamError(item.error)}</td>
       </tr>
     `).join("");
   }
