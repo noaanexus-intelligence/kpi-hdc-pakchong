@@ -4,11 +4,17 @@
 // จึง snapshot ทุก endpoint ที่หน้าเว็บเรียกในโหมด standard (ปี default) ไว้ใน data/snapshot/
 // แล้วหน้าเว็บจะ fallback มาอ่าน snapshot เมื่อเรียก proxy ไม่ได้ (ดู hdcGet ใน script.js)
 //
+// เดิมดึงเฉพาะหมวด "Service Plan" — ตอนนี้ดึงครบทุกหมวดของ standard catalog แล้ว
+// พร้อมคำนวณสถานะ success/no_data/error ต่อรายงาน เขียนเป็น data/snapshot/coverage.json
+// (coverage.js ใช้แสดงผลบนหน้าเว็บ — อ่านไฟล์นี้เฉยๆ ไม่เรียก live proxy)
+//
 // รัน: node scripts/snapshot.mjs   (ต้องรันบนเครื่องที่อยู่ในไทย)
+// จำกัดจำนวนหมวดตอนทดสอบได้ด้วย: HDC_CATEGORY_LIMIT=2 node scripts/snapshot.mjs
 
 import { writeFile, mkdir, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { normalizePakchongRows } from "./lib/hdc-normalize.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -18,6 +24,7 @@ const HDC_BASE = "https://api-hdc.moph.go.th/v1/";
 const CENTER_BASE = "https://api-center-hdc.moph.go.th/v1/";
 const HDC_CONFIG = { zone: "09", provinceCode: "30", districtCode: "3021" };
 const YEAR = process.env.HDC_YEAR || "2569"; // ปีงบประมาณ default ของหน้าเว็บ (โหมด standard)
+const CATEGORY_LIMIT = process.env.HDC_CATEGORY_LIMIT ? Number(process.env.HDC_CATEGORY_LIMIT) : Infinity;
 
 const UPSTREAM_HEADERS = {
   domain: "nma",
@@ -54,6 +61,7 @@ const baseFor = (kind) => (kind === "center" ? CENTER_BASE : HDC_BASE);
 
 // ---- fetch + เก็บไฟล์ พร้อมลงทะเบียนใน manifest ----
 const manifest = { generatedAt: "", year: YEAR, entries: {} };
+const dataCache = new Map(); // key -> parsed JSON (เก็บไว้กันซ้ำ คืนข้อมูลจริงได้แม้ key เคย snap แล้วในรอบนี้)
 const errors = [];
 let counter = 0;
 
@@ -62,7 +70,7 @@ const MAX_TRIES = 4; // upstream HDC flaky — retry 5xx/timeout
 
 async function snap(kind, path) {
   const key = `${kind} ${path}`;
-  if (manifest.entries[key]) return null; // กันซ้ำ
+  if (manifest.entries[key]) return dataCache.get(key) ?? null; // กันซ้ำ แต่คืนข้อมูลที่เคยดึงได้ในรอบนี้
   const target = baseFor(kind) + path;
   let lastErr = "";
   for (let attempt = 1; attempt <= MAX_TRIES; attempt += 1) {
@@ -78,6 +86,7 @@ async function snap(kind, path) {
       const file = `snap_${String(counter).padStart(4, "0")}.json`;
       await writeFile(join(OUT_DIR, file), JSON.stringify(data), "utf8");
       manifest.entries[key] = file;
+      dataCache.set(key, data);
       return data;
     } catch (err) {
       lastErr = err.message;
@@ -87,6 +96,77 @@ async function snap(kind, path) {
   errors.push({ key, error: lastErr });
   console.error(`  ✗ ${key} -> ${lastErr} (หลัง ${MAX_TRIES} ครั้ง)`);
   return null;
+}
+
+// ---- coverage: สถานะ success/no_data/error ต่อรายงาน (ครบทุกหมวด ไม่ใช่แค่ Service Plan) ----
+const coverageReports = [];
+
+async function snapReportAndTrackCoverage(category, sub, report) {
+  const reportCode = String(report.report_code).trim();
+  const startedAt = Date.now();
+  const errorsBefore = errors.length;
+  const data = await snap("hdc", buildProviderDataPath(reportCode));
+  const durationMs = Date.now() - startedAt;
+  const failed = errors.length > errorsBefore;
+
+  let status = "error";
+  let rowCount = 0;
+  let error;
+  if (failed) {
+    error = errors[errors.length - 1]?.error;
+  } else {
+    rowCount = normalizePakchongRows(data?.rows).length;
+    status = rowCount > 0 ? "success" : "no_data";
+  }
+
+  coverageReports.push({
+    category: category.name,
+    subcategory: optionText(sub),
+    subcatalogId: sub.code,
+    reportCode,
+    title: stripHtmlTags(report.report_name || report.title_name || report.report_names || report.label || reportCode),
+    status,
+    rowCount,
+    error,
+    durationMs,
+  });
+}
+
+function buildCoverageSummary(reports) {
+  return {
+    total: reports.length,
+    success: reports.filter((r) => r.status === "success").length,
+    noData: reports.filter((r) => r.status === "no_data").length,
+    error: reports.filter((r) => r.status === "error").length,
+  };
+}
+
+function buildCoverageGroups(reports) {
+  const byCategory = new Map();
+  for (const report of reports) {
+    const list = byCategory.get(report.category) ?? [];
+    list.push(report);
+    byCategory.set(report.category, list);
+  }
+  return Array.from(byCategory.entries()).map(([category, items]) => ({
+    category,
+    ...buildCoverageSummary(items),
+  }));
+}
+
+async function writeCoverageFile() {
+  const coverage = {
+    generatedAt: new Date().toISOString(),
+    year: YEAR,
+    summary: buildCoverageSummary(coverageReports),
+    groups: buildCoverageGroups(coverageReports),
+    errors: coverageReports
+      .filter((r) => r.status === "error")
+      .map((r) => ({ reportCode: r.reportCode, title: r.title, category: r.category, error: r.error })),
+    reports: coverageReports,
+  };
+  await writeFile(join(OUT_DIR, "coverage.json"), JSON.stringify(coverage), "utf8");
+  return coverage;
 }
 
 async function main() {
@@ -104,20 +184,23 @@ async function main() {
     `lookup/hospital?provinceCode=${HDC_CONFIG.provinceCode}&districtCode=${HDC_CONFIG.districtCode}&subdistrictCode=&servicePlanLV=&byear=&isRegis=`,
   );
 
-  // 2) Service Plan subcatalogs ทั้งหมด -> รายการรายงาน -> provider data ของแต่ละรายงาน
-  const servicePlan = (standardCatalog?.rows || []).find((c) => String(c.name).includes("Service Plan"));
-  const subcatalogs = servicePlan?.sub_menu || [];
-  console.log(`[snapshot] Service Plan: ${subcatalogs.length} สาขา`);
+  // 2) ทุกหมวดของ standard catalog -> ทุกหมวดย่อย -> รายการรายงาน -> provider data ของแต่ละรายงาน
+  //    (เดิมดึงเฉพาะหมวด "Service Plan" หมวดเดียว ตอนนี้ครบทุกหมวดเพื่อให้ตรวจ KPI ได้สมบูรณ์ขึ้น)
+  const categories = (standardCatalog?.rows || []).filter((c) => c.code).slice(0, CATEGORY_LIMIT);
+  console.log(`[snapshot] standard catalog: ${categories.length} หมวด`);
 
   let reportTotal = 0;
-  for (const sub of subcatalogs) {
-    const reportsResp = await snap("center", `system/subcatalog/reports?subcatalogId=${encodeURIComponent(sub.code)}`);
-    const reports = (reportsResp?.rows || []).filter((r) => r.report_code);
-    reportTotal += reports.length;
-    for (const report of reports) {
-      await snap("hdc", buildProviderDataPath(report.report_code));
+  for (const category of categories) {
+    const subcatalogs = category.sub_menu || [];
+    for (const sub of subcatalogs) {
+      const reportsResp = await snap("center", `system/subcatalog/reports?subcatalogId=${encodeURIComponent(sub.code)}`);
+      const reports = (reportsResp?.rows || []).filter((r) => r.report_code && r.active !== false);
+      reportTotal += reports.length;
+      for (const report of reports) {
+        await snapReportAndTrackCoverage(category, sub, report);
+      }
+      console.log(`  ✓ [${category.name}] ${optionText(sub)} — ${reports.length} รายงาน`);
     }
-    console.log(`  ✓ ${optionText(sub)} — ${reports.length} รายงาน`);
   }
 
   manifest.generatedAt = new Date().toISOString();
@@ -125,7 +208,11 @@ async function main() {
   manifest.errors = errors;
   await writeFile(join(OUT_DIR, "manifest.json"), JSON.stringify(manifest, null, 2), "utf8");
 
-  console.log(`[snapshot] เสร็จ: ${counter} ไฟล์, ${subcatalogs.length} สาขา, ${reportTotal} รายงาน, error ${errors.length}`);
+  const coverage = await writeCoverageFile();
+  console.log(
+    `[snapshot] เสร็จ: ${counter} ไฟล์, ${categories.length} หมวด, ${reportTotal} รายงาน, lookup error ${errors.length}` +
+      ` | coverage: สำเร็จ ${coverage.summary.success}, ไม่มีข้อมูล ${coverage.summary.noData}, error ${coverage.summary.error}`,
+  );
 
   // ถ้าดึง lookup เริ่มต้นไม่ได้เลย = upstream ใช้ไม่ได้ -> exit 1 (กัน push ของเสีย)
   if (!manifest.entries["hdc lookup/standard/catalog"]) {
@@ -136,6 +223,10 @@ async function main() {
 
 function optionText(item) {
   return item.name || item.text || item.code_name || item.value || item.code;
+}
+
+function stripHtmlTags(value) {
+  return String(value ?? "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
 }
 
 main().catch((err) => {

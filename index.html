@@ -391,6 +391,61 @@
       </div>
     </section>
 
+    <section class="kpi-data-panel" id="backgroundSyncCoverage">
+      <div class="data-heading">
+        <span class="spark" data-icon="audit"></span>
+        <div>
+          <h2>สถานะอัปเดตข้อมูลพื้นหลัง (Background Sync)</h2>
+          <p id="bgSyncGeneratedAt">กำลังโหลดสถานะ...</p>
+        </div>
+        <button class="data-button ghost" type="button" id="bgSyncExportErrors" disabled>ส่งออก Error Log CSV</button>
+      </div>
+
+      <p id="bgSyncEmpty" class="data-status" hidden>ยังไม่มีข้อมูล coverage จาก background sync — รอรอบ snapshot ถัดไป (ดู scripts/README.md)</p>
+
+      <div class="all-kpi-summary service-plan-coverage" id="bgSyncSummaryBlock" hidden>
+        <div class="summary-heading-row">
+          <div>
+            <h3>ความครบถ้วนข้อมูลครบทุกหมวด (ไม่ใช่แค่ Service Plan)</h3>
+            <p>คำนวณจากรอบ background sync ล่าสุดที่รันจากเครื่อง IP ไทย แล้ว push ขึ้น GitHub</p>
+          </div>
+          <strong id="bgSyncTotal">-</strong>
+        </div>
+        <div class="table-wrap compact-table">
+          <table class="kpi-table">
+            <thead>
+              <tr>
+                <th>หมวด</th>
+                <th>รายงานทั้งหมด</th>
+                <th>สำเร็จ</th>
+                <th>ไม่มีข้อมูล</th>
+                <th>error</th>
+                <th>สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="bgSyncCoverageBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="all-kpi-summary" id="bgSyncErrorWrap" hidden>
+        <h3>Error log</h3>
+        <div class="table-wrap compact-table">
+          <table class="kpi-table">
+            <thead>
+              <tr>
+                <th>หมวด</th>
+                <th>reportCode</th>
+                <th>รายงาน</th>
+                <th>error</th>
+              </tr>
+            </thead>
+            <tbody id="bgSyncErrorBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section class="report-shortcuts">
       <div class="shortcut-title">
         <h2>กลุ่มรายงานมาตรฐาน</h2>
@@ -437,5 +492,6 @@
   </section>
 
   <script src="script.js"></script>
+  <script src="coverage.js"></script>
 </body>
 </html>
