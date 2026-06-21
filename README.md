@@ -66,6 +66,24 @@ Validate TypeScript:
 npm test
 ```
 
+### Windows: npm scripts failing with ENOENT in a non-ASCII folder path
+
+If this project lives under a folder name containing Thai (or other
+non-ASCII) characters and `npm test` / `npm run build` / `npm run dev` fail
+with `ENOENT` while the same commands work when you call `node` directly,
+it's a Windows `cmd.exe` issue, not a bug in this project: `cmd.exe` (which
+npm uses by default to run package.json scripts on Windows) can fail to
+open files by path in such folders depending on the system's active code
+page. Node itself is unaffected — only the `cmd.exe` hop breaks.
+
+Fix it once per machine by pointing npm's script runner at PowerShell
+instead of `cmd.exe` (this is a machine-level npm setting, not a
+project file, so it won't affect Vercel's Linux build):
+
+```powershell
+npm config set script-shell "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+```
+
 ## Deploy on Vercel
 
 1. Push the project to GitHub.
