@@ -153,6 +153,15 @@ const kpiState = {
   lastTrend: null
 };
 
+// แนวทาง hybrid: dashboard/insight/brief อ่านจาก snapshot เป็นหลัก (เร็ว/เสถียร ไม่รอ HDC ตอนเปิดหน้า)
+// ตารางรายหน่วยตอนผู้ใช้กดดูพยายามดึงสดก่อนเสมอ ถ้าดึงไม่ได้ค่อย fallback มา snapshot
+// เก็บสถานะไว้ที่นี่เพื่อแสดงเวลาอัปเดตและข้อความ fallback บนหน้าเว็บ (ดู scripts/README.md)
+const dataStatus = {
+  snapshotGeneratedAt: null,
+  lastLiveFetchAt: null,
+  lastTableSource: null // "live" | "snapshot-fallback" | null
+};
+
 const kpiEls = {
   mode: document.querySelector("#dataModeSelect"),
   catalog: document.querySelector("#kpiCatalogSelect"),
@@ -164,6 +173,7 @@ const kpiEls = {
   checkServicePlan: document.querySelector("#checkServicePlanButton"),
   exportCsv: document.querySelector("#exportKpiButton"),
   status: document.querySelector("#kpiStatus"),
+  tableDataStatus: document.querySelector("#tableDataStatus"),
   tableBody: document.querySelector("#kpiTableBody"),
   allSummary: document.querySelector("#allKpiSummary"),
   allTableBody: document.querySelector("#allKpiTableBody"),
@@ -439,6 +449,25 @@ function formatNumber(value, digits = 0) {
     maximumFractionDigits: digits,
     minimumFractionDigits: digits
   });
+}
+
+function formatThaiDateTime(value) {
+  const date = value instanceof Date ? value : value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) return "ไม่พบข้อมูล";
+  return date.toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" });
+}
+
+function renderTableDataStatus() {
+  if (!kpiEls.tableDataStatus) return;
+  const snapshotText = `อัปเดต snapshot ล่าสุด: ${formatThaiDateTime(dataStatus.snapshotGeneratedAt)}`;
+  const liveText = dataStatus.lastLiveFetchAt
+    ? `ดึงข้อมูลสดล่าสุด: ${formatThaiDateTime(dataStatus.lastLiveFetchAt)}`
+    : "ดึงข้อมูลสดล่าสุด: ยังไม่เคยดึงสดในเซสชันนี้";
+  const fallbackText = dataStatus.lastTableSource === "snapshot-fallback"
+    ? " — ไม่สามารถดึงข้อมูลสดจาก HDC ได้ในขณะนี้ แสดงข้อมูลจาก snapshot ล่าสุดแทน"
+    : "";
+  kpiEls.tableDataStatus.textContent = `${snapshotText} | ${liveText}${fallbackText}`;
+  kpiEls.tableDataStatus.classList.toggle("error", Boolean(fallbackText));
 }
 
 function ratioClass(value) {
@@ -799,8 +828,9 @@ function renderDistrictBrief() {
 
   if (briefEls.suggestionText) briefEls.suggestionText.textContent = buildBriefRecommendation(brief);
   if (briefEls.statusBadge) {
+    // brief อ่านจาก kpiState ที่โหลดมาแล้ว (snapshot เป็นหลักตอนเปิดหน้า) — โชว์เวลา snapshot ล่าสุดให้ผู้ใช้เข้าใจที่มา
     briefEls.statusBadge.textContent = (brief.risk.hasData || brief.units.hasData)
-      ? "อัปเดตล่าสุดจากข้อมูลที่โหลดอยู่"
+      ? `อัปเดต snapshot ล่าสุด: ${formatThaiDateTime(dataStatus.snapshotGeneratedAt)}`
       : "กำลังวิเคราะห์ข้อมูล HDC...";
   }
 }
@@ -873,32 +903,66 @@ function normalizeProviderRowsResponse(response) {
   return { rows, dateCom: source.datecom || "", label: source.label || "" };
 }
 
-async function fetchProviderRows(reportCode, budgetYear = getSelectedBudgetYear()) {
-  const response = await hdcGet("hdc", buildProviderDataPath(reportCode, budgetYear));
-  return normalizeProviderRowsResponse(response);
+// preferLive=false (default): เส้นทางเดิม snapshot-first เมื่อออนไลน์ / live-first เมื่อเปิดจากเครื่องไทย (ดู hdcGet)
+// ใช้กับ processAllKpis/checkAllServicePlans ที่ไล่ดึงหลายร้อยรายงาน — ไม่อยากรอ live timeout ทุกรายงาน
+//
+// preferLive=true: ใช้กับ "ตารางรายหน่วยตอนผู้ใช้กดดู" (loadCurrentKpi) ตามแนวทาง hybrid —
+// ลองดึงสดจาก HDC ก่อนเสมอไม่ว่าจะเปิดจากที่ไหน ถ้าดึงไม่ได้ (เช่น Vercel เข้า HDC ไม่ได้เลย
+// ตามที่อธิบายใน scripts/README.md) ให้ fallback มา snapshot แทน พร้อมบันทึกแหล่งข้อมูลไว้ใน
+// dataStatus ให้ UI แสดงเวลาที่ดึงสดล่าสุด/ข้อความ fallback ได้
+async function fetchProviderRows(reportCode, budgetYear = getSelectedBudgetYear(), { preferLive = false } = {}) {
+  if (!preferLive) {
+    const response = await hdcGet("hdc", buildProviderDataPath(reportCode, budgetYear));
+    return normalizeProviderRowsResponse(response);
+  }
+
+  const path = buildProviderDataPath(reportCode, budgetYear);
+  try {
+    const response = await fetchProxy("hdc", path, 12000);
+    dataStatus.lastLiveFetchAt = new Date();
+    dataStatus.lastTableSource = "live";
+    return normalizeProviderRowsResponse(response);
+  } catch (liveError) {
+    const snapshot = await getSnapshot("hdc", path);
+    if (snapshot) {
+      dataStatus.lastTableSource = "snapshot-fallback";
+      return normalizeProviderRowsResponse(snapshot);
+    }
+    throw liveError;
+  }
 }
 
-async function loadCurrentKpi() {
+async function loadCurrentKpi({ preferLive = true } = {}) {
   const report = getCurrentReport();
   if (!report?.report_code) return;
 
   kpiEls.load.disabled = true;
   kpiState.currentReportName = report.report_name;
   resetTrendInsight();
+  dataStatus.lastTableSource = null;
   setKpiStatus(`กำลังโหลดข้อมูลรายหน่วยบริการ: ${report.report_name}`);
   try {
-    const { rows, dateCom } = await fetchProviderRows(report.report_code);
+    const { rows, dateCom } = await fetchProviderRows(report.report_code, undefined, { preferLive });
     kpiState.currentRows = rows;
     kpiState.lastDateCom = dateCom;
     renderCurrentRows();
     const reportCountNote = kpiState.reportSkippedCount
       ? ` | รายงานที่ดึงข้อมูลได้ ${kpiState.reports.length}/${kpiState.reportSourceCount} (ไม่มี report code ${kpiState.reportSkippedCount})`
       : "";
-    setKpiStatus(`โหลดข้อมูลสดจาก HDC Public สำเร็จ ${rows.length} หน่วยบริการ (${dateCom || "ไม่ระบุวันที่ประมวลผล"})${reportCountNote}`, "success");
+    const fallbackNote = dataStatus.lastTableSource === "snapshot-fallback"
+      ? " | ไม่สามารถดึงข้อมูลสดจาก HDC ได้ในขณะนี้ แสดงข้อมูลจาก snapshot ล่าสุดแทน"
+      : "";
+    const sourceLabel = dataStatus.lastTableSource === "live" ? "สดจาก HDC Public " : "";
+    setKpiStatus(
+      `โหลดข้อมูล${sourceLabel}สำเร็จ ${rows.length} หน่วยบริการ (${dateCom || "ไม่ระบุวันที่ประมวลผล"})${reportCountNote}${fallbackNote}`,
+      fallbackNote ? "" : "success"
+    );
+    renderTableDataStatus();
   } catch (error) {
     kpiState.currentRows = [];
     renderCurrentRows();
     setKpiStatus(`โหลดข้อมูลไม่สำเร็จ: ${error.message}`, "error");
+    renderTableDataStatus();
   } finally {
     kpiEls.load.disabled = false;
   }
@@ -982,7 +1046,7 @@ async function fetchStandardReports(subcatalogId) {
   return normalizeReports(response.rows);
 }
 
-async function loadKpiReports() {
+async function loadKpiReports({ preferLive = true } = {}) {
   const catalogId = kpiEls.catalog.value;
   const standardMode = isStandardDataMode();
   setKpiStatus(standardMode ? "กำลังโหลดรายการรายงานมาตรฐาน..." : "กำลังโหลดรายการ KPI...");
@@ -1016,7 +1080,7 @@ async function loadKpiReports() {
     "success"
   );
   if (kpiState.reports.length) {
-    await loadCurrentKpi();
+    await loadCurrentKpi({ preferLive });
   } else {
     kpiState.currentRows = [];
     kpiState.currentReportName = "";
@@ -1029,11 +1093,16 @@ async function loadInitialKpiData() {
   if (!kpiEls.catalog) return;
 
   try {
-    const [catalogResponse, standardCatalogResponse, hospitalResponse] = await Promise.all([
+    const [catalogResponse, standardCatalogResponse, hospitalResponse, manifest] = await Promise.all([
       hdcGet("hdc", "lookup/kpi/catalog"),
       hdcGet("hdc", "lookup/standard/catalog"),
-      hdcGet("hdc", `lookup/hospital?provinceCode=${HDC_CONFIG.provinceCode}&districtCode=${HDC_CONFIG.districtCode}&subdistrictCode=&servicePlanLV=&byear=&isRegis=`)
+      hdcGet("hdc", `lookup/hospital?provinceCode=${HDC_CONFIG.provinceCode}&districtCode=${HDC_CONFIG.districtCode}&subdistrictCode=&servicePlanLV=&byear=&isRegis=`),
+      loadSnapshotManifest()
     ]);
+
+    // หน้าเว็บเปิดมาให้เห็นเวลา snapshot ล่าสุดทันที — dashboard/insight/brief ใช้ snapshot เป็นหลัก (ดู scripts/README.md)
+    dataStatus.snapshotGeneratedAt = manifest?.generatedAt ? new Date(manifest.generatedAt) : null;
+    renderTableDataStatus();
 
     kpiState.catalogs = catalogResponse.rows || [];
     kpiState.standardCatalogs = standardCatalogResponse.rows || [];
@@ -1066,7 +1135,8 @@ async function loadInitialKpiData() {
 
     kpiEls.serviceUnitCount.textContent = formatNumber(kpiState.hospitals.length);
     setKpiStatus(`เชื่อมต่อ HDC สำเร็จ กรองเหลือหน่วยบริการตามบัญชี สสอ.ปากช่อง ${kpiState.hospitals.length} แห่ง`, "success");
-    await loadKpiReports();
+    // เปิดหน้าครั้งแรก: ใช้ snapshot เป็นหลัก (เร็ว/เสถียร ไม่รอ HDC) — ผู้ใช้กดโหลด/เปลี่ยนรายงานเองจะลองดึงสดก่อนเสมอ
+    await loadKpiReports({ preferLive: false });
   } catch (error) {
     kpiEls.tableBody.innerHTML = '<tr><td colspan="7">เชื่อมต่อ HDC API ไม่สำเร็จ</td></tr>';
     setKpiStatus(`เชื่อมต่อ HDC API ไม่สำเร็จ: ${error.message}`, "error");

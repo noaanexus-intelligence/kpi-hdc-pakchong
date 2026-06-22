@@ -158,7 +158,8 @@ class HdcHandler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     status = "พร้อมใช้งาน" if api_key else "ไม่พบ ANTHROPIC_API_KEY — iQ จะใช้โหมด keyword fallback"
-    server = ThreadingHTTPServer(("127.0.0.1", 4173), HdcHandler)
-    print(f"HDC Pakchong server: http://127.0.0.1:4173/")
+    port = int(os.environ.get("PORT", 4173))
+    server = ThreadingHTTPServer(("127.0.0.1", port), HdcHandler)
+    print(f"HDC Pakchong server: http://127.0.0.1:{port}/")
     print(f"Claude iQ: {status}")
     server.serve_forever()
