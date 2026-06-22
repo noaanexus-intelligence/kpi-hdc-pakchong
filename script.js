@@ -149,7 +149,8 @@ const kpiState = {
   reportSourceCount: 0,
   reportSkippedCount: 0,
   lastDateCom: "",
-  currentReportName: ""
+  currentReportName: "",
+  lastTrend: null
 };
 
 const kpiEls = {
@@ -198,6 +199,20 @@ const iqEls = {
   messages: document.querySelector("#iqMessages"),
   form: document.querySelector("#iqForm"),
   input: document.querySelector("#iqInput")
+};
+
+const briefEls = {
+  statusBadge: document.querySelector("#briefStatusBadge"),
+  grid: document.querySelector("#briefGrid"),
+  riskCount: document.querySelector("#briefRiskCount"),
+  riskNote: document.querySelector("#briefRiskNote"),
+  unitsList: document.querySelector("#briefUnitsList"),
+  qualityStatus: document.querySelector("#briefQualityStatus"),
+  qualityList: document.querySelector("#briefQualityList"),
+  trendLabel: document.querySelector("#briefTrendLabel"),
+  trendDetail: document.querySelector("#briefTrendDetail"),
+  trendSpark: document.querySelector("#briefTrendSpark"),
+  suggestionText: document.querySelector("#briefSuggestionText")
 };
 
 function setKpiStatus(message, type = "") {
@@ -583,7 +598,9 @@ async function loadTrendSummary() {
   if (!points.length) {
     if (kpiEls.insightTrend) kpiEls.insightTrend.textContent = "-";
     if (kpiEls.insightTrendNote) kpiEls.insightTrendNote.textContent = "ยังไม่มี snapshot หรือข้อมูลสดย้อนหลังสำหรับรายงานนี้";
+    kpiState.lastTrend = null;
     kpiEls.loadTrend.disabled = false;
+    renderDistrictBrief();
     return;
   }
 
@@ -600,13 +617,192 @@ async function loadTrendSummary() {
       .map((point) => `${point.year}: ${formatNumber(point.ratio, 2)}%`)
       .join(" | ");
   }
+  kpiState.lastTrend = { reportName: report.report_name, latest, previous, points: ordered };
   kpiEls.loadTrend.disabled = false;
+  renderDistrictBrief();
 }
 
 function resetTrendInsight() {
   if (kpiEls.insightTrend) kpiEls.insightTrend.textContent = "-";
   if (kpiEls.insightTrendNote) kpiEls.insightTrendNote.textContent = "พร้อมคำนวณเมื่อเลือกตัวชี้วัด";
   if (kpiEls.loadTrend) kpiEls.loadTrend.disabled = false;
+  kpiState.lastTrend = null; // เปลี่ยนรายงานแล้ว trend เดิมใช้ไม่ได้ — ให้ brief fallback เป็น "รอข้อมูลย้อนหลัง" จนกว่าจะคำนวณใหม่
+}
+
+// ---- สรุปสถานการณ์ HDC อำเภอปากช่อง (district brief) — ใช้ข้อมูล state เดิมทั้งหมด ไม่ดึงเพิ่ม ----
+function getRiskKpiSummary() {
+  const fromAllSummary = kpiState.allSummary.length > 0;
+  const sourceRows = fromAllSummary
+    ? kpiState.allSummary.map((item) => ({ gap: item.gap, ratio: item.ratio }))
+    : applyUnitFilter(kpiState.currentRows).map((row) => ({ gap: rowGap(row), ratio: row.ratio }));
+
+  if (!sourceRows.length) {
+    return { hasData: false, count: null, total: 0, note: "รอข้อมูลเป้าหมาย" };
+  }
+
+  const atRisk = sourceRows.filter((row) => (row.gap !== null && row.gap < 0) || (Number.isFinite(row.ratio) && row.ratio < 80));
+  return {
+    hasData: true,
+    count: atRisk.length,
+    total: sourceRows.length,
+    note: atRisk.length ? "ควรติดตามรายงานที่ gap สูงก่อน" : "ยังไม่พบรายการที่เสี่ยงไม่ถึงเป้าในรอบล่าสุด"
+  };
+}
+
+function getFollowUpUnits() {
+  const rows = applyUnitFilter(kpiState.currentRows);
+  if (!rows.length) return { hasData: false, units: [], missingCount: 0 };
+
+  const ranked = rows.filter((row) => Number.isFinite(row.ratio)).sort((a, b) => a.ratio - b.ratio).slice(0, 3);
+  const missingCount = rows.filter((row) => !Number.isFinite(row.ratio)).length;
+  return { hasData: true, units: ranked, missingCount };
+}
+
+function getDataQualityWarnings() {
+  const rows = applyUnitFilter(kpiState.currentRows);
+  const summary = summarizeRows(rows);
+  const warnings = buildQualityWarnings(rows, summary);
+  const OK_MESSAGE = "ไม่พบสัญญาณผิดปกติจาก target/result/rate ในรายงานนี้";
+  const EMPTY_MESSAGE = "ยังไม่มีข้อมูลรายหน่วยบริการ";
+  const hasIssue = warnings.some((warning) => warning !== OK_MESSAGE && warning !== EMPTY_MESSAGE);
+  return {
+    hasData: rows.length > 0,
+    warnings,
+    status: !rows.length ? "รอข้อมูล" : hasIssue ? "ควรตรวจสอบ" : "ไม่พบความผิดปกติชัดเจน"
+  };
+}
+
+function getTrendSummary() {
+  const trend = kpiState.lastTrend;
+  if (!trend || !trend.latest) {
+    return { hasData: false, label: "รอข้อมูลย้อนหลัง", detail: "ยังไม่ได้คำนวณ Trend 5 ปี — กดปุ่ม คำนวณ Trend 5 ปี ที่การ์ด Insight ด้านล่าง", points: [] };
+  }
+  if (!trend.previous) {
+    return { hasData: true, label: `${formatNumber(trend.latest.ratio, 1)}%`, detail: `${trend.reportName} (${trend.latest.year})`, points: trend.points };
+  }
+  const diff = trend.latest.ratio - trend.previous.ratio;
+  const label = Math.abs(diff) < 1 ? "คงที่" : diff > 0 ? "ดีขึ้น" : "ลดลง";
+  return {
+    hasData: true,
+    label,
+    detail: `${trend.reportName}: เปลี่ยน ${formatNumber(Math.abs(diff), 1)} จุดจากปีก่อน`,
+    points: trend.points
+  };
+}
+
+function buildDistrictBrief() {
+  return {
+    risk: getRiskKpiSummary(),
+    units: getFollowUpUnits(),
+    quality: getDataQualityWarnings(),
+    trend: getTrendSummary()
+  };
+}
+
+function buildBriefRecommendation(brief) {
+  const notes = [];
+
+  if (brief.risk.hasData && brief.risk.count > 0) {
+    notes.push(`พบรายการที่มี gap สูงหรือผลงานต่ำกว่าเป้า ${formatNumber(brief.risk.count)} จาก ${formatNumber(brief.risk.total)} รายการ`);
+  }
+  if (brief.units.hasData && brief.units.missingCount > 0) {
+    notes.push(`มีหน่วยบริการที่ข้อมูลเป็น "-" ${formatNumber(brief.units.missingCount)} แห่ง ควรตรวจสอบข้อมูล`);
+  }
+  if (kpiState.servicePlanCoverage.length) {
+    const completePlans = kpiState.servicePlanCoverage.filter((item) => item.totalReports && item.noData === 0 && item.failed === 0).length;
+    notes.push(
+      completePlans === kpiState.servicePlanCoverage.length
+        ? "Service Plan ครบ 17 สาขาแล้ว"
+        : `Service Plan ครบ ${completePlans}/${kpiState.servicePlanCoverage.length} สาขา`
+    );
+  }
+  if (brief.quality.status === "ควรตรวจสอบ") {
+    notes.push("ควรตรวจสอบรายงานวัคซีน, Service Plan NCD และคุณภาพข้อมูล 43 แฟ้มก่อน เนื่องจากอาจเกี่ยวข้องกับ gap สูงหรือคุณภาพข้อมูล");
+  }
+
+  if (notes.length) return notes.join(" — ");
+  if (!brief.risk.hasData && !brief.units.hasData) return "กำลังวิเคราะห์ข้อมูล HDC เพื่อสรุปประเด็นสำคัญ กรุณารอสักครู่";
+  return "ข้อมูลล่าสุดยังไม่พบประเด็นเสี่ยงชัดเจน ระบบจะอัปเดตสรุปนี้ทุกครั้งที่โหลดข้อมูลใหม่";
+}
+
+function briefStatusClass(status) {
+  if (status === "ควรตรวจสอบ") return "status-danger";
+  if (status === "ไม่พบความผิดปกติชัดเจน") return "status-ok";
+  return "";
+}
+
+function renderBriefSparkline(points) {
+  if (!briefEls.trendSpark) return;
+  if (!points || points.length < 2) {
+    briefEls.trendSpark.innerHTML = "";
+    return;
+  }
+
+  const ordered = [...points].sort((a, b) => a.year - b.year);
+  const ratios = ordered.map((point) => point.ratio);
+  const min = Math.min(...ratios);
+  const max = Math.max(...ratios);
+  const range = max - min || 1;
+  const width = 100;
+  const height = 32;
+  const stepX = ordered.length > 1 ? width / (ordered.length - 1) : 0;
+  const coords = ratios.map((ratio, index) => {
+    const x = index * stepX;
+    const y = height - ((ratio - min) / range) * height;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+
+  briefEls.trendSpark.innerHTML = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none"><polyline points="${coords.join(" ")}" fill="none" stroke="#0aa083" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>`;
+}
+
+function renderDistrictBrief() {
+  if (!briefEls.grid) return;
+  const brief = buildDistrictBrief();
+
+  if (briefEls.riskCount) {
+    briefEls.riskCount.textContent = brief.risk.hasData ? `${formatNumber(brief.risk.count)}/${formatNumber(brief.risk.total)}` : "-";
+    briefEls.riskCount.className = brief.risk.hasData && brief.risk.count > 0 ? "status-warn" : "";
+  }
+  if (briefEls.riskNote) briefEls.riskNote.textContent = brief.risk.note;
+
+  if (briefEls.unitsList) {
+    if (!brief.units.hasData || !brief.units.units.length) {
+      briefEls.unitsList.innerHTML = '<li class="insight-empty">ยังไม่พบหน่วยเสี่ยง</li>';
+    } else {
+      const rows = brief.units.units.map((row, index) => `
+        <li>
+          <span>${index + 1}. ${row.name || row.code}</span>
+          <strong class="${ratioClass(row.ratio)}">${formatNumber(row.ratio, 1)}%</strong>
+        </li>
+      `);
+      if (brief.units.missingCount) {
+        rows.push(`<li><span>ไม่มีข้อมูล (-)</span><strong class="status-warn">${formatNumber(brief.units.missingCount)} แห่ง</strong></li>`);
+      }
+      briefEls.unitsList.innerHTML = rows.join("");
+    }
+  }
+
+  if (briefEls.qualityStatus) {
+    briefEls.qualityStatus.textContent = brief.quality.status;
+    briefEls.qualityStatus.className = briefStatusClass(brief.quality.status);
+  }
+  if (briefEls.qualityList) {
+    briefEls.qualityList.innerHTML = brief.quality.warnings.map((warning) => `<li><span>${warning}</span></li>`).join("");
+  }
+
+  if (briefEls.trendLabel) {
+    briefEls.trendLabel.textContent = brief.trend.label;
+    briefEls.trendLabel.className = brief.trend.label === "ดีขึ้น" ? "status-ok" : brief.trend.label === "ลดลง" ? "status-danger" : "";
+  }
+  if (briefEls.trendDetail) briefEls.trendDetail.textContent = brief.trend.detail;
+  renderBriefSparkline(brief.trend.points);
+
+  if (briefEls.suggestionText) briefEls.suggestionText.textContent = buildBriefRecommendation(brief);
+  if (briefEls.statusBadge) {
+    briefEls.statusBadge.textContent = (brief.risk.hasData || brief.units.hasData)
+      ? "อัปเดตล่าสุดจากข้อมูลที่โหลดอยู่"
+      : "กำลังวิเคราะห์ข้อมูล HDC...";
+  }
 }
 
 function renderCurrentRows() {
@@ -619,6 +815,7 @@ function renderCurrentRows() {
   kpiEls.metricRatio.textContent = summary.ratio === null ? "-" : `${formatNumber(summary.ratio, 2)}%`;
   if (kpiEls.metricGap) kpiEls.metricGap.textContent = formatGap(summary.gap);
   renderInsightPanel(rows, summary);
+  renderDistrictBrief();
 
   if (!rows.length) {
     kpiEls.tableBody.innerHTML = '<tr><td colspan="7">ไม่พบข้อมูลรายหน่วยบริการตามเงื่อนไขที่เลือก</td></tr>';
@@ -976,6 +1173,7 @@ async function processAllKpis() {
   const failCount = reports.length - successCount;
   setKpiStatus(`ประมวลผลครบ ${reports.length} รายการ: สำเร็จ ${successCount} / ไม่สำเร็จ ${failCount}`, failCount ? "" : "success");
   kpiEls.processAll.disabled = false;
+  renderDistrictBrief();
 }
 
 function renderAllSummary() {
@@ -1095,6 +1293,7 @@ async function checkAllServicePlans() {
 
   kpiEls.checkServicePlan.disabled = false;
   kpiEls.processAll.disabled = false;
+  renderDistrictBrief();
 }
 
 function exportCsv() {

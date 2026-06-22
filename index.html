@@ -249,6 +249,57 @@
           <small>ดึงข้อมูลสำเร็จ</small>
           </article>
         </div>
+
+        <section class="district-brief" id="districtBrief" aria-label="สรุปสถานการณ์ HDC อำเภอปากช่อง">
+          <div class="data-heading">
+            <span class="spark" data-icon="spark"></span>
+            <div>
+              <h2>สรุปสถานการณ์ HDC อำเภอปากช่อง</h2>
+              <p>ภาพรวมตัวชี้วัดสำคัญ ความเสี่ยงรายงาน และคุณภาพข้อมูล ปีงบประมาณ 2569</p>
+            </div>
+            <span class="source-badge" id="briefStatusBadge">กำลังวิเคราะห์ข้อมูล HDC...</span>
+          </div>
+
+          <div class="brief-grid" id="briefGrid">
+            <article class="brief-card">
+              <span class="brief-icon" data-icon="gauge"></span>
+              <span class="brief-label">KPI เสี่ยงไม่ถึงเป้า</span>
+              <strong id="briefRiskCount">-</strong>
+              <small id="briefRiskNote">กำลังวิเคราะห์ข้อมูล HDC...</small>
+            </article>
+
+            <article class="brief-card">
+              <span class="brief-icon" data-icon="hospital"></span>
+              <span class="brief-label">หน่วยบริการที่ควรติดตาม</span>
+              <ul class="insight-list" id="briefUnitsList">
+                <li class="insight-empty">กำลังวิเคราะห์ข้อมูล HDC...</li>
+              </ul>
+              <a class="brief-link" href="#kpiDataPanel">ดูรายหน่วย →</a>
+            </article>
+
+            <article class="brief-card">
+              <span class="brief-icon" data-icon="audit"></span>
+              <span class="brief-label">คุณภาพข้อมูล 43 แฟ้ม</span>
+              <strong id="briefQualityStatus">-</strong>
+              <ul class="insight-list" id="briefQualityList">
+                <li class="insight-empty">กำลังวิเคราะห์ข้อมูล HDC...</li>
+              </ul>
+            </article>
+
+            <article class="brief-card">
+              <span class="brief-icon" data-icon="chart"></span>
+              <span class="brief-label">Trend 5 ปี</span>
+              <strong id="briefTrendLabel">-</strong>
+              <small id="briefTrendDetail">รอข้อมูลย้อนหลัง</small>
+              <div class="brief-spark" id="briefTrendSpark" aria-hidden="true"></div>
+            </article>
+          </div>
+
+          <div class="brief-suggestion" id="briefSuggestion">
+            <span class="brief-suggestion-icon" data-icon="megaphone"></span>
+            <p id="briefSuggestionText">กำลังวิเคราะห์ข้อมูล HDC...</p>
+          </div>
+        </section>
       </div>
 
       <aside class="video-panel">

@@ -1339,6 +1339,130 @@ main {
   line-height: 1.45;
 }
 
+.district-brief {
+  margin-top: 18px;
+}
+
+.district-brief .data-heading {
+  margin-bottom: 12px;
+}
+
+.brief-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.brief-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 132px;
+  padding: 13px 14px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #dfe8ef;
+  box-shadow: 0 10px 20px rgba(31, 53, 86, .06);
+}
+
+.brief-icon {
+  width: 30px;
+  height: 30px;
+  padding: 7px;
+  margin-bottom: 8px;
+  border-radius: 9px;
+  color: #0c8f73;
+  background: var(--mint);
+}
+
+.brief-label {
+  color: #5d6d82;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.brief-card > strong {
+  margin-top: 8px;
+  color: #162238;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.brief-card > small {
+  margin-top: 6px;
+  color: #74839a;
+  line-height: 1.45;
+}
+
+.brief-card .insight-list {
+  flex: 1;
+}
+
+.brief-link {
+  margin-top: auto;
+  padding-top: 10px;
+  color: #087f69;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.brief-link:hover {
+  color: #075f50;
+  text-decoration: underline;
+}
+
+.brief-spark {
+  margin-top: auto;
+  padding-top: 8px;
+  height: 32px;
+}
+
+.brief-spark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.brief-card .status-ok {
+  color: #0c725f;
+}
+
+.brief-card .status-warn {
+  color: #9b5d00;
+}
+
+.brief-card .status-danger {
+  color: #a33a3a;
+}
+
+.brief-suggestion {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--mint);
+  border: 1px solid #cdeee3;
+}
+
+.brief-suggestion-icon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  padding: 7px;
+  border-radius: 9px;
+  color: #fff;
+  background: var(--primary);
+}
+
+.brief-suggestion p {
+  margin: 0;
+  color: #0c5443;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 .insight-list {
   display: grid;
   gap: 7px;
@@ -1923,6 +2047,10 @@ main {
   }
 
   .shortcut-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .brief-grid {
     grid-template-columns: 1fr;
   }
 
