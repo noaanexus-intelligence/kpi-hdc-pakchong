@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-06-21T10:26:15.099Z",
-  "catalogSnapshotGeneratedAt": "2026-06-21T10:24:30.172Z",
+  "generatedAt": "2026-06-22T09:08:09.268Z",
+  "catalogSnapshotGeneratedAt": "2026-06-22T09:07:49.335Z",
   "catalog": "รายงานมาตรฐาน / ข้อมูลตอบสนอง Service Plan",
   "counts": {
     "servicePlanBranches": 17,
@@ -378,7 +378,7 @@
     "gapReductionPercent": 100
   },
   "limitations": [
-    "Live recrawl of hdc.moph.go.th / api-hdc.moph.go.th / api-center-hdc.moph.go.th was attempted from this environment and blocked (HTTP 503 on every request) — matches the Thai-IP-only restriction documented in scripts/README.md. This audit therefore reconstructs the 'official' tree from the most recent committed data/snapshot/ (captured 2026-06-21T10:24:30.172Z by the existing Thai-IP scheduled task), not a fresh live call.",
+    "Live recrawl of hdc.moph.go.th / api-hdc.moph.go.th / api-center-hdc.moph.go.th was attempted from this environment and blocked (HTTP 503 on every request) — matches the Thai-IP-only restriction documented in scripts/README.md. This audit therefore reconstructs the 'official' tree from the most recent committed data/snapshot/ (captured 2026-06-22T09:07:49.335Z by the existing Thai-IP scheduled task), not a fresh live call.",
     "Because of the above, any branch, group, or report HDC added/removed after that snapshot run is invisible to this audit. The recursive-flatten bug in scripts/snapshot.mjs and script.js is now fixed in code (see fixVerification above), but coverage.json/snap_*.json themselves still reflect the LAST run made before the fix — reportsInSnapshot/reportsInCoverage/reportsMissing below will not drop until scripts/snapshot.mjs is re-run from a Thai IP (or via the Task Scheduler job) with the fix in place.",
     "depth/nesting: every one of the 17 Service Plan branches in the current snapshot is exactly 2 levels deep (branch -> group -> leaf report). The flattening code recurses to arbitrary depth defensively, but deeper nesting has not been observed and is unverified."
   ]

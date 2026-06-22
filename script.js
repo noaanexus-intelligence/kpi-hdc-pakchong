@@ -137,7 +137,10 @@ const ALLOWED_SERVICE_UNIT_CODES = new Set(ALLOWED_SERVICE_UNITS.map((unit) => u
 const kpiState = {
   mode: "standard",
   catalogs: [],
+  standardCatalogs: [],
+  standardSubcatalogs: [],
   servicePlanSubcatalogs: [],
+  preventionSubcatalogs: [],
   reports: [],
   hospitals: [],
   currentRows: [],
@@ -167,13 +170,24 @@ const kpiEls = {
   coverageTableBody: document.querySelector("#servicePlanCoverageBody"),
   coverageTotal: document.querySelector("#coverageTotal"),
   servicePlanMenu: document.querySelector("#servicePlanMenu"),
+  preventionMenu: document.querySelector("#preventionMenu"),
   serviceUnitCount: document.querySelector("#serviceUnitCount"),
   kpiCatalogCount: document.querySelector("#kpiCatalogCount"),
   kpiProcessedCount: document.querySelector("#kpiProcessedCount"),
   metricUnits: document.querySelector("#metricUnits"),
   metricTarget: document.querySelector("#metricTarget"),
   metricResult: document.querySelector("#metricResult"),
-  metricRatio: document.querySelector("#metricRatio")
+  metricRatio: document.querySelector("#metricRatio"),
+  metricGap: document.querySelector("#metricGap"),
+  insightPanel: document.querySelector("#kpiInsightPanel"),
+  insightGap: document.querySelector("#insightGap"),
+  insightGapNote: document.querySelector("#insightGapNote"),
+  insightLowList: document.querySelector("#insightLowList"),
+  insightHighList: document.querySelector("#insightHighList"),
+  insightQualityList: document.querySelector("#insightQualityList"),
+  insightTrend: document.querySelector("#insightTrend"),
+  insightTrendNote: document.querySelector("#insightTrendNote"),
+  loadTrend: document.querySelector("#loadTrendButton")
 };
 
 const iqEls = {
@@ -198,9 +212,9 @@ function showLocalServerRequired() {
     kpiEls.servicePlanMenu.innerHTML = '<p class="mega-loading">กรุณารัน server.py แล้วเปิดผ่าน http://127.0.0.1:4173/</p>';
   }
   if (kpiEls.tableBody) {
-    kpiEls.tableBody.innerHTML = '<tr><td colspan="6">เปิดไฟล์ตรงจากเครื่องไม่ได้ ต้องเปิดผ่าน backend server: http://127.0.0.1:4173/</td></tr>';
+    kpiEls.tableBody.innerHTML = '<tr><td colspan="7">เปิดไฟล์ตรงจากเครื่องไม่ได้ ต้องเปิดผ่าน backend server: http://127.0.0.1:4173/</td></tr>';
   }
-  [kpiEls.load, kpiEls.processAll, kpiEls.checkServicePlan, kpiEls.exportCsv].forEach((button) => {
+  [kpiEls.load, kpiEls.processAll, kpiEls.checkServicePlan, kpiEls.exportCsv, kpiEls.loadTrend].forEach((button) => {
     if (button) button.disabled = true;
   });
 }
@@ -276,6 +290,33 @@ function optionText(item) {
   return item.name || item.text || item.code_name || item.value || item.code;
 }
 
+function isStandardDataMode() {
+  return kpiState.mode === "standard" || kpiState.mode === "service-plan";
+}
+
+function cleanServicePlanName(value) {
+  return String(value || "")
+    .replace(/^ข้อมูลเพื่อตอบสนอง\s*Service Plan\s*/i, "")
+    .replace(/^สาขา\s*/i, "")
+    .trim();
+}
+
+function catalogOptionText(item) {
+  const label = optionText(item);
+  if (kpiState.mode === "service-plan") return cleanServicePlanName(label);
+  return item.parentName ? `${item.parentName}: ${label}` : label;
+}
+
+function flattenStandardSubcatalogs(catalogs) {
+  return (catalogs || []).flatMap((catalog) => (
+    (catalog.sub_menu || []).map((subcatalog) => ({
+      ...subcatalog,
+      parentCode: catalog.code,
+      parentName: catalog.name
+    }))
+  ));
+}
+
 function setOptions(select, rows, getValue, getLabel, placeholder = "") {
   select.innerHTML = "";
   if (placeholder) {
@@ -293,7 +334,7 @@ function setOptions(select, rows, getValue, getLabel, placeholder = "") {
 }
 
 function getSelectedBudgetYear() {
-  if (kpiState.mode === "standard") return kpiEls.year.value || "2569";
+  if (isStandardDataMode()) return kpiEls.year.value || "2569";
   const option = kpiEls.year.options[kpiEls.year.selectedIndex];
   return option?.dataset.byear || option?.textContent || "2569";
 }
@@ -403,7 +444,169 @@ function summarizeRows(rows) {
   const result = rows.reduce((sum, row) => sum + (row.result || 0), 0);
   const ratios = rows.map((row) => row.ratio).filter((value) => Number.isFinite(value));
   const ratio = target > 0 ? (result / target) * 100 : ratios.length ? ratios.reduce((sum, value) => sum + value, 0) / ratios.length : null;
-  return { target, result, ratio };
+  const gap = target || result ? result - target : null;
+  return { target, result, gap, ratio };
+}
+
+function rowGap(row) {
+  if (row.target === null || row.target === undefined || row.result === null || row.result === undefined) return null;
+  return row.result - row.target;
+}
+
+function gapClass(value) {
+  if (value === null || value === undefined || Number.isNaN(value)) return "";
+  if (value < 0) return "danger";
+  if (value > 0) return "success";
+  return "";
+}
+
+function formatGap(value) {
+  if (value === null || value === undefined || Number.isNaN(value)) return "-";
+  if (value < 0) return `ขาด ${formatNumber(Math.abs(value))}`;
+  if (value > 0) return `เกิน ${formatNumber(value)}`;
+  return "พอดีเป้า";
+}
+
+function median(values) {
+  const sorted = values.filter((value) => Number.isFinite(value)).sort((a, b) => a - b);
+  if (!sorted.length) return null;
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
+function renderInsightList(element, rows, direction) {
+  if (!element) return;
+  if (!rows.length) {
+    element.innerHTML = '<li class="insight-empty">ยังไม่มี ratio สำหรับจัดอันดับ</li>';
+    return;
+  }
+
+  element.innerHTML = rows.map((row, index) => `
+    <li>
+      <span>${index + 1}. ${row.name || row.code}</span>
+      <strong class="${ratioClass(row.ratio)}">${formatNumber(row.ratio, 2)}%</strong>
+    </li>
+  `).join("");
+}
+
+function buildQualityWarnings(rows, summary) {
+  if (!rows.length) return ["ยังไม่มีข้อมูลรายหน่วยบริการ"];
+  const warnings = [];
+  const zeroTargets = rows.filter((row) => row.target === 0 && (row.result || 0) > 0).length;
+  const missingRatios = rows.filter((row) => !Number.isFinite(row.ratio)).length;
+  const missingTargets = rows.filter((row) => row.target === null || row.target === undefined).length;
+  const targets = rows.map((row) => row.target).filter((value) => Number.isFinite(value) && value > 0);
+  const targetMedian = median(targets);
+  const highDenominator = targetMedian
+    ? rows.filter((row) => Number.isFinite(row.target) && row.target > targetMedian * 2.5).length
+    : 0;
+
+  if (zeroTargets) warnings.push(`มี ${formatNumber(zeroTargets)} หน่วยที่ผลงานมีค่าแต่เป้าหมายเป็นศูนย์`);
+  if (missingRatios) warnings.push(`มี ${formatNumber(missingRatios)} หน่วยที่ยังคำนวณร้อยละไม่ได้`);
+  if (missingTargets) warnings.push(`มี ${formatNumber(missingTargets)} หน่วยที่ไม่พบ denominator/target`);
+  if (highDenominator) warnings.push(`มี ${formatNumber(highDenominator)} หน่วยที่ denominator สูงกว่าค่ากลางมาก ควรตรวจ TYPEAREA/DISCHARGE`);
+  if (summary.target === 0 && summary.result > 0) warnings.push("เป้าหมายรวมเป็นศูนย์แต่มีผลงาน ควรตรวจแฟ้ม PERSON/SERVICE");
+  if (!warnings.length) warnings.push("ไม่พบสัญญาณผิดปกติจาก target/result/rate ในรายงานนี้");
+  return warnings.slice(0, 4);
+}
+
+function renderQualityWarnings(rows, summary) {
+  if (!kpiEls.insightQualityList) return;
+  const warnings = buildQualityWarnings(rows, summary);
+  kpiEls.insightQualityList.innerHTML = warnings.map((warning) => `<li><span>${warning}</span></li>`).join("");
+}
+
+function renderInsightPanel(rows, summary) {
+  if (!kpiEls.insightPanel) return;
+
+  if (kpiEls.insightGap) kpiEls.insightGap.textContent = formatGap(summary.gap);
+  if (kpiEls.insightGapNote) {
+    const ratioText = summary.ratio === null ? "ยังไม่มีร้อยละ" : `ร้อยละรวม ${formatNumber(summary.ratio, 2)}%`;
+    kpiEls.insightGapNote.textContent = `${formatNumber(rows.length)} หน่วยบริการ | ${ratioText}`;
+  }
+
+  const ranked = rows
+    .filter((row) => Number.isFinite(row.ratio))
+    .sort((a, b) => a.ratio - b.ratio);
+  renderInsightList(kpiEls.insightLowList, ranked.slice(0, 3), "low");
+  renderInsightList(kpiEls.insightHighList, [...ranked].reverse().slice(0, 3), "high");
+  renderQualityWarnings(rows, summary);
+}
+
+async function getTrendProviderResponse(reportCode, budgetYear) {
+  const path = buildProviderDataPath(reportCode, budgetYear);
+  const snapshot = await getSnapshot("hdc", path);
+  if (snapshot) return snapshot;
+  if (!IS_LOCAL) return null;
+  try {
+    return await fetchProxy("hdc", path, 15000);
+  } catch (_error) {
+    return null;
+  }
+}
+
+function trendYears() {
+  const selected = Number(getSelectedBudgetYear());
+  const current = Number.isFinite(selected) ? selected : new Date().getFullYear() + 543;
+  return [current, current - 1, current - 2, current - 3, current - 4];
+}
+
+function filterTrendRows(rows) {
+  const selected = kpiEls.unit.value;
+  if (!selected || selected === "ALL") return rows;
+  return rows.filter((row) => row.code === selected);
+}
+
+async function loadTrendSummary() {
+  const report = getCurrentReport();
+  if (!report?.report_code || !kpiEls.loadTrend) return;
+
+  kpiEls.loadTrend.disabled = true;
+  if (kpiEls.insightTrend) kpiEls.insightTrend.textContent = "กำลังคำนวณ";
+  if (kpiEls.insightTrendNote) kpiEls.insightTrendNote.textContent = "ตรวจ snapshot และข้อมูลสดย้อนหลัง";
+
+  const points = [];
+  for (const year of trendYears()) {
+    const response = await getTrendProviderResponse(report.report_code, String(year));
+    if (!response) continue;
+    try {
+      const { rows } = normalizeProviderRowsResponse(response);
+      const summary = summarizeRows(filterTrendRows(rows));
+      if (Number.isFinite(summary.ratio)) {
+        points.push({ year, ratio: summary.ratio });
+      }
+    } catch (_error) {
+      // ข้ามปีที่ HDC ต้นทางไม่มีโครงข้อมูลแบบ provider
+    }
+  }
+
+  if (!points.length) {
+    if (kpiEls.insightTrend) kpiEls.insightTrend.textContent = "-";
+    if (kpiEls.insightTrendNote) kpiEls.insightTrendNote.textContent = "ยังไม่มี snapshot หรือข้อมูลสดย้อนหลังสำหรับรายงานนี้";
+    kpiEls.loadTrend.disabled = false;
+    return;
+  }
+
+  const ordered = points.sort((a, b) => b.year - a.year);
+  const latest = ordered[0];
+  const previous = ordered[1];
+  if (kpiEls.insightTrend) {
+    kpiEls.insightTrend.textContent = previous
+      ? `${latest.ratio >= previous.ratio ? "เพิ่ม" : "ลด"} ${formatNumber(Math.abs(latest.ratio - previous.ratio), 2)} จุด`
+      : `${formatNumber(latest.ratio, 2)}%`;
+  }
+  if (kpiEls.insightTrendNote) {
+    kpiEls.insightTrendNote.textContent = ordered
+      .map((point) => `${point.year}: ${formatNumber(point.ratio, 2)}%`)
+      .join(" | ");
+  }
+  kpiEls.loadTrend.disabled = false;
+}
+
+function resetTrendInsight() {
+  if (kpiEls.insightTrend) kpiEls.insightTrend.textContent = "-";
+  if (kpiEls.insightTrendNote) kpiEls.insightTrendNote.textContent = "พร้อมคำนวณเมื่อเลือกตัวชี้วัด";
+  if (kpiEls.loadTrend) kpiEls.loadTrend.disabled = false;
 }
 
 function renderCurrentRows() {
@@ -414,9 +617,11 @@ function renderCurrentRows() {
   kpiEls.metricTarget.textContent = formatNumber(summary.target);
   kpiEls.metricResult.textContent = formatNumber(summary.result);
   kpiEls.metricRatio.textContent = summary.ratio === null ? "-" : `${formatNumber(summary.ratio, 2)}%`;
+  if (kpiEls.metricGap) kpiEls.metricGap.textContent = formatGap(summary.gap);
+  renderInsightPanel(rows, summary);
 
   if (!rows.length) {
-    kpiEls.tableBody.innerHTML = '<tr><td colspan="6">ไม่พบข้อมูลรายหน่วยบริการตามเงื่อนไขที่เลือก</td></tr>';
+    kpiEls.tableBody.innerHTML = '<tr><td colspan="7">ไม่พบข้อมูลรายหน่วยบริการตามเงื่อนไขที่เลือก</td></tr>';
     return;
   }
 
@@ -426,6 +631,7 @@ function renderCurrentRows() {
       <td>${row.name || row.code}</td>
       <td>${formatNumber(row.target)}</td>
       <td>${formatNumber(row.result)}</td>
+      <td><span class="gap-pill ${gapClass(rowGap(row))}">${formatGap(rowGap(row))}</span></td>
       <td><span class="ratio-pill ${ratioClass(row.ratio)}">${row.ratio === null ? "-" : `${formatNumber(row.ratio, 2)}%`}</span></td>
       <td>${kpiState.lastDateCom || "-"}</td>
     </tr>
@@ -436,10 +642,10 @@ function getCurrentReport() {
   return kpiState.reports.find((report) => String(report.report_code) === kpiEls.report.value);
 }
 
-function buildProviderDataPath(reportCode) {
+function buildProviderDataPath(reportCode, budgetYear = getSelectedBudgetYear()) {
   const params = new URLSearchParams({
     table_display: "provider",
-    year: getSelectedBudgetYear(),
+    year: budgetYear,
     month: "ALL",
     zone: HDC_CONFIG.zone,
     province_code: HDC_CONFIG.provinceCode,
@@ -459,8 +665,7 @@ function buildProviderDataPath(reportCode) {
   return `reports/province/data/${reportCode}?${params.toString()}`;
 }
 
-async function fetchProviderRows(reportCode) {
-  const response = await hdcGet("hdc", buildProviderDataPath(reportCode));
+function normalizeProviderRowsResponse(response) {
   if (!response.ok) throw new Error(response.error || "HDC API error");
   const source = response.rows?.[0] || {};
   const allowedCodes = getHospitalCodes();
@@ -471,12 +676,18 @@ async function fetchProviderRows(reportCode) {
   return { rows, dateCom: source.datecom || "", label: source.label || "" };
 }
 
+async function fetchProviderRows(reportCode, budgetYear = getSelectedBudgetYear()) {
+  const response = await hdcGet("hdc", buildProviderDataPath(reportCode, budgetYear));
+  return normalizeProviderRowsResponse(response);
+}
+
 async function loadCurrentKpi() {
   const report = getCurrentReport();
   if (!report?.report_code) return;
 
   kpiEls.load.disabled = true;
   kpiState.currentReportName = report.report_name;
+  resetTrendInsight();
   setKpiStatus(`กำลังโหลดข้อมูลรายหน่วยบริการ: ${report.report_name}`);
   try {
     const { rows, dateCom } = await fetchProviderRows(report.report_code);
@@ -497,7 +708,7 @@ async function loadCurrentKpi() {
 }
 
 function fillYearsForCatalog(catalog) {
-  if (kpiState.mode === "standard") {
+  if (isStandardDataMode()) {
     const currentYear = new Date().getFullYear() + 543;
     kpiEls.year.innerHTML = "";
     [currentYear, currentYear - 1, currentYear - 2, currentYear - 3, currentYear - 4].forEach((year) => {
@@ -555,6 +766,20 @@ function normalizeReports(rows) {
     }));
 }
 
+// ใช้กับ lookup/kpi/subcatalog (โหมด KPI) — endpoint นี้ส่งมาแบบ flat ไม่มี children ซ้อน
+// แต่ใช้ countReportItems เดิมไว้เผื่อมี children ในอนาคต
+function countReportItems(rows) {
+  let total = 0;
+
+  function visit(report) {
+    total += 1;
+    (report.children || []).forEach(visit);
+  }
+
+  (rows || []).forEach(visit);
+  return total;
+}
+
 async function fetchStandardReports(subcatalogId) {
   const response = await hdcGet("center", `system/subcatalog/reports?subcatalogId=${encodeURIComponent(subcatalogId)}`);
   return normalizeReports(response.rows);
@@ -562,16 +787,17 @@ async function fetchStandardReports(subcatalogId) {
 
 async function loadKpiReports() {
   const catalogId = kpiEls.catalog.value;
-  setKpiStatus(kpiState.mode === "standard" ? "กำลังโหลดรายการรายงานมาตรฐาน..." : "กำลังโหลดรายการ KPI...");
+  const standardMode = isStandardDataMode();
+  setKpiStatus(standardMode ? "กำลังโหลดรายการรายงานมาตรฐาน..." : "กำลังโหลดรายการ KPI...");
   let sourceReportCount = 0;
-  if (kpiState.mode === "standard") {
+  if (standardMode) {
     const response = await hdcGet("center", `system/subcatalog/reports?subcatalogId=${encodeURIComponent(catalogId)}`);
     sourceReportCount = flattenReportTree(response.rows || []).length;
     kpiState.reports = normalizeReports(response.rows);
   } else {
     const year = kpiEls.year.value || "2026";
     const response = await hdcGet("hdc", `lookup/kpi/subcatalog?catalogId=${encodeURIComponent(catalogId)}&year=${encodeURIComponent(year)}`);
-    sourceReportCount = (response.rows || []).length;
+    sourceReportCount = countReportItems(response.rows || []);
     kpiState.reports = normalizeReports(response.rows);
   }
   kpiState.reportSourceCount = sourceReportCount;
@@ -580,7 +806,7 @@ async function loadKpiReports() {
     kpiEls.report,
     kpiState.reports,
     (report) => report.report_code,
-    (report) => `${report.weight || report.no || ""} ${report.report_name}`.trim(),
+    (report) => `${report.weight || report.no || ""} ${report.report_group ? report.report_group + " > " : ""}${report.report_name}`.trim(),
     "เลือกรายงาน"
   );
   if (kpiState.reports.length) kpiEls.report.selectedIndex = 1;
@@ -592,7 +818,14 @@ async function loadKpiReports() {
       : `พบรายงานที่มี report code ${kpiState.reports.length} รายการ`,
     "success"
   );
-  if (kpiState.reports.length) await loadCurrentKpi();
+  if (kpiState.reports.length) {
+    await loadCurrentKpi();
+  } else {
+    kpiState.currentRows = [];
+    kpiState.currentReportName = "";
+    resetTrendInsight();
+    renderCurrentRows();
+  }
 }
 
 async function loadInitialKpiData() {
@@ -606,11 +839,24 @@ async function loadInitialKpiData() {
     ]);
 
     kpiState.catalogs = catalogResponse.rows || [];
-    const servicePlanCatalog = (standardCatalogResponse.rows || []).find((catalog) => String(catalog.name).includes("Service Plan"));
-    kpiState.servicePlanSubcatalogs = servicePlanCatalog?.sub_menu || [];
+    kpiState.standardCatalogs = standardCatalogResponse.rows || [];
+    kpiState.standardSubcatalogs = flattenStandardSubcatalogs(kpiState.standardCatalogs);
+    const servicePlanCatalog = kpiState.standardCatalogs.find((catalog) => String(catalog.name).includes("Service Plan"));
+    const preventionCatalog = kpiState.standardCatalogs.find((catalog) => String(catalog.name).includes("ส่งเสริมป้องกัน"));
+    kpiState.servicePlanSubcatalogs = (servicePlanCatalog?.sub_menu || []).map((item) => ({
+      ...item,
+      parentCode: servicePlanCatalog?.code,
+      parentName: servicePlanCatalog?.name
+    }));
+    kpiState.preventionSubcatalogs = (preventionCatalog?.sub_menu || []).map((item) => ({
+      ...item,
+      parentCode: preventionCatalog?.code,
+      parentName: preventionCatalog?.name
+    }));
     kpiState.hospitals = filterAllowedHospitals(hospitalResponse.rows || []);
 
     renderServicePlanMenu();
+    renderPreventionMenu();
     renderCatalogOptions();
     setOptions(
       kpiEls.unit,
@@ -625,50 +871,61 @@ async function loadInitialKpiData() {
     setKpiStatus(`เชื่อมต่อ HDC สำเร็จ กรองเหลือหน่วยบริการตามบัญชี สสอ.ปากช่อง ${kpiState.hospitals.length} แห่ง`, "success");
     await loadKpiReports();
   } catch (error) {
-    kpiEls.tableBody.innerHTML = '<tr><td colspan="6">เชื่อมต่อ HDC API ไม่สำเร็จ</td></tr>';
+    kpiEls.tableBody.innerHTML = '<tr><td colspan="7">เชื่อมต่อ HDC API ไม่สำเร็จ</td></tr>';
     setKpiStatus(`เชื่อมต่อ HDC API ไม่สำเร็จ: ${error.message}`, "error");
   }
 }
 
 function getCatalogRowsForMode() {
-  return kpiState.mode === "standard" ? kpiState.servicePlanSubcatalogs : kpiState.catalogs;
+  if (kpiState.mode === "standard") return kpiState.standardSubcatalogs;
+  if (kpiState.mode === "service-plan") return kpiState.servicePlanSubcatalogs;
+  return kpiState.catalogs;
 }
 
-function renderServicePlanMenu() {
-  if (!kpiEls.servicePlanMenu) return;
-  kpiEls.servicePlanMenu.replaceChildren();
+function renderStandardLinkMenu(container, rows, iconName, mode = "standard", cleanLabel = false) {
+  if (!container) return;
+  container.replaceChildren();
 
-  const rows = kpiState.servicePlanSubcatalogs.filter((item) => item.code);
-  if (!rows.length) {
+  const menuRows = rows.filter((item) => item.code);
+  if (!menuRows.length) {
     const message = document.createElement("p");
     message.className = "mega-loading";
-    message.textContent = "ไม่พบรายการ Service Plan จาก HDC";
-    kpiEls.servicePlanMenu.appendChild(message);
+    message.textContent = "ไม่พบรายการจาก HDC";
+    container.appendChild(message);
     return;
   }
 
-  rows.forEach((item) => {
+  menuRows.forEach((item) => {
     const link = document.createElement("a");
     link.href = "#kpiDataPanel";
     link.dataset.standardSubcatalog = item.code;
+    link.dataset.mode = mode;
 
     const icon = document.createElement("span");
-    icon.dataset.icon = "file";
+    icon.dataset.icon = iconName;
     renderIcon(icon);
 
     const label = document.createElement("span");
-    label.textContent = optionText(item);
+    label.textContent = cleanLabel ? cleanServicePlanName(optionText(item)) : optionText(item);
 
     link.append(icon, label);
-    kpiEls.servicePlanMenu.appendChild(link);
+    container.appendChild(link);
   });
+}
+
+function renderServicePlanMenu() {
+  renderStandardLinkMenu(kpiEls.servicePlanMenu, kpiState.servicePlanSubcatalogs, "file", "service-plan", true);
+}
+
+function renderPreventionMenu() {
+  renderStandardLinkMenu(kpiEls.preventionMenu, kpiState.preventionSubcatalogs, "shield", "standard");
 }
 
 function renderCatalogOptions() {
   kpiState.mode = kpiEls.mode?.value || "standard";
   const rows = getCatalogRowsForMode();
-  setOptions(kpiEls.catalog, rows, (catalog) => catalog.code, optionText);
-  if (kpiState.mode === "standard") {
+  setOptions(kpiEls.catalog, rows, (catalog) => catalog.code, catalogOptionText);
+  if (isStandardDataMode()) {
     const agingIndex = rows.findIndex((row) => row.code === DEFAULT_STANDARD_SUBCATALOG);
     if (agingIndex >= 0) kpiEls.catalog.selectedIndex = agingIndex;
   }
@@ -696,6 +953,7 @@ async function processAllKpis() {
         units: rows.length,
         target: summary.target,
         result: summary.result,
+        gap: summary.gap,
         ratio: summary.ratio,
         status: "สำเร็จ"
       });
@@ -705,6 +963,7 @@ async function processAllKpis() {
         units: 0,
         target: null,
         result: null,
+        gap: null,
         ratio: null,
         status: "ไม่สำเร็จ"
       });
@@ -726,6 +985,7 @@ function renderAllSummary() {
       <td>${formatNumber(item.units)}</td>
       <td>${formatNumber(item.target)}</td>
       <td>${formatNumber(item.result)}</td>
+      <td><span class="gap-pill ${gapClass(item.gap)}">${formatGap(item.gap)}</span></td>
       <td><span class="ratio-pill ${ratioClass(item.ratio)}">${item.ratio === null ? "-" : `${formatNumber(item.ratio, 2)}%`}</span></td>
       <td>${item.status}</td>
     </tr>
@@ -843,11 +1103,11 @@ function exportCsv() {
 
   const useSummary = !rows.length;
   const header = useSummary
-    ? ["kpi", "units", "target", "result", "ratio", "status"]
-    : ["report", "hospcode", "hospital", "target", "result", "ratio", "datecom"];
+    ? ["kpi", "units", "target", "result", "gap", "ratio", "status"]
+    : ["report", "hospcode", "hospital", "target", "result", "gap", "ratio", "datecom"];
   const body = useSummary
-    ? kpiState.allSummary.map((item) => [item.name, item.units, item.target, item.result, item.ratio, item.status])
-    : rows.map((row) => [kpiState.currentReportName, row.code, row.name, row.target, row.result, row.ratio, kpiState.lastDateCom]);
+    ? kpiState.allSummary.map((item) => [item.name, item.units, item.target, item.result, item.gap, item.ratio, item.status])
+    : rows.map((row) => [kpiState.currentReportName, row.code, row.name, row.target, row.result, rowGap(row), row.ratio, kpiState.lastDateCom]);
 
   const csv = [header, ...body]
     .map((line) => line.map((cell) => `"${String(cell ?? "").replaceAll('"', '""')}"`).join(","))
@@ -896,8 +1156,9 @@ function describeCurrentKpi() {
   const target = kpiEls.metricTarget?.textContent?.trim() || "-";
   const result = kpiEls.metricResult?.textContent?.trim() || "-";
   const ratio = kpiEls.metricRatio?.textContent?.trim() || "-";
+  const gap = kpiEls.metricGap?.textContent?.trim() || "-";
 
-  return `ตอนนี้กำลังดู ${report} หมวด ${catalog} ปีงบประมาณ ${year} หน่วยบริการ ${unit} พบข้อมูล ${units} แห่ง เป้าหมายรวม ${target} ผลงานรวม ${result} ร้อยละ ${ratio} สถานะล่าสุด: ${status}`;
+  return `ตอนนี้กำลังดู ${report} หมวด ${catalog} ปีงบประมาณ ${year} หน่วยบริการ ${unit} พบข้อมูล ${units} แห่ง เป้าหมายรวม ${target} ผลงานรวม ${result} Gap ${gap} ร้อยละ ${ratio} สถานะล่าสุด: ${status}`;
 }
 
 function describeRank(direction) {
@@ -977,7 +1238,8 @@ function buildKpiContext() {
   const target = kpiEls.metricTarget?.textContent?.trim();
   const result = kpiEls.metricResult?.textContent?.trim();
   const ratio = kpiEls.metricRatio?.textContent?.trim();
-  if (units && units !== "-") parts.push(`สรุป: ${units} หน่วย | เป้า ${target} | ผลงาน ${result} | ร้อยละ ${ratio}`);
+  const gap = kpiEls.metricGap?.textContent?.trim();
+  if (units && units !== "-") parts.push(`สรุป: ${units} หน่วย | เป้า ${target} | ผลงาน ${result} | Gap ${gap} | ร้อยละ ${ratio}`);
 
   const rows = kpiState.currentRows.filter((row) => Number.isFinite(row.ratio));
   if (rows.length) {
@@ -1073,17 +1335,30 @@ kpiEls.load?.addEventListener("click", loadCurrentKpi);
 kpiEls.processAll?.addEventListener("click", processAllKpis);
 kpiEls.checkServicePlan?.addEventListener("click", checkAllServicePlans);
 kpiEls.exportCsv?.addEventListener("click", exportCsv);
+kpiEls.loadTrend?.addEventListener("click", loadTrendSummary);
 
-kpiEls.servicePlanMenu?.addEventListener("click", async (event) => {
+document.addEventListener("click", async (event) => {
   const link = event.target.closest("[data-standard-subcatalog]");
   if (!link) return;
   event.preventDefault();
 
   setMega(false);
-  if (kpiEls.mode) kpiEls.mode.value = "standard";
+  const mode = link.dataset.mode || "standard";
+  if (kpiEls.mode) kpiEls.mode.value = mode;
   renderCatalogOptions();
+  const rows = getCatalogRowsForMode();
+  if (!rows.length) {
+    setKpiStatus("ยังโหลดรายการรายงานมาตรฐานไม่เสร็จ กรุณารอสักครู่");
+    return;
+  }
+
   kpiEls.catalog.value = link.dataset.standardSubcatalog;
-  const selected = kpiState.servicePlanSubcatalogs.find((item) => String(item.code) === kpiEls.catalog.value);
+  const selected = rows.find((item) => String(item.code) === kpiEls.catalog.value);
+  if (!selected) {
+    setKpiStatus("ไม่พบหัวข้อรายงานนี้ใน catalog ล่าสุดของ HDC", "error");
+    return;
+  }
+
   fillYearsForCatalog(selected);
   await loadKpiReports();
   document.querySelector("#kpiDataPanel")?.scrollIntoView({ behavior: "smooth", block: "start" });

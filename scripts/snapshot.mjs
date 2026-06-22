@@ -239,12 +239,13 @@ async function main() {
     for (const sub of subcatalogs) {
       const reportsResp = await snap("center", `system/subcatalog/reports?subcatalogId=${encodeURIComponent(sub.code)}`);
       const { leaves } = flattenReportTree(reportsResp?.rows || []);
+      const sourceReportCount = leaves.length;
       const reports = dedupeByReportCode(leaves.filter((r) => r.report_code && r.active !== false));
       reportTotal += reports.length;
       for (const report of reports) {
         await snapReportAndTrackCoverage(category, sub, report);
       }
-      console.log(`  ✓ [${category.name}] ${optionText(sub)} — ${reports.length} รายงาน`);
+      console.log(`  ✓ [${category.name}] ${optionText(sub)} — ${reports.length}/${sourceReportCount} รายงานที่มี report_code`);
     }
   }
 
