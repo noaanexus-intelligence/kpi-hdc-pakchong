@@ -676,16 +676,16 @@
     <span>Health Data Center Service</span>
   </footer>
 
-  <!-- ===== แถบป้ายวิ่งผู้ดูแลระบบ (credit marquee) — แก้ข้อความได้ที่ span.credit-marquee-move ===== -->
-  <div class="credit-marquee" role="marquee" aria-label="ข้อมูลผู้ดูแลระบบ">
-    <span class="credit-marquee-tag" aria-hidden="true">ผู้ดูแลระบบ</span>
+  <!-- ===== แถบป้ายวิ่ง (credit marquee) — #marqueeFresh เติมวันที่ข้อมูลอัตโนมัติจาก data/sync-audit.json ===== -->
+  <div class="credit-marquee" role="marquee" aria-label="สถานะข้อมูลและผู้ดูแลระบบ">
+    <span class="credit-marquee-tag" aria-hidden="true">ข้อมูล HDC</span>
     <div class="credit-marquee-track">
       <span class="credit-marquee-move">
-        นายธนพล วงวิลาศ
-        <span class="credit-marquee-sep">•</span>
-        ที่อยู่: 278 ม.16 ต.หมูสี อ.ปากช่อง จ.นครราชสีมา 30450
+        <span id="marqueeFresh"></span>ดูแลระบบ: นายธนพล วงวิลาศ — สสอ.ปากช่อง
         <span class="credit-marquee-sep">•</span>
         โทร. 088-582-2787
+        <span class="credit-marquee-sep">•</span>
+        ข้อมูลเพื่อติดตามผลงานระดับอำเภอปากช่อง
       </span>
     </div>
   </div>
@@ -715,5 +715,28 @@
 
   <script src="script.js"></script>
   <script src="coverage.js"></script>
+  <script>
+    /* เติมวันที่ความสดของข้อมูลลงแถบป้ายวิ่งอัตโนมัติ (ใช้วันที่ snapshot ถูกเก็บจริง) */
+    (function () {
+      fetch('data/sync-audit.json', { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          if (!j) return;
+          var el = document.getElementById('marqueeFresh');
+          if (!el) return;
+          var iso = (j.summary && j.summary.snapshotGeneratedAt) || j.generatedAt;
+          var parts = [];
+          if (iso) {
+            var dt = new Date(iso);
+            if (!isNaN(dt.getTime())) {
+              parts.push('ข้อมูล ณ ' + dt.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Bangkok' }));
+            }
+          }
+          if (j.year) parts.push('ปีงบ ' + j.year);
+          if (parts.length) el.textContent = parts.join(' · ') + ' • ';
+        })
+        .catch(function () {});
+    })();
+  </script>
 </body>
 </html>
