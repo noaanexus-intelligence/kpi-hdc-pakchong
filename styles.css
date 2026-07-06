@@ -24,6 +24,7 @@ html {
 
 body {
   margin: 0;
+  padding-bottom: 44px;
   min-width: 320px;
   overflow-x: hidden;
   color: var(--text);
@@ -1890,12 +1891,64 @@ main {
 .iq-chat {
   position: fixed;
   right: 22px;
-  bottom: 22px;
+  bottom: 54px;
   z-index: 80;
   display: grid;
   justify-items: end;
   gap: 12px;
   font-family: inherit;
+}
+
+/* ===== แถบป้ายวิ่งผู้ดูแลระบบ (credit marquee) ===== */
+.credit-marquee {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  height: 40px;
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 -6px 18px rgba(31, 53, 86, .16);
+}
+.credit-marquee-tag {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 16px;
+  background: var(--primary-dark);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.credit-marquee-track {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+.credit-marquee-move {
+  display: inline-block;
+  white-space: nowrap;
+  padding-left: 100%;
+  font-size: 14px;
+  animation: credit-marquee-scroll 28s linear infinite;
+}
+.credit-marquee:hover .credit-marquee-move { animation-play-state: paused; }
+.credit-marquee-sep { opacity: .55; margin: 0 12px; }
+@keyframes credit-marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+@media (max-width: 560px) {
+  .credit-marquee { height: 34px; }
+  .credit-marquee-tag { padding: 0 12px; font-size: 12px; }
+  .credit-marquee-move { font-size: 12.5px; animation-duration: 20s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .credit-marquee-track { overflow-x: auto; }
+  .credit-marquee-move { animation: none; padding-left: 16px; }
 }
 
 .iq-toggle {
