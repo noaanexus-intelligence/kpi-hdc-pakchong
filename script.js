@@ -589,12 +589,12 @@ function formatThaiDateTime(value) {
 
 function renderTableDataStatus() {
   if (!kpiEls.tableDataStatus) return;
-  const snapshotText = `อัปเดต snapshot ล่าสุด: ${formatThaiDateTime(dataStatus.snapshotGeneratedAt)}`;
+  const snapshotText = `ข้อมูลสำรองล่าสุด: ${formatThaiDateTime(dataStatus.snapshotGeneratedAt)}`;
   const liveText = dataStatus.lastLiveFetchAt
-    ? `ดึงข้อมูลสดล่าสุด: ${formatThaiDateTime(dataStatus.lastLiveFetchAt)}`
-    : "ดึงข้อมูลสดล่าสุด: ยังไม่เคยดึงสดในเซสชันนี้";
+    ? `ข้อมูลสดล่าสุดจาก HDC: ${formatThaiDateTime(dataStatus.lastLiveFetchAt)}`
+    : "ข้อมูลสดจาก HDC: ยังดึงไม่ได้ในรอบนี้";
   const fallbackText = dataStatus.lastTableSource === "snapshot-fallback"
-    ? " — ไม่สามารถดึงข้อมูลสดจาก HDC ได้ในขณะนี้ แสดงข้อมูลจาก snapshot ล่าสุดแทน"
+    ? " | ตอนนี้เชื่อม HDC สดไม่ได้ จึงแสดงข้อมูลสำรองล่าสุดให้ดูก่อน"
     : "";
   kpiEls.tableDataStatus.textContent = `${snapshotText} | ${liveText}${fallbackText}`;
   kpiEls.tableDataStatus.classList.toggle("error", Boolean(fallbackText));
@@ -1080,7 +1080,7 @@ async function loadCurrentKpi({ preferLive = true } = {}) {
       ? ` | รายงานที่ดึงข้อมูลได้ ${kpiState.reports.length}/${kpiState.reportSourceCount} (ไม่มี report code ${kpiState.reportSkippedCount})`
       : "";
     const fallbackNote = dataStatus.lastTableSource === "snapshot-fallback"
-      ? " | ไม่สามารถดึงข้อมูลสดจาก HDC ได้ในขณะนี้ แสดงข้อมูลจาก snapshot ล่าสุดแทน"
+      ? " | ตอนนี้เชื่อม HDC สดไม่ได้ จึงแสดงข้อมูลสำรองล่าสุดให้ดูก่อน"
       : "";
     const sourceLabel = dataStatus.lastTableSource === "live" ? "สดจาก HDC Public " : "";
     setKpiStatus(
