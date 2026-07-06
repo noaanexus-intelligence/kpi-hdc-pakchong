@@ -699,17 +699,38 @@
       <div class="iq-header">
         <div>
           <strong>iQ</strong>
-          <span>AI Chat Bot ข้อมูล HDC ปากช่อง</span>
+          <span>ผู้ช่วยข้อมูล KPI · กระดานแจ้งปัญหา</span>
         </div>
         <button class="iq-close" id="iqClose" type="button" data-iq-close aria-label="ปิด iQ">×</button>
       </div>
-      <div class="iq-messages" id="iqMessages" aria-live="polite">
-        <div class="iq-message bot">สวัสดีครับ ผม iQ ผู้ช่วยวิเคราะห์ข้อมูล HDC ปากช่อง ถามได้เลย เช่น "วิเคราะห์ข้อมูลตอนนี้", "หน่วยไหนต่ำสุด", "สรุป Service Plan"</div>
+      <div class="iq-tabs" role="tablist" aria-label="โหมด iQ">
+        <button class="iq-tab active" type="button" role="tab" data-iqtab="ai" aria-selected="true">ถาม iQ (AI)</button>
+        <button class="iq-tab" type="button" role="tab" data-iqtab="board" aria-selected="false">กระดานแจ้งปัญหา</button>
       </div>
-      <form class="iq-form" id="iqForm">
-        <input id="iqInput" type="text" autocomplete="off" placeholder="ถาม iQ เช่น สรุปข้อมูลตอนนี้">
-        <button type="submit">ส่ง</button>
-      </form>
+      <div class="iq-body">
+        <div class="iq-pane" data-iqpane="ai">
+          <div class="iq-messages" id="iqMessages" aria-live="polite">
+            <div class="iq-message bot">สวัสดีครับ ผม iQ ผู้ช่วยวิเคราะห์ข้อมูล HDC ปากช่อง ถามได้เลย เช่น "วิเคราะห์ข้อมูลตอนนี้", "หน่วยไหนต่ำสุด", "สรุป Service Plan"</div>
+          </div>
+          <form class="iq-form" id="iqForm">
+            <input id="iqInput" type="text" autocomplete="off" placeholder="ถาม iQ เช่น สรุปข้อมูลตอนนี้">
+            <button type="submit">ส่ง</button>
+          </form>
+        </div>
+        <div class="iq-pane" data-iqpane="board" hidden>
+          <div class="board-note">กระดานสาธารณะสำหรับแจ้งปัญหา/แลกเปลี่ยนความคิดเห็น — ทุกคนเห็นข้อความนี้ • อย่าโพสต์ข้อมูลผู้ป่วยหรือข้อมูลส่วนบุคคล • ระบบลบข้อความอัตโนมัติหลัง 30 วัน</div>
+          <div class="board-messages" id="boardMessages" aria-live="polite">
+            <div class="board-empty" id="boardEmpty">กำลังโหลดข้อความ…</div>
+          </div>
+          <form class="board-form" id="boardForm">
+            <input id="boardName" class="board-name" type="text" maxlength="60" autocomplete="off" placeholder="ชื่อ/หน่วยงานผู้แจ้ง (เช่น รพ.สต.กลางดง)">
+            <div class="board-row">
+              <input id="boardInput" class="board-input" type="text" maxlength="1000" autocomplete="off" placeholder="พิมพ์ข้อความแจ้งปัญหา…">
+              <button type="submit" id="boardSend">ส่ง</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -736,6 +757,109 @@
           if (parts.length) el.textContent = parts.join(' · ') + ' • ';
         })
         .catch(function () {});
+    })();
+  </script>
+  <script>
+    /* ===== กระดานแจ้งปัญหา (Supabase public board) ===== */
+    (function () {
+      var SB_URL = 'https://kopifgiqujchayvpxpzu.supabase.co';
+      var SB_KEY = 'sb_publishable_S7CZhkrXgvyCYi8xfhVk1Q_LyW7EDbs';
+      var REST = SB_URL + '/rest/v1/board_messages';
+      var HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
+      var RETENTION_DAYS = 30;
+
+      var tabs = document.querySelectorAll('.iq-tab');
+      var panes = document.querySelectorAll('.iq-pane');
+      var listEl = document.getElementById('boardMessages');
+      var form = document.getElementById('boardForm');
+      var nameEl = document.getElementById('boardName');
+      var inputEl = document.getElementById('boardInput');
+      var sendBtn = document.getElementById('boardSend');
+      if (!listEl || !form) return;
+
+      var pollTimer = null;
+
+      try { if (nameEl) nameEl.value = localStorage.getItem('board_name') || ''; } catch (e) {}
+
+      function fmtTime(iso) {
+        try {
+          var d = new Date(iso), now = new Date();
+          var t = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' });
+          if (d.toDateString() === now.toDateString()) return t;
+          return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' }) + ' ' + t;
+        } catch (e) { return ''; }
+      }
+
+      function render(rows) {
+        var atBottom = listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight < 60;
+        listEl.textContent = '';
+        if (!rows.length) {
+          var em = document.createElement('div');
+          em.className = 'board-empty';
+          em.textContent = 'ยังไม่มีข้อความ เริ่มแจ้งปัญหาหรือพูดคุยได้เลย';
+          listEl.appendChild(em);
+          return;
+        }
+        rows.forEach(function (m) {
+          var wrap = document.createElement('div'); wrap.className = 'board-msg';
+          var head = document.createElement('div'); head.className = 'board-msg-head';
+          var a = document.createElement('span'); a.className = 'board-msg-author'; a.textContent = m.author || 'ผู้ใช้'; head.appendChild(a);
+          if (m.unit) { var u = document.createElement('span'); u.className = 'board-msg-unit'; u.textContent = m.unit; head.appendChild(u); }
+          var tm = document.createElement('span'); tm.className = 'board-msg-time'; tm.textContent = fmtTime(m.created_at); head.appendChild(tm);
+          var body = document.createElement('div'); body.className = 'board-msg-body'; body.textContent = m.body || '';
+          wrap.appendChild(head); wrap.appendChild(body); listEl.appendChild(wrap);
+        });
+        if (atBottom) listEl.scrollTop = listEl.scrollHeight;
+      }
+
+      function load() {
+        var since = new Date(Date.now() - RETENTION_DAYS * 864e5).toISOString();
+        var q = REST + '?select=id,created_at,author,unit,body&created_at=gt.' + encodeURIComponent(since) + '&order=created_at.asc&limit=300';
+        fetch(q, { headers: HEADERS, cache: 'no-store' })
+          .then(function (r) { return r.ok ? r.json() : []; })
+          .then(function (rows) { if (Array.isArray(rows)) render(rows); })
+          .catch(function () {});
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var body = (inputEl.value || '').trim();
+        if (!body) return;
+        var author = (nameEl.value || '').trim() || 'ผู้ใช้';
+        try { localStorage.setItem('board_name', author === 'ผู้ใช้' ? '' : author); } catch (e2) {}
+        if (sendBtn) sendBtn.disabled = true;
+        fetch(REST, {
+          method: 'POST',
+          headers: Object.assign({ 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, HEADERS),
+          body: JSON.stringify({ author: author.slice(0, 60), body: body.slice(0, 1000) })
+        }).then(function (r) {
+          if (sendBtn) sendBtn.disabled = false;
+          if (r.ok) { inputEl.value = ''; load(); }
+        }).catch(function () { if (sendBtn) sendBtn.disabled = false; });
+      });
+
+      function startPoll() { load(); if (!pollTimer) pollTimer = setInterval(load, 5000); }
+      function stopPoll() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+      tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          var target = tab.getAttribute('data-iqtab');
+          tabs.forEach(function (t) { var on = t === tab; t.classList.toggle('active', on); t.setAttribute('aria-selected', on ? 'true' : 'false'); });
+          panes.forEach(function (p) { p.hidden = p.getAttribute('data-iqpane') !== target; });
+          if (target === 'board') startPoll(); else stopPoll();
+        });
+      });
+
+      var toggleBtn = document.getElementById('iqToggle');
+      if (toggleBtn) toggleBtn.addEventListener('click', function () {
+        setTimeout(function () {
+          var bp = document.querySelector('.iq-pane[data-iqpane="board"]');
+          if (bp && !bp.hidden) startPoll();
+        }, 60);
+      });
+      var closeBtn = document.getElementById('iqClose');
+      if (closeBtn) closeBtn.addEventListener('click', stopPoll);
+      document.addEventListener('visibilitychange', function () { if (document.hidden) stopPoll(); });
     })();
   </script>
 </body>

@@ -1992,7 +1992,7 @@ main {
   box-shadow: 0 22px 54px rgba(15, 45, 65, .22);
   overflow: hidden;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto 1fr;
 }
 
 .iq-panel[hidden] {
@@ -2099,6 +2099,51 @@ main {
   font-weight: 700;
   cursor: pointer;
 }
+
+/* ===== แท็บ iQ (ถาม AI / กระดานแจ้งปัญหา) ===== */
+.iq-tabs { display: flex; background: #0b8069; }
+.iq-tab {
+  flex: 1; border: 0; background: transparent;
+  color: rgba(255, 255, 255, .72);
+  padding: 10px 6px; font-family: inherit; font-weight: 700; font-size: 13px;
+  cursor: pointer; border-bottom: 3px solid transparent;
+}
+.iq-tab.active { color: #fff; background: rgba(255, 255, 255, .10); border-bottom-color: #fff; }
+.iq-body { position: relative; min-height: 0; }
+.iq-pane { position: absolute; inset: 0; display: grid; grid-template-rows: 1fr auto; min-height: 0; }
+.iq-pane[hidden] { display: none; }
+.iq-pane[data-iqpane="board"] { grid-template-rows: auto 1fr auto; }
+
+/* ===== กระดานแจ้งปัญหา ===== */
+.board-note {
+  padding: 8px 12px; font-size: 11.5px; line-height: 1.45;
+  color: #8a5200; background: #fff6e5; border-bottom: 1px solid #f0e2c4;
+}
+.board-messages {
+  min-height: 0; overflow-y: auto; padding: 14px;
+  display: flex; flex-direction: column; gap: 8px; background: #f5f9fb;
+}
+.board-empty { margin: auto; color: #8496a8; font-size: 13px; text-align: center; padding: 20px; }
+.board-msg {
+  max-width: 94%; align-self: flex-start; background: #fff;
+  border: 1px solid #e1edf4; border-radius: 12px; padding: 8px 11px;
+}
+.board-msg-head { display: flex; gap: 8px; align-items: baseline; margin-bottom: 3px; }
+.board-msg-author { font-weight: 700; font-size: 12.5px; color: #0b7d67; }
+.board-msg-unit { font-size: 11px; color: #7c8ba0; }
+.board-msg-time { margin-left: auto; font-size: 11px; color: #9aa8b8; white-space: nowrap; }
+.board-msg-body { font-size: 14px; line-height: 1.5; color: #1c3148; white-space: pre-wrap; word-break: break-word; }
+.board-form { display: grid; gap: 8px; padding: 12px; border-top: 1px solid #e1edf4; background: #fff; }
+.board-form input {
+  min-width: 0; height: 38px; border: 1px solid #ceddea; border-radius: 10px;
+  padding: 0 12px; color: #132138; font-family: inherit; font-size: 14px;
+}
+.board-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.board-form button {
+  height: 38px; border: 0; border-radius: 10px; background: #0f9f83; color: #fff;
+  padding: 0 16px; font-family: inherit; font-weight: 700; cursor: pointer;
+}
+.board-form button:disabled { opacity: .6; cursor: default; }
 
 @media (max-width: 1180px) {
   :root {
