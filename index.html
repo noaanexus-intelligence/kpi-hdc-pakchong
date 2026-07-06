@@ -614,21 +614,30 @@
       </div>
 
       <div class="all-kpi-summary" id="bgSyncErrorWrap" hidden>
-        <h3>รายงานที่ HDC ต้นทางยังตอบไม่ได้ในรอบล่าสุด</h3>
-        <p>รายการนี้เป็นผลจาก background sync เท่านั้น ข้อมูลหลักของ dashboard ยังใช้งานจาก snapshot ได้ตามปกติ</p>
-        <div class="table-wrap compact-table">
-          <table class="kpi-table">
-            <thead>
-              <tr>
-                <th>หมวด</th>
-                <th>reportCode</th>
-                <th>รายงาน</th>
-                <th>รายละเอียด</th>
-              </tr>
-            </thead>
-            <tbody id="bgSyncErrorBody"></tbody>
-          </table>
+        <div class="summary-heading-row">
+          <div>
+            <h3>รายงานที่รอประมวลผลใหม่จาก HDC</h3>
+            <p id="bgSyncErrorSummary">กำลังสรุปรายการที่ HDC ต้นทางยังตอบไม่ได้...</p>
+          </div>
+          <strong id="bgSyncErrorCount">-</strong>
         </div>
+        <div class="bg-error-groups" id="bgSyncErrorGroups"></div>
+        <details class="bg-error-details">
+          <summary id="bgSyncErrorDetailsSummary">ดูตัวอย่างรายงานที่รอประมวลผล</summary>
+          <p>แสดงเฉพาะตัวอย่างบางรายการเพื่อให้อ่านง่าย รายการเต็มส่งออกได้ด้วยปุ่ม CSV ด้านบน</p>
+          <div class="table-wrap compact-table">
+            <table class="kpi-table bg-error-table">
+              <thead>
+                <tr>
+                  <th>หมวด</th>
+                  <th>รายงาน</th>
+                  <th>สาเหตุ</th>
+                </tr>
+              </thead>
+              <tbody id="bgSyncErrorBody"></tbody>
+            </table>
+          </div>
+        </details>
       </div>
     </section>
 

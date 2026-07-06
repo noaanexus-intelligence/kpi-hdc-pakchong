@@ -9,10 +9,16 @@ const bgEls = {
   total: document.querySelector("#bgSyncTotal"),
   tableBody: document.querySelector("#bgSyncCoverageBody"),
   errorWrap: document.querySelector("#bgSyncErrorWrap"),
+  errorSummary: document.querySelector("#bgSyncErrorSummary"),
+  errorCount: document.querySelector("#bgSyncErrorCount"),
+  errorGroups: document.querySelector("#bgSyncErrorGroups"),
+  errorDetailsSummary: document.querySelector("#bgSyncErrorDetailsSummary"),
   errorBody: document.querySelector("#bgSyncErrorBody"),
   exportErrors: document.querySelector("#bgSyncExportErrors"),
   empty: document.querySelector("#bgSyncEmpty"),
 };
+
+const ERROR_PREVIEW_LIMIT = 15;
 
 function bgFormatNumber(value) {
   if (value === null || value === undefined || Number.isNaN(value)) return "-";
@@ -26,6 +32,15 @@ function bgFormatDate(iso) {
   } catch (_error) {
     return iso;
   }
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function bgStatusClass(item) {
@@ -45,12 +60,34 @@ function bgStatusText(item) {
 // ใช้ตรงนี้แทนการแสดง item.error ตรงๆ ทุกที่ที่โชว์ error log บนหน้าเว็บ
 function formatUpstreamError(error) {
   if (error === "HTTP 502") {
-    return "HDC ต้นทางตอบ HTTP 502 — รอลองประมวลผลใหม่ภายหลัง";
+    return "HDC ต้นทางตอบ 502 ในรอบนี้";
   }
   if (error === "HTTP 500") {
-    return "HDC ต้นทางเกิดข้อผิดพลาดภายใน HTTP 500";
+    return "HDC ต้นทางตอบ 500 ในรอบนี้";
   }
-  return `HDC ต้นทางตอบผิดพลาด — ${error || "ไม่ทราบสาเหตุ"}`;
+  return `HDC ต้นทางตอบผิดพลาด (${error || "ไม่ทราบสาเหตุ"})`;
+}
+
+function summarizeErrorsByCategory(errors) {
+  const groups = new Map();
+  errors.forEach((item) => {
+    const category = item.category || "ไม่ระบุหมวด";
+    groups.set(category, (groups.get(category) || 0) + 1);
+  });
+  return Array.from(groups.entries())
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category, "th"));
+}
+
+function countByError(errors) {
+  const groups = new Map();
+  errors.forEach((item) => {
+    const label = formatUpstreamError(item.error);
+    groups.set(label, (groups.get(label) || 0) + 1);
+  });
+  return Array.from(groups.entries())
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count);
 }
 
 function renderBackgroundCoverage(coverage) {
@@ -90,19 +127,55 @@ function renderBackgroundCoverage(coverage) {
 
   const errors = coverage.errors || [];
   if (bgEls.errorWrap) bgEls.errorWrap.hidden = errors.length === 0;
+  const categorySummary = summarizeErrorsByCategory(errors);
+  const errorSummary = countByError(errors);
+
+  if (bgEls.errorCount) {
+    bgEls.errorCount.textContent = `${bgFormatNumber(errors.length)} รายงาน`;
+  }
+
+  if (bgEls.errorSummary) {
+    const topReason = errorSummary[0]
+      ? `${errorSummary[0].label} ${bgFormatNumber(errorSummary[0].count)} รายการ`
+      : "ไม่พบรายการที่รอประมวลผล";
+    bgEls.errorSummary.textContent = errors.length
+      ? `สรุปสั้นๆ: HDC ต้นทางยังตอบไม่ได้บางรายงานในรอบ sync ล่าสุด (${topReason}) ข้อมูลหลักของ dashboard ยังเปิดดูได้จากข้อมูลสำรองล่าสุดตามปกติ`
+      : "HDC ต้นทางตอบได้ครบในรอบ sync ล่าสุด";
+  }
+
+  if (bgEls.errorGroups) {
+    bgEls.errorGroups.innerHTML = categorySummary.map((item) => `
+      <span>
+        <strong>${escapeHtml(item.category)}</strong>
+        <small>${bgFormatNumber(item.count)} รายงาน</small>
+      </span>
+    `).join("");
+  }
+
+  if (bgEls.errorDetailsSummary) {
+    const previewCount = Math.min(errors.length, ERROR_PREVIEW_LIMIT);
+    bgEls.errorDetailsSummary.textContent = errors.length
+      ? `ดูตัวอย่าง ${bgFormatNumber(previewCount)} จาก ${bgFormatNumber(errors.length)} รายงาน`
+      : "ไม่มีรายการที่ต้องประมวลผลใหม่";
+  }
+
   if (bgEls.errorBody) {
-    bgEls.errorBody.innerHTML = errors.slice(0, 200).map((item) => `
+    bgEls.errorBody.innerHTML = errors.slice(0, ERROR_PREVIEW_LIMIT).map((item) => `
       <tr>
-        <td>${item.category || "-"}</td>
-        <td>${item.reportCode}</td>
-        <td>${item.title}</td>
-        <td>${formatUpstreamError(item.error)}</td>
+        <td>${escapeHtml(item.category || "-")}</td>
+        <td>
+          <strong>${escapeHtml(item.title)}</strong>
+          <small>${escapeHtml(item.reportCode)}</small>
+        </td>
+        <td>${escapeHtml(formatUpstreamError(item.error))}</td>
       </tr>
     `).join("");
   }
   if (bgEls.exportErrors) bgEls.exportErrors.disabled = errors.length === 0;
 
-  bgEls.exportErrors?.addEventListener("click", () => exportBgErrorsCsv(errors), { once: true });
+  if (bgEls.exportErrors) {
+    bgEls.exportErrors.onclick = () => exportBgErrorsCsv(errors);
+  }
 }
 
 function exportBgErrorsCsv(errors) {

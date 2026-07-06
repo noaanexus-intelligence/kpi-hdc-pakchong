@@ -1688,6 +1688,74 @@ main {
   background: #ffe7e7;
 }
 
+.bg-error-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 14px;
+}
+
+.bg-error-groups span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #f1d7d7;
+  border-radius: 8px;
+  color: #7a3030;
+  background: #fff7f7;
+}
+
+.bg-error-groups strong,
+.bg-error-groups small {
+  line-height: 1.2;
+}
+
+.bg-error-groups small {
+  color: #a14b4b;
+  font-weight: 700;
+}
+
+.bg-error-details {
+  border-top: 1px solid #edf2f7;
+  padding-top: 12px;
+}
+
+.bg-error-details summary {
+  cursor: pointer;
+  color: #087f69;
+  font-weight: 800;
+}
+
+.bg-error-details > p {
+  margin: 8px 0 12px;
+  color: #68788d;
+  font-size: 13px;
+}
+
+.bg-error-table {
+  min-width: 840px;
+}
+
+.bg-error-table td:nth-child(2) strong {
+  display: block;
+  color: #1b283b;
+}
+
+.bg-error-table td:nth-child(2) small {
+  display: block;
+  margin-top: 3px;
+  color: #7c8aa0;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.bg-error-table td:nth-child(3) {
+  color: #a33a3a;
+  font-weight: 700;
+}
+
 .compact-table {
   max-height: 420px;
 }
