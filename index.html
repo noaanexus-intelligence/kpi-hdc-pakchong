@@ -467,15 +467,26 @@
       </div>
 
       <div class="all-kpi-summary" id="allKpiSummary" hidden>
-        <h3>สรุปการประมวลผล KPI ทั้งหมด</h3>
+        <div class="summary-heading-row all-summary-heading">
+          <div>
+            <h3>สรุปการประมวลผล KPI ทั้งหมด</h3>
+            <p id="allSummaryScope">แสดงภาพรวมทุกหน่วยบริการ</p>
+          </div>
+          <label class="summary-filter">
+            <span>ดูเฉพาะหน่วยบริการ</span>
+            <select id="allSummaryUnitSelect">
+              <option value="ALL">ทุกหน่วยบริการ (ภาพรวม)</option>
+            </select>
+          </label>
+        </div>
         <div class="table-wrap compact-table">
           <table class="kpi-table">
             <thead>
               <tr>
                 <th>KPI</th>
-                <th>หน่วยบริการ</th>
-                <th>เป้าหมายรวม</th>
-                <th>ผลงานรวม</th>
+                <th>หน่วยบริการ/ขอบเขต</th>
+                <th>เป้าหมาย</th>
+                <th>ผลงาน</th>
                 <th>Gap</th>
                 <th>ร้อยละ</th>
                 <th>สถานะ</th>

@@ -179,6 +179,8 @@ const kpiEls = {
   tableDataStatus: document.querySelector("#tableDataStatus"),
   tableBody: document.querySelector("#kpiTableBody"),
   allSummary: document.querySelector("#allKpiSummary"),
+  allSummaryUnit: document.querySelector("#allSummaryUnitSelect"),
+  allSummaryScope: document.querySelector("#allSummaryScope"),
   allTableBody: document.querySelector("#allKpiTableBody"),
   coverage: document.querySelector("#servicePlanCoverage"),
   coverageTableBody: document.querySelector("#servicePlanCoverageBody"),
@@ -613,6 +615,66 @@ function applyUnitFilter(rows) {
   return rows.filter((row) => row.code === selected);
 }
 
+function getUnitLabel(code, { short = false } = {}) {
+  if (!code || code === "ALL") return short ? "ทุกหน่วย" : "ทุกหน่วยบริการ";
+  const unit = kpiState.hospitals.find((hospital) => String(hospital.code) === String(code))
+    || ALLOWED_SERVICE_UNITS.find((unit) => String(unit.code) === String(code));
+  if (!unit) return String(code);
+  return short ? (unit.name || unit.code_name || unit.code) : (unit.code_name || `${unit.code} - ${unit.name}`);
+}
+
+function getAllSummaryUnitCode() {
+  return kpiEls.allSummaryUnit?.value || "ALL";
+}
+
+function getAllSummaryDisplayRows() {
+  const selectedCode = getAllSummaryUnitCode();
+  return kpiState.allSummary.map((item) => {
+    if (item.status !== "สำเร็จ") {
+      return {
+        ...item,
+        unitsLabel: selectedCode === "ALL" ? "-" : getUnitLabel(selectedCode, { short: true }),
+        target: null,
+        result: null,
+        gap: null,
+        ratio: null
+      };
+    }
+
+    const sourceRows = Array.isArray(item.rows) ? item.rows : [];
+    const rows = selectedCode === "ALL"
+      ? sourceRows
+      : sourceRows.filter((row) => String(row.code) === String(selectedCode));
+    const summary = summarizeRows(rows);
+    const hasSelectedUnitData = selectedCode === "ALL" || rows.length > 0;
+
+    return {
+      ...item,
+      units: rows.length,
+      unitsLabel: selectedCode === "ALL" ? `${formatNumber(rows.length)} หน่วย` : getUnitLabel(selectedCode, { short: true }),
+      target: hasSelectedUnitData ? summary.target : null,
+      result: hasSelectedUnitData ? summary.result : null,
+      gap: hasSelectedUnitData ? summary.gap : null,
+      ratio: hasSelectedUnitData ? summary.ratio : null,
+      status: hasSelectedUnitData ? item.status : "ไม่มีข้อมูลหน่วยนี้"
+    };
+  });
+}
+
+function renderAllSummaryScope() {
+  if (!kpiEls.allSummaryScope) return;
+  const selectedCode = getAllSummaryUnitCode();
+  const rows = getAllSummaryDisplayRows();
+  const successCount = rows.filter((item) => item.status === "สำเร็จ").length;
+  const noDataCount = rows.filter((item) => item.status === "ไม่มีข้อมูลหน่วยนี้").length;
+  if (selectedCode === "ALL") {
+    kpiEls.allSummaryScope.textContent = `แสดงภาพรวมทุกหน่วยบริการ จาก KPI ที่ประมวลผลแล้ว ${formatNumber(rows.length)} รายการ`;
+    return;
+  }
+  const noDataNote = noDataCount ? ` | ไม่มีข้อมูลของหน่วยนี้ ${formatNumber(noDataCount)} รายการ` : "";
+  kpiEls.allSummaryScope.textContent = `แสดงเฉพาะ ${getUnitLabel(selectedCode)} | มีข้อมูล ${formatNumber(successCount)}/${formatNumber(rows.length)} KPI${noDataNote}`;
+}
+
 function summarizeRows(rows) {
   const target = rows.reduce((sum, row) => sum + (row.target || 0), 0);
   const result = rows.reduce((sum, row) => sum + (row.result || 0), 0);
@@ -792,7 +854,7 @@ function resetTrendInsight() {
 function getRiskKpiSummary() {
   const fromAllSummary = kpiState.allSummary.length > 0;
   const sourceRows = fromAllSummary
-    ? kpiState.allSummary.map((item) => ({ gap: item.gap, ratio: item.ratio }))
+    ? getAllSummaryDisplayRows().map((item) => ({ gap: item.gap, ratio: item.ratio }))
     : applyUnitFilter(kpiState.currentRows).map((row) => ({ gap: rowGap(row), ratio: row.ratio }));
 
   if (!sourceRows.length) {
@@ -1263,6 +1325,7 @@ async function loadInitialKpiData() {
       "ทุกหน่วยบริการตามบัญชี สสอ.ปากช่อง"
     );
     kpiEls.unit.options[0].value = "ALL";
+    renderAllSummaryUnitOptions();
 
     kpiEls.serviceUnitCount.textContent = formatNumber(kpiState.hospitals.length);
     setKpiStatus(`เชื่อมต่อ HDC สำเร็จ กรองเหลือหน่วยบริการตามบัญชี สสอ.ปากช่อง ${kpiState.hospitals.length} แห่ง`, "success");
@@ -1332,6 +1395,21 @@ function renderCatalogOptions() {
   fillYearsForCatalog(selected);
 }
 
+function renderAllSummaryUnitOptions() {
+  if (!kpiEls.allSummaryUnit) return;
+  const selected = kpiEls.allSummaryUnit.value || "ALL";
+  setOptions(
+    kpiEls.allSummaryUnit,
+    kpiState.hospitals,
+    (hospital) => hospital.code,
+    (hospital) => hospital.code_name || `${hospital.code} - ${hospital.name}`,
+    "ทุกหน่วยบริการ (ภาพรวม)"
+  );
+  kpiEls.allSummaryUnit.options[0].value = "ALL";
+  const hasSelected = Array.from(kpiEls.allSummaryUnit.options).some((option) => option.value === selected);
+  kpiEls.allSummaryUnit.value = hasSelected ? selected : "ALL";
+}
+
 async function processAllKpis() {
   const reports = kpiState.reports.filter((report) => report.report_code);
   if (!reports.length) return;
@@ -1340,15 +1418,24 @@ async function processAllKpis() {
   kpiState.allSummary = [];
   kpiEls.allSummary.hidden = false;
   kpiEls.allTableBody.innerHTML = "";
+  if (kpiEls.allSummaryUnit && kpiEls.unit?.value) {
+    const selectedUnit = kpiEls.unit.value;
+    const hasOption = Array.from(kpiEls.allSummaryUnit.options).some((option) => option.value === selectedUnit);
+    kpiEls.allSummaryUnit.value = hasOption ? selectedUnit : "ALL";
+  }
+  renderAllSummaryScope();
 
   for (let index = 0; index < reports.length; index += 1) {
     const report = reports[index];
     setKpiStatus(`กำลังประมวลผล KPI ${index + 1}/${reports.length}: ${report.report_name}`);
     try {
-      const { rows } = await fetchProviderRows(report.report_code);
+      const { rows, dateCom } = await fetchProviderRows(report.report_code);
       const summary = summarizeRows(rows);
       kpiState.allSummary.push({
+        reportCode: report.report_code,
         name: report.report_name,
+        rows,
+        dateCom,
         units: rows.length,
         target: summary.target,
         result: summary.result,
@@ -1358,7 +1445,10 @@ async function processAllKpis() {
       });
     } catch (error) {
       kpiState.allSummary.push({
+        reportCode: report.report_code,
         name: report.report_name,
+        rows: [],
+        dateCom: "",
         units: 0,
         target: null,
         result: null,
@@ -1379,10 +1469,12 @@ async function processAllKpis() {
 }
 
 function renderAllSummary() {
-  kpiEls.allTableBody.innerHTML = kpiState.allSummary.map((item) => `
+  renderAllSummaryScope();
+  const rows = getAllSummaryDisplayRows();
+  kpiEls.allTableBody.innerHTML = rows.map((item) => `
     <tr>
       <td>${item.name}</td>
-      <td>${formatNumber(item.units)}</td>
+      <td>${item.unitsLabel || formatNumber(item.units)}</td>
       <td>${formatNumber(item.target)}</td>
       <td>${formatNumber(item.result)}</td>
       <td><span class="gap-pill ${gapClass(item.gap)}">${formatGap(item.gap)}</span></td>
@@ -1500,14 +1592,14 @@ async function checkAllServicePlans() {
 
 function exportCsv() {
   const rows = applyUnitFilter(kpiState.currentRows);
-  if (!rows.length && !kpiState.allSummary.length) return;
+  const useSummary = kpiState.allSummary.length > 0 && kpiEls.allSummary?.hidden === false;
+  if (!useSummary && !rows.length) return;
 
-  const useSummary = !rows.length;
   const header = useSummary
-    ? ["kpi", "units", "target", "result", "gap", "ratio", "status"]
+    ? ["kpi", "scope", "target", "result", "gap", "ratio", "status"]
     : ["report", "hospcode", "hospital", "target", "result", "gap", "ratio", "datecom"];
   const body = useSummary
-    ? kpiState.allSummary.map((item) => [item.name, item.units, item.target, item.result, item.gap, item.ratio, item.status])
+    ? getAllSummaryDisplayRows().map((item) => [item.name, item.unitsLabel || item.units, item.target, item.result, item.gap, item.ratio, item.status])
     : rows.map((row) => [kpiState.currentReportName, row.code, row.name, row.target, row.result, rowGap(row), row.ratio, kpiState.lastDateCom]);
 
   const csv = [header, ...body]
@@ -1517,7 +1609,9 @@ function exportCsv() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = useSummary ? "pakchong-kpi-summary.csv" : "pakchong-kpi-provider.csv";
+  const selectedUnit = useSummary ? getAllSummaryUnitCode() : kpiEls.unit.value;
+  const suffix = selectedUnit && selectedUnit !== "ALL" ? `-${selectedUnit}` : "";
+  link.download = useSummary ? `pakchong-kpi-summary${suffix}.csv` : `pakchong-kpi-provider${suffix}.csv`;
   link.click();
   URL.revokeObjectURL(url);
 }
@@ -1733,6 +1827,10 @@ kpiEls.catalog?.addEventListener("change", async () => {
 kpiEls.year?.addEventListener("change", loadKpiReports);
 kpiEls.report?.addEventListener("change", loadCurrentKpi);
 kpiEls.unit?.addEventListener("change", renderCurrentRows);
+kpiEls.allSummaryUnit?.addEventListener("change", () => {
+  renderAllSummary();
+  renderDistrictBrief();
+});
 kpiEls.load?.addEventListener("click", loadCurrentKpi);
 kpiEls.processAll?.addEventListener("click", processAllKpis);
 kpiEls.checkServicePlan?.addEventListener("click", checkAllServicePlans);
