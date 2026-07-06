@@ -4,6 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>HDC Service - สาธารณสุขอำเภอปากช่อง</title>
+  <meta name="description" content="ระบบติดตาม KPI และ Service Plan รายหน่วยบริการของสำนักงานสาธารณสุขอำเภอปากช่อง เชื่อมโยงข้อมูล HDC Public จังหวัดนครราชสีมา">
+  <meta name="theme-color" content="#0f9f83">
+  <meta property="og:title" content="HDC Service - สสอ.ปากช่อง">
+  <meta property="og:description" content="ติดตาม KPI และ Service Plan รายหน่วยบริการ 24 แห่งตามบัญชี สสอ.ปากช่อง">
+  <meta property="og:type" content="website">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23109d80'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='Arial,sans-serif' font-size='11' font-weight='700' fill='white'%3EHDC%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -324,9 +329,16 @@
         <span class="spark" data-icon="chart"></span>
         <div>
           <h2>ข้อมูล KPI/Service Plan รายหน่วยบริการ อำเภอปากช่อง</h2>
-          <p>ดึงข้อมูลสดจาก HDC Public จังหวัดนครราชสีมา กรองเฉพาะ 24 หน่วยบริการตามบัญชี สสอ.ปากช่อง</p>
+          <p>เชื่อมโยงข้อมูลจาก HDC Public จังหวัดนครราชสีมา กรองเฉพาะ 24 หน่วยบริการตามบัญชี สสอ.ปากช่อง</p>
         </div>
-        <a class="source-badge" href="https://hdc.moph.go.th/nma/public/main" target="_blank" rel="noopener">HDC Public Realtime</a>
+        <a class="source-badge" id="dataSourceBadge" href="https://hdc.moph.go.th/nma/public/main" target="_blank" rel="noopener">กำลังตรวจแหล่งข้อมูล</a>
+      </div>
+
+      <div class="data-assurance" aria-label="สถานะแหล่งข้อมูล">
+        <span><strong>พื้นที่</strong> จังหวัด 30 อำเภอ 3021</span>
+        <span><strong>หน่วยบริการ</strong> 24 แห่งตามบัญชี สสอ.ปากช่อง</span>
+        <span id="snapshotMeta"><strong>แหล่งข้อมูล</strong> HDC Public</span>
+        <span id="syncAuditMeta"><strong>Sync</strong> กำลังตรวจสอบ</span>
       </div>
 
       <p class="data-status" id="tableDataStatus">กำลังตรวจสถานะข้อมูล...</p>
@@ -366,11 +378,19 @@
         </label>
         <button class="data-button primary" type="button" id="loadKpiButton">โหลดข้อมูลรายหน่วย</button>
         <button class="data-button" type="button" id="processAllKpiButton">ประมวลผลทั้งหมด</button>
-        <button class="data-button" type="button" id="checkServicePlanButton">ตรวจครบทุก Service Plan</button>
+        <button class="data-button" type="button" id="checkServicePlanButton">ตรวจครบทุกสาขา</button>
         <button class="data-button ghost" type="button" id="exportKpiButton">ส่งออก CSV</button>
       </div>
 
       <div class="data-status" id="kpiStatus">กำลังเตรียมการเชื่อมต่อข้อมูล HDC...</div>
+
+      <div class="sync-audit-card" id="syncAuditCard" hidden>
+        <div>
+          <strong id="syncAuditTitle">สถานะ Sync HDC</strong>
+          <p id="syncAuditDetail">กำลังอ่านผลตรวจการ sync...</p>
+        </div>
+        <span id="syncAuditBadge">-</span>
+      </div>
 
       <div class="data-metrics" aria-label="สรุปผล KPI">
         <article>
@@ -650,7 +670,7 @@
         <button class="iq-close" id="iqClose" type="button" data-iq-close aria-label="ปิด iQ">×</button>
       </div>
       <div class="iq-messages" id="iqMessages" aria-live="polite">
-        <div class="iq-message bot">สวัสดีครับ ผม iQ ขับเคลื่อนด้วย Claude AI — ถามได้เลยครับ เช่น "วิเคราะห์ข้อมูลตอนนี้", "หน่วยไหนต่ำสุด", "สรุป Service Plan"</div>
+        <div class="iq-message bot">สวัสดีครับ ผม iQ ผู้ช่วยวิเคราะห์ข้อมูล HDC ปากช่อง ถามได้เลย เช่น "วิเคราะห์ข้อมูลตอนนี้", "หน่วยไหนต่ำสุด", "สรุป Service Plan"</div>
       </div>
       <form class="iq-form" id="iqForm">
         <input id="iqInput" type="text" autocomplete="off" placeholder="ถาม iQ เช่น สรุปข้อมูลตอนนี้">

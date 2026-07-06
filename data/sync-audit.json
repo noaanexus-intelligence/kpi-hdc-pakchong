@@ -1,0 +1,97 @@
+{
+  "generatedAt": "2026-07-06T07:21:34.423Z",
+  "year": "2569",
+  "status": "stale",
+  "summary": {
+    "total": 3,
+    "synced": 1,
+    "stale": 2,
+    "missing": 0,
+    "errors": 0,
+    "snapshotGeneratedAt": "2026-06-22T09:07:49.335Z",
+    "snapshotAgeHours": 334.23,
+    "snapshotErrorCount": 203,
+    "snapshotEntries": 686
+  },
+  "checks": [
+    {
+      "group": "Service Plan สาขาอายุรกรรม",
+      "name": "อัตราตายผู้ป่วยติดเชื้อในกระแสเลือดแบบรุนแรงชนิด community-acquired",
+      "reportCode": "00366a85bd3c2b6932a228df29137252",
+      "path": "reports/province/data/00366a85bd3c2b6932a228df29137252?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
+      "status": "stale",
+      "live": {
+        "datecom": "03 กรกฎาคม 2569",
+        "units": 24,
+        "target": 193,
+        "result": 38,
+        "ratio": 19.6891
+      },
+      "snapshot": {
+        "datecom": "17 มิถุนายน 2569",
+        "units": 24,
+        "target": 210,
+        "result": 60,
+        "ratio": 28.5714
+      },
+      "diff": [
+        "datecom",
+        "target",
+        "result",
+        "ratio"
+      ],
+      "error": ""
+    },
+    {
+      "group": "Service Plan สาขาสุขภาพช่องปาก",
+      "name": "ร้อยละของเด็กอายุ 0-5 ปี ฟันดีไม่มีผุ (Cavity Free)",
+      "reportCode": "abt2t2k4z4xeqzytwbave",
+      "path": "reports/province/data/abt2t2k4z4xeqzytwbave?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
+      "status": "stale",
+      "live": {
+        "datecom": "06 กรกฎาคม 2569",
+        "units": 24,
+        "target": 4345,
+        "result": 3097,
+        "ratio": 71.2773
+      },
+      "snapshot": {
+        "datecom": "22 มิถุนายน 2569",
+        "units": 24,
+        "target": 4348,
+        "result": 3065,
+        "ratio": 70.4922
+      },
+      "diff": [
+        "datecom",
+        "target",
+        "result",
+        "ratio"
+      ],
+      "error": ""
+    },
+    {
+      "group": "Service Plan สาขาโรคไม่ติดต่อ (NCD DM,HT,CVD)",
+      "name": "อัตราผู้ป่วยความดันโลหิตสูงและเบาหวานรายใหม่",
+      "reportCode": "418ae93a872547ebe2fbf0ff4f73e65e",
+      "path": "reports/province/data/418ae93a872547ebe2fbf0ff4f73e65e?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
+      "status": "synced",
+      "live": {
+        "datecom": "26 มีนาคม 2569",
+        "units": 24,
+        "target": 0,
+        "result": 0,
+        "ratio": null
+      },
+      "snapshot": {
+        "datecom": "26 มีนาคม 2569",
+        "units": 24,
+        "target": 0,
+        "result": 0,
+        "ratio": null
+      },
+      "diff": [],
+      "error": ""
+    }
+  ]
+}

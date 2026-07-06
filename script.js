@@ -148,6 +148,9 @@ const kpiState = {
   servicePlanCoverage: [],
   reportSourceCount: 0,
   reportSkippedCount: 0,
+  dataSource: "checking",
+  snapshotGeneratedAt: "",
+  syncAudit: null,
   lastDateCom: "",
   currentReportName: "",
   lastTrend: null
@@ -180,6 +183,13 @@ const kpiEls = {
   coverage: document.querySelector("#servicePlanCoverage"),
   coverageTableBody: document.querySelector("#servicePlanCoverageBody"),
   coverageTotal: document.querySelector("#coverageTotal"),
+  sourceBadge: document.querySelector("#dataSourceBadge"),
+  snapshotMeta: document.querySelector("#snapshotMeta"),
+  syncAuditMeta: document.querySelector("#syncAuditMeta"),
+  syncAuditCard: document.querySelector("#syncAuditCard"),
+  syncAuditTitle: document.querySelector("#syncAuditTitle"),
+  syncAuditDetail: document.querySelector("#syncAuditDetail"),
+  syncAuditBadge: document.querySelector("#syncAuditBadge"),
   servicePlanMenu: document.querySelector("#servicePlanMenu"),
   preventionMenu: document.querySelector("#preventionMenu"),
   serviceUnitCount: document.querySelector("#serviceUnitCount"),
@@ -248,6 +258,114 @@ function localApiPath(kind, path) {
   return `/api/${kind}/${path.replace(/^\/+/, "")}`;
 }
 
+function formatThaiDateTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("th-TH", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Bangkok"
+  });
+}
+
+function dataSourceLabel() {
+  if (kpiState.dataSource === "live") return "HDC Public สด";
+  if (kpiState.dataSource === "snapshot") return "Snapshot HDC Public";
+  if (kpiState.dataSource === "error") return "เชื่อมต่อข้อมูลไม่ได้";
+  return "กำลังตรวจแหล่งข้อมูล";
+}
+
+function updateDataSource(source) {
+  if (source) kpiState.dataSource = source;
+  const label = dataSourceLabel();
+  if (kpiEls.sourceBadge) {
+    kpiEls.sourceBadge.textContent = label;
+    kpiEls.sourceBadge.classList.toggle("live", kpiState.dataSource === "live");
+    kpiEls.sourceBadge.classList.toggle("snapshot", kpiState.dataSource === "snapshot");
+    kpiEls.sourceBadge.classList.toggle("error", kpiState.dataSource === "error");
+  }
+  if (kpiEls.snapshotMeta) {
+    const generated = formatThaiDateTime(kpiState.snapshotGeneratedAt);
+    const suffix = kpiState.dataSource === "snapshot" && generated ? ` อัปเดต ${generated}` : "";
+    kpiEls.snapshotMeta.innerHTML = `<strong>แหล่งข้อมูล</strong> ${label}${suffix}`;
+  }
+}
+
+function syncAuditLabel(status) {
+  if (status === "synced") return "ตรงกับ HDC";
+  if (status === "stale") return "Snapshot ล้าหลัง";
+  if (status === "missing") return "ยังไม่มีผลตรวจ";
+  return "ตรวจไม่สำเร็จ";
+}
+
+function syncAuditClass(status) {
+  if (status === "synced") return "synced";
+  if (status === "stale" || status === "missing") return "stale";
+  return "error";
+}
+
+function renderSyncAudit(audit) {
+  const status = audit?.status || "missing";
+  const label = syncAuditLabel(status);
+  const cssClass = syncAuditClass(status);
+
+  if (kpiEls.syncAuditMeta) {
+    const checkedAt = audit?.generatedAt ? ` ตรวจล่าสุด ${formatThaiDateTime(audit.generatedAt)}` : "";
+    kpiEls.syncAuditMeta.innerHTML = `<strong>Sync</strong> ${label}${checkedAt}`;
+  }
+
+  if (!kpiEls.syncAuditCard) return;
+  kpiEls.syncAuditCard.hidden = false;
+  kpiEls.syncAuditCard.classList.toggle("synced", cssClass === "synced");
+  kpiEls.syncAuditCard.classList.toggle("stale", cssClass === "stale");
+  kpiEls.syncAuditCard.classList.toggle("error", cssClass === "error");
+
+  if (kpiEls.syncAuditBadge) kpiEls.syncAuditBadge.textContent = label;
+
+  if (!audit) {
+    if (kpiEls.syncAuditTitle) kpiEls.syncAuditTitle.textContent = "ยังไม่มีผลตรวจ Sync";
+    if (kpiEls.syncAuditDetail) kpiEls.syncAuditDetail.textContent = "รัน node scripts/sync-audit.mjs หลัง refresh snapshot เพื่อสร้าง data/sync-audit.json";
+    return;
+  }
+
+  const summary = audit.summary || {};
+  const checkedAt = formatThaiDateTime(audit.generatedAt);
+  const snapshotAt = formatThaiDateTime(summary.snapshotGeneratedAt);
+  const issueReports = (audit.checks || [])
+    .filter((item) => item.status !== "synced")
+    .slice(0, 2)
+    .map((item) => item.name)
+    .join(", ");
+
+  if (kpiEls.syncAuditTitle) {
+    kpiEls.syncAuditTitle.textContent = status === "synced"
+      ? "ข้อมูล snapshot ตรงกับ HDC live"
+      : status === "stale"
+        ? "ข้อมูล snapshot ไม่ตรงกับ HDC live"
+        : "ตรวจ Sync ไม่สำเร็จ";
+  }
+
+  if (kpiEls.syncAuditDetail) {
+    const base = `ตรวจ ${summary.synced || 0}/${summary.total || 0} รายงาน, snapshot ${snapshotAt || "-"}, audit ${checkedAt || "-"}`;
+    kpiEls.syncAuditDetail.textContent = issueReports ? `${base} | ต้องตรวจ: ${issueReports}` : base;
+  }
+}
+
+async function loadSyncAudit() {
+  try {
+    const response = await fetch("data/sync-audit.json", { cache: "no-store" });
+    if (!response.ok) {
+      renderSyncAudit(null);
+      return;
+    }
+    kpiState.syncAudit = await response.json();
+    renderSyncAudit(kpiState.syncAudit);
+  } catch (_error) {
+    renderSyncAudit(null);
+  }
+}
+
 // Snapshot fallback — เมื่อเรียก proxy ไม่ได้ (ออนไลน์บน Vercel เข้า HDC จาก IP ตปท.ไม่ได้)
 // อ่านข้อมูลที่ดึงไว้ล่วงหน้าจากเครื่อง IP ไทย (สร้างด้วย scripts/snapshot.mjs)
 let snapshotManifestPromise = null;
@@ -255,6 +373,10 @@ function loadSnapshotManifest() {
   if (!snapshotManifestPromise) {
     snapshotManifestPromise = fetch("data/snapshot/manifest.json", { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
+      .then((manifest) => {
+        if (manifest?.generatedAt) kpiState.snapshotGeneratedAt = manifest.generatedAt;
+        return manifest;
+      })
       .catch(() => null);
   }
   return snapshotManifestPromise;
@@ -266,7 +388,9 @@ async function getSnapshot(kind, path) {
   if (!file) return null;
   try {
     const response = await fetch(`data/snapshot/${file}`, { cache: "no-store" });
-    return response.ok ? await response.json() : null;
+    if (!response.ok) return null;
+    updateDataSource("snapshot");
+    return await response.json();
   } catch (_error) {
     return null;
   }
@@ -287,6 +411,7 @@ async function fetchProxy(kind, path, timeoutMs) {
       headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
     });
     if (!response.ok) throw new Error(await response.text());
+    updateDataSource("live");
     return await response.json();
   } finally {
     clearTimeout(timer);
@@ -308,7 +433,12 @@ async function hdcGet(kind, path) {
   const snapshot = await getSnapshot(kind, path);
   if (snapshot) return snapshot;
   // path ที่ไม่มีใน snapshot (เช่นเปลี่ยนปี/รายงานนอกชุด) -> ลอง proxy แบบมี timeout สั้น
-  return await fetchProxy(kind, path, 8000);
+  try {
+    return await fetchProxy(kind, path, 8000);
+  } catch (error) {
+    updateDataSource("error");
+    throw error;
+  }
 }
 
 function optionText(item) {
@@ -961,6 +1091,7 @@ async function loadCurrentKpi({ preferLive = true } = {}) {
   } catch (error) {
     kpiState.currentRows = [];
     renderCurrentRows();
+    updateDataSource("error");
     setKpiStatus(`โหลดข้อมูลไม่สำเร็จ: ${error.message}`, "error");
     renderTableDataStatus();
   } finally {
@@ -1139,6 +1270,7 @@ async function loadInitialKpiData() {
     await loadKpiReports({ preferLive: false });
   } catch (error) {
     kpiEls.tableBody.innerHTML = '<tr><td colspan="7">เชื่อมต่อ HDC API ไม่สำเร็จ</td></tr>';
+    updateDataSource("error");
     setKpiStatus(`เชื่อมต่อ HDC API ไม่สำเร็จ: ${error.message}`, "error");
   }
 }
@@ -1528,6 +1660,7 @@ function buildKpiContext() {
 }
 
 async function askClaude(question) {
+  if (IS_LOCAL) throw new Error("local assistant mode");
   const response = await fetch("/api/claude", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -1632,6 +1765,9 @@ document.addEventListener("click", async (event) => {
   await loadKpiReports();
   document.querySelector("#kpiDataPanel")?.scrollIntoView({ behavior: "smooth", block: "start" });
 });
+
+updateDataSource();
+loadSyncAudit();
 
 if (window.location.protocol === "file:") {
   showLocalServerRequired();

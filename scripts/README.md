@@ -36,10 +36,23 @@ HDC API (`api-hdc.moph.go.th`, `api-center-hdc.moph.go.th`) **เข้าถึ
   เก็บเป็น `data/snapshot/snap_*.json` + `manifest.json` (map `"<kind> <path>" → ไฟล์`)
   - รันเอง: `node scripts/snapshot.mjs`  (ต้องอยู่ในไทย)
   - retry 5xx อัตโนมัติ 4 ครั้ง
+- `sync-audit.mjs` — ตรวจ control reports กับ HDC live แล้วสร้าง `data/sync-audit.json`
+  เพื่อให้หน้าเว็บแสดงสถานะว่า snapshot ยังตรงกับ HDC live หรือเริ่ม stale
+  - รันเองหลัง snapshot: `node scripts/sync-audit.mjs`
 - `refresh-and-push.ps1` — รัน snapshot แล้ว `git commit` + `git push` (สำหรับ Task Scheduler)
+  ตอนนี้จะรัน `sync-audit.mjs` ต่อท้าย และ commit ทั้ง `data/snapshot` กับ `data/sync-audit.json`
 
 > หมายเหตุ: บางรายงาน HDC ต้นทาง **พังเอง** (ตอบ 502/500 แม้ดึงจากไทย) รายงานพวกนั้นจะไม่มีใน snapshot
 > = ข้อมูลครบ "เท่าที่ต้นทางมีจริง" ซึ่งเท่ากับที่เปิดสดในเครื่องไทยจะได้
+
+## สถานะ Sync บนหน้าเว็บ
+
+หน้าเว็บอ่าน `data/sync-audit.json` แล้วแสดงสถานะ:
+
+- `ตรงกับ HDC` — control reports ที่ตรวจตรงกับ HDC live
+- `Snapshot ล้าหลัง` — snapshot ต่างจาก HDC live ต้อง refresh snapshot แล้ว push
+- `ยังไม่มีผลตรวจ` — ยังไม่ได้รัน `node scripts/sync-audit.mjs`
+- `ตรวจไม่สำเร็จ` — เรียก HDC live ไม่ได้หรือ audit ล้มเหลว
 
 ## ตั้ง Task Scheduler ให้รันทุกคืน (รันครั้งเดียวใน PowerShell)
 
