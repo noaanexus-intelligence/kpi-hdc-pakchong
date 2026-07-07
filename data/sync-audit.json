@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-07-06T07:21:34.423Z",
+  "generatedAt": "2026-07-07T09:08:45.108Z",
   "year": "2569",
-  "status": "stale",
+  "status": "synced",
   "summary": {
     "total": 3,
-    "synced": 1,
-    "stale": 2,
+    "synced": 3,
+    "stale": 0,
     "missing": 0,
     "errors": 0,
-    "snapshotGeneratedAt": "2026-06-22T09:07:49.335Z",
-    "snapshotAgeHours": 334.23,
-    "snapshotErrorCount": 203,
+    "snapshotGeneratedAt": "2026-07-07T09:08:44.448Z",
+    "snapshotAgeHours": 0,
+    "snapshotErrorCount": 204,
     "snapshotEntries": 686
   },
   "checks": [
@@ -19,7 +19,7 @@
       "name": "อัตราตายผู้ป่วยติดเชื้อในกระแสเลือดแบบรุนแรงชนิด community-acquired",
       "reportCode": "00366a85bd3c2b6932a228df29137252",
       "path": "reports/province/data/00366a85bd3c2b6932a228df29137252?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
-      "status": "stale",
+      "status": "synced",
       "live": {
         "datecom": "03 กรกฎาคม 2569",
         "units": 24,
@@ -28,18 +28,13 @@
         "ratio": 19.6891
       },
       "snapshot": {
-        "datecom": "17 มิถุนายน 2569",
+        "datecom": "03 กรกฎาคม 2569",
         "units": 24,
-        "target": 210,
-        "result": 60,
-        "ratio": 28.5714
+        "target": 193,
+        "result": 38,
+        "ratio": 19.6891
       },
-      "diff": [
-        "datecom",
-        "target",
-        "result",
-        "ratio"
-      ],
+      "diff": [],
       "error": ""
     },
     {
@@ -47,27 +42,22 @@
       "name": "ร้อยละของเด็กอายุ 0-5 ปี ฟันดีไม่มีผุ (Cavity Free)",
       "reportCode": "abt2t2k4z4xeqzytwbave",
       "path": "reports/province/data/abt2t2k4z4xeqzytwbave?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
-      "status": "stale",
+      "status": "synced",
       "live": {
-        "datecom": "06 กรกฎาคม 2569",
+        "datecom": "07 กรกฎาคม 2569",
         "units": 24,
-        "target": 4345,
-        "result": 3097,
-        "ratio": 71.2773
+        "target": 4349,
+        "result": 3099,
+        "ratio": 71.2578
       },
       "snapshot": {
-        "datecom": "22 มิถุนายน 2569",
+        "datecom": "07 กรกฎาคม 2569",
         "units": 24,
-        "target": 4348,
-        "result": 3065,
-        "ratio": 70.4922
+        "target": 4349,
+        "result": 3099,
+        "ratio": 71.2578
       },
-      "diff": [
-        "datecom",
-        "target",
-        "result",
-        "ratio"
-      ],
+      "diff": [],
       "error": ""
     },
     {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-22T09:07:49.335Z",
+  "generatedAt": "2026-07-07T09:08:44.448Z",
   "year": "2569",
   "entries": {
     "hdc lookup/kpi/catalog": "snap_0001.json",
@@ -249,9 +249,9 @@
     "hdc reports/province/data/c46937050a3fa5198e5cd139578a3732?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D": "snap_0245.json",
     "hdc reports/province/data/e92321deb9e2bc3b24d453d6122b8827?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D": "snap_0246.json",
     "hdc reports/province/data/a35f2d61161b86725cccf061b5cbea04?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D": "snap_0247.json",
-    "hdc reports/province/data/5087190fa0a3c28974fdde7fd1443d5e?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D": "snap_0248.json",
-    "hdc reports/province/data/xwzzqarxw13v9yyxa6g4s?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D": "snap_0249.json",
-    "hdc reports/province/data/lxcpqbnca7h0gy98mf763?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D": "snap_0250.json",
+    "hdc reports/province/data/xwzzqarxw13v9yyxa6g4s?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D": "snap_0248.json",
+    "hdc reports/province/data/lxcpqbnca7h0gy98mf763?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D": "snap_0249.json",
+    "hdc reports/province/data/qttc1p0sut0j6i9xxers8?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D": "snap_0250.json",
     "hdc reports/province/data/4f7d8042fb0a064b25f29a48f6ccd23f?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D": "snap_0251.json",
     "hdc reports/province/data/96e32d575103002017729beef422b5e3?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D": "snap_0252.json",
     "hdc reports/province/data/558ea584f4a02ff17f227a6347de117d?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D": "snap_0253.json",
@@ -689,7 +689,7 @@
     "hdc reports/province/data/61c1e6a35fe0520dd214947166b96aa3?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D": "snap_0685.json",
     "hdc reports/province/data/fcd684032c7218d76edb3317604d14ac?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D": "snap_0686.json"
   },
-  "errorCount": 203,
+  "errorCount": 204,
   "errors": [
     {
       "key": "hdc reports/province/data/09cf07164c9b7cfbfe724bee8c6b20c3?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
@@ -1104,6 +1104,10 @@
       "error": "HTTP 502"
     },
     {
+      "key": "hdc reports/province/data/45984fz9g4ib6abh9cnud?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
+      "error": "HTTP 502"
+    },
+    {
       "key": "hdc reports/province/data/eefd31ab993640a98206360a843fbe37?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
       "error": "HTTP 502"
     },
@@ -1189,7 +1193,7 @@
     },
     {
       "key": "hdc reports/province/data/t0negpef28xnffraqahfn?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
-      "error": "HTTP 500"
+      "error": "HTTP 502"
     },
     {
       "key": "hdc reports/province/data/f65f34f9f8eae331c9c7c1ed6fb4a765?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
