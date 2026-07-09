@@ -74,6 +74,7 @@ const MAX_TRIES = 4; // upstream HDC flaky — retry 5xx/timeout
 // HTTP 500/502 จาก HDC ต้นทางมักเป็นปัญหาชั่วคราว (ดู scripts/README.md) — รอนานขึ้นกว่า error อื่นก่อน retry
 // เป็นแค่ background sync (รันแยกจากหน้าเว็บหลักเสมอ) ดังนั้นรอนานขึ้นตรงนี้ไม่กระทบผู้ใช้ที่เปิดหน้าเว็บ
 const UPSTREAM_5XX_BACKOFF_MS = [2000, 5000, 10000];
+const FETCH_TIMEOUT_MS = 15000; // ตัด request ที่ค้าง/ไม่ตอบ ไม่ให้รอบ snapshot ค้างนาน (fail เร็ว -> retry เร็ว)
 
 async function snap(kind, path) {
   const key = `${kind} ${path}`;
@@ -82,7 +83,7 @@ async function snap(kind, path) {
   let lastErr = "";
   for (let attempt = 1; attempt <= MAX_TRIES; attempt += 1) {
     try {
-      const res = await fetch(target, { headers: UPSTREAM_HEADERS });
+      const res = await fetch(target, { headers: UPSTREAM_HEADERS, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
       if (!res.ok) {
         lastErr = `HTTP ${res.status}`;
         if (res.status >= 500 && attempt < MAX_TRIES) {
@@ -107,7 +108,7 @@ async function snap(kind, path) {
     }
   }
   errors.push({ key, error: lastErr });
-  console.error(`  ✗ ${key} -> ${lastErr} (หลัง ${MAX_TRIES} ครั้ง)`);
+  console.error(`  ✗ ${key.split("?")[0]} -> ${lastErr} (หลัง ${MAX_TRIES} ครั้ง)`);
   return null;
 }
 

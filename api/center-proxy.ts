@@ -33,6 +33,7 @@ export default async (req: Request) => {
         Accept: "application/json,*/*",
         "Cache-Control": "no-cache",
       },
+      signal: AbortSignal.timeout(10000),
     });
     const body = await upstream.arrayBuffer();
     const ct = upstream.headers.get("Content-Type") ?? "application/json";
