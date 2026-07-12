@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-11T01:01:07.840Z",
+  "generatedAt": "2026-07-12T01:00:59.133Z",
   "year": "2569",
   "status": "synced",
   "summary": {
@@ -8,7 +8,7 @@
     "stale": 0,
     "missing": 0,
     "errors": 0,
-    "snapshotGeneratedAt": "2026-07-11T01:01:07.088Z",
+    "snapshotGeneratedAt": "2026-07-12T01:00:58.601Z",
     "snapshotAgeHours": 0,
     "snapshotErrorCount": 205,
     "snapshotEntries": 685
@@ -21,18 +21,18 @@
       "path": "reports/province/data/00366a85bd3c2b6932a228df29137252?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
       "status": "synced",
       "live": {
-        "datecom": "03 กรกฎาคม 2569",
+        "datecom": "11 กรกฎาคม 2569",
         "units": 24,
-        "target": 193,
-        "result": 38,
-        "ratio": 19.6891
+        "target": 204,
+        "result": 39,
+        "ratio": 19.1176
       },
       "snapshot": {
-        "datecom": "03 กรกฎาคม 2569",
+        "datecom": "11 กรกฎาคม 2569",
         "units": 24,
-        "target": 193,
-        "result": 38,
-        "ratio": 19.6891
+        "target": 204,
+        "result": 39,
+        "ratio": 19.1176
       },
       "diff": [],
       "error": ""
@@ -44,14 +44,14 @@
       "path": "reports/province/data/abt2t2k4z4xeqzytwbave?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
       "status": "synced",
       "live": {
-        "datecom": "10 กรกฎาคม 2569",
+        "datecom": "11 กรกฎาคม 2569",
         "units": 24,
         "target": 4335,
         "result": 3077,
         "ratio": 70.9804
       },
       "snapshot": {
-        "datecom": "10 กรกฎาคม 2569",
+        "datecom": "11 กรกฎาคม 2569",
         "units": 24,
         "target": 4335,
         "result": 3077,
