@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T01:02:41.576Z",
+  "generatedAt": "2026-07-15T01:00:46.259Z",
   "year": "2569",
   "status": "synced",
   "summary": {
@@ -8,7 +8,7 @@
     "stale": 0,
     "missing": 0,
     "errors": 0,
-    "snapshotGeneratedAt": "2026-07-14T01:02:40.876Z",
+    "snapshotGeneratedAt": "2026-07-15T01:00:45.544Z",
     "snapshotAgeHours": 0,
     "snapshotErrorCount": 205,
     "snapshotEntries": 685
@@ -44,18 +44,18 @@
       "path": "reports/province/data/abt2t2k4z4xeqzytwbave?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
       "status": "synced",
       "live": {
-        "datecom": "13 กรกฎาคม 2569",
+        "datecom": "14 กรกฎาคม 2569",
         "units": 24,
-        "target": 4337,
-        "result": 3080,
-        "ratio": 71.0168
+        "target": 4332,
+        "result": 3078,
+        "ratio": 71.0526
       },
       "snapshot": {
-        "datecom": "13 กรกฎาคม 2569",
+        "datecom": "14 กรกฎาคม 2569",
         "units": 24,
-        "target": 4337,
-        "result": 3080,
-        "ratio": 71.0168
+        "target": 4332,
+        "result": 3078,
+        "ratio": 71.0526
       },
       "diff": [],
       "error": ""
