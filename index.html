@@ -415,7 +415,7 @@
           <strong id="metricResult">-</strong>
         </article>
         <article>
-          <span>ร้อยละเฉลี่ย</span>
+          <span id="metricRatioLabel">ร้อยละเฉลี่ย</span>
           <strong id="metricRatio">-</strong>
         </article>
         <article>
@@ -430,9 +430,16 @@
             <h3 id="approvedChartTitle">กราฟแท่งแนวตั้งร้อยละรายหน่วยบริการ</h3>
             <p id="approvedChartNote">คำนวณจากตัวตั้งและตัวหารตามสูตร HDC ที่ตรวจแล้ว</p>
           </div>
-          <strong id="approvedChartSource">Snapshot HDC</strong>
+          <div class="approved-chart-tools">
+            <label id="approvedMetricSelector" hidden>
+              <span>ชุดข้อมูลกราฟจาก HDC</span>
+              <select id="approvedMetricSelect"></select>
+            </label>
+            <strong id="approvedChartSource">Snapshot HDC</strong>
+          </div>
         </div>
         <div class="approved-chart-list" id="approvedChartList"></div>
+        <div class="approved-chart-legend" id="approvedChartLegend" hidden></div>
       </section>
 
       <div class="insight-panel" id="kpiInsightPanel" aria-label="Insight รายงานที่เลือก">
@@ -476,7 +483,7 @@
               <th id="tableTargetLabel">เป้าหมาย</th>
               <th id="tableResultLabel">ผลงาน</th>
               <th id="tableGapLabel">Gap</th>
-              <th>ร้อยละ</th>
+              <th id="tableRatioLabel">ร้อยละ</th>
               <th>วันที่ประมวลผล</th>
             </tr>
           </thead>

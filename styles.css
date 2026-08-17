@@ -2423,6 +2423,17 @@ main {
   color: #8a5b00;
 }
 
+.approved-kpi-notice.hdc-direct {
+  border-color: #9ec8e8;
+  background: #eff7fd;
+  color: #244f70;
+}
+
+.approved-kpi-notice.hdc-direct strong,
+.approved-kpi-notice.hdc-direct > span {
+  color: #17679f;
+}
+
 .approved-bar-chart {
   margin: 16px 0 18px;
   padding: 18px;
@@ -2454,6 +2465,39 @@ main {
 .approved-chart-heading > strong {
   color: #087963;
   font-size: 12px;
+}
+
+.approved-chart-tools {
+  display: flex;
+  flex: none;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.approved-chart-tools > strong {
+  color: #087963;
+  font-size: 12px;
+}
+
+.approved-chart-tools label {
+  display: grid;
+  gap: 4px;
+  color: #52687a;
+  font-size: 11px;
+}
+
+.approved-chart-tools label[hidden] {
+  display: none;
+}
+
+.approved-chart-tools select {
+  width: min(430px, 42vw);
+  min-height: 36px;
+  border: 1px solid #bfd0da;
+  border-radius: 8px;
+  background: #fff;
+  color: #173047;
+  font: inherit;
 }
 
 .approved-chart-list {
@@ -2537,6 +2581,36 @@ main {
   background: #0a8f76;
 }
 
+.approved-chart-bar.performance-1,
+.approved-legend-item i.performance-1 {
+  border-color: #a92f37;
+  background: #d94b55;
+}
+
+.approved-chart-bar.performance-2,
+.approved-legend-item i.performance-2 {
+  border-color: #b95b18;
+  background: #ef812f;
+}
+
+.approved-chart-bar.performance-3,
+.approved-legend-item i.performance-3 {
+  border-color: #b78a10;
+  background: #e8bd35;
+}
+
+.approved-chart-bar.performance-4,
+.approved-legend-item i.performance-4 {
+  border-color: #5f9f42;
+  background: #8bc96d;
+}
+
+.approved-chart-bar.performance-5,
+.approved-legend-item i.performance-5 {
+  border-color: #167844;
+  background: #2ca568;
+}
+
 .approved-chart-bar.no-data {
   height: 0 !important;
   min-height: 0;
@@ -2567,6 +2641,38 @@ main {
   font-size: 11px;
 }
 
+.approved-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 12px 0 0 54px;
+  color: #42586b;
+  font-size: 11px;
+}
+
+.approved-chart-legend[hidden] {
+  display: none;
+}
+
+.approved-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.approved-legend-item i {
+  width: 11px;
+  height: 11px;
+  border: 1px solid;
+  border-radius: 2px;
+}
+
+.approved-legend-note {
+  flex-basis: 100%;
+  color: #68798a;
+}
+
 .approved-chart-placeholder {
   display: grid;
   gap: 5px;
@@ -2594,6 +2700,16 @@ main {
   .approved-chart-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .approved-chart-tools {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .approved-chart-tools select {
+    width: 100%;
   }
 
   .approved-bar-chart {
@@ -2630,6 +2746,10 @@ main {
   }
 
   .approved-chart-help {
+    margin-left: 46px;
+  }
+
+  .approved-chart-legend {
     margin-left: 46px;
   }
 }

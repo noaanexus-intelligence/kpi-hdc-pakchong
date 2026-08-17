@@ -1,12 +1,13 @@
 {
-  "version": 2,
+  "version": 3,
   "budgetYear": "2569",
   "selectionTotal": 62,
   "approvedTotal": 13,
+  "directHdcTotal": 49,
   "pendingReviewTotal": 49,
   "reviewedAt": "2026-08-17",
   "source": "HDC Public จังหวัดนครราชสีมา snapshot 24 กรกฎาคม 2569 08:03",
-  "notice": "แสดง KPI รพ.สต. ที่คัดเลือกครบ 62 ข้อ โดยคำนวณเฉพาะ 13 ข้อที่ยืนยันสูตรหลักแล้ว อีก 49 ข้อแสดงรายการและข้อมูลดิบแต่ไม่สร้างร้อยละหรือกราฟจนกว่าจะยืนยันสูตรหลัก",
+  "notice": "แสดง KPI รพ.สต. ครบ 62 ข้อ: 13 ข้อตรวจสูตรและคำนวณเทียบได้ ส่วน 49 ข้อใช้ค่าผลลัพธ์ F ที่ HDC คำนวณให้โดยตรง และแสดงกราฟเฉพาะคอลัมน์ที่ HDC ระบุ is_chart=1",
   "items": [
     {
       "order": 1,
@@ -18,8 +19,48 @@
       "formulaCount": 5,
       "formulaText": "F3: (#{result}/#{target})*100 | F6: (#{resultq1}/#{targetq1})*100 | F9: (#{resultq2}/#{targetq2})*100 | F12: (#{resultq3}/#{targetq3})*100 | F15: (#{resultq4}/#{targetq4})*100",
       "variables": "result, target, resultq1, targetq1, resultq2, targetq2, resultq3, targetq3, resultq4, targetq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{resultq1}/#{targetq1})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq2}/#{targetq2})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{resultq3}/#{targetq3})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "targetq3",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{resultq4}/#{targetq4})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "targetq4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 2,
@@ -31,8 +72,48 @@
       "formulaCount": 5,
       "formulaText": "F3: (#{result}/#{target})*100 | F6: (#{resultq1}/#{targetq1})*100 | F9: (#{resultq2}/#{targetq2})*100 | F12: (#{resultq3}/#{targetq3})*100 | F15: (#{resultq4}/#{targetq4})*100",
       "variables": "result, target, resultq1, targetq1, resultq2, targetq2, resultq3, targetq3, resultq4, targetq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{resultq1}/#{targetq1})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq2}/#{targetq2})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{resultq3}/#{targetq3})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "targetq3",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{resultq4}/#{targetq4})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "targetq4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 3,
@@ -44,8 +125,48 @@
       "formulaCount": 5,
       "formulaText": "F3: (#{result}/#{target})*100 | F6: (#{resultq1}/#{targetq1})*100 | F9: (#{resultq2}/#{targetq2})*100 | F12: (#{resultq3}/#{targetq3})*100 | F15: (#{resultq4}/#{targetq4})*100",
       "variables": "result, target, resultq1, targetq1, resultq2, targetq2, resultq3, targetq3, resultq4, targetq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{resultq1}/#{targetq1})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq2}/#{targetq2})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{resultq3}/#{targetq3})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "targetq3",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{resultq4}/#{targetq4})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "targetq4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 4,
@@ -57,8 +178,104 @@
       "formulaCount": 13,
       "formulaText": "F3: (#{result}/#{target})*100 | F6: (#{result10}/#{target10})*100 | F9: (#{result11}/#{target11})*100 | F12: (#{result12}/#{target12})*100 | F15: (#{result1}/#{target1})*100 | F18: (#{result2}/#{target2})*100 | F21: (#{result3}/#{target3})*100 | F24: (#{result4}/#{target4})*100 | F27: (#{result5}/#{target5})*100 | F30: (#{result6}/#{target6})*100 | F33: (#{result7}/#{target7})*100 | F36: (#{result8}/#{target8})*100 | F39: (#{result9}/#{target9})*100",
       "variables": "result, target, result10, target10, result11, target11, result12, target12, result1, target1, result2, target2, result3, target3, result4, target4, result5, target5, result6, target6, result7, target7, result8, target8, result9, target9",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{result10}/#{target10})*100",
+          "numeratorField": "result10",
+          "denominatorField": "target10",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{result11}/#{target11})*100",
+          "numeratorField": "result11",
+          "denominatorField": "target11",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{result12}/#{target12})*100",
+          "numeratorField": "result12",
+          "denominatorField": "target12",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{result1}/#{target1})*100",
+          "numeratorField": "result1",
+          "denominatorField": "target1",
+          "scale": 100
+        },
+        {
+          "field": "F18",
+          "formula": "(#{result2}/#{target2})*100",
+          "numeratorField": "result2",
+          "denominatorField": "target2",
+          "scale": 100
+        },
+        {
+          "field": "F21",
+          "formula": "(#{result3}/#{target3})*100",
+          "numeratorField": "result3",
+          "denominatorField": "target3",
+          "scale": 100
+        },
+        {
+          "field": "F24",
+          "formula": "(#{result4}/#{target4})*100",
+          "numeratorField": "result4",
+          "denominatorField": "target4",
+          "scale": 100
+        },
+        {
+          "field": "F27",
+          "formula": "(#{result5}/#{target5})*100",
+          "numeratorField": "result5",
+          "denominatorField": "target5",
+          "scale": 100
+        },
+        {
+          "field": "F30",
+          "formula": "(#{result6}/#{target6})*100",
+          "numeratorField": "result6",
+          "denominatorField": "target6",
+          "scale": 100
+        },
+        {
+          "field": "F33",
+          "formula": "(#{result7}/#{target7})*100",
+          "numeratorField": "result7",
+          "denominatorField": "target7",
+          "scale": 100
+        },
+        {
+          "field": "F36",
+          "formula": "(#{result8}/#{target8})*100",
+          "numeratorField": "result8",
+          "denominatorField": "target8",
+          "scale": 100
+        },
+        {
+          "field": "F39",
+          "formula": "(#{result9}/#{target9})*100",
+          "numeratorField": "result9",
+          "denominatorField": "target9",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "lower-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 5,
@@ -70,8 +287,34 @@
       "formulaCount": 3,
       "formulaText": "F3: (#{result}/#{target})*100 | F12: (#{result1}/#{result})*100 | F13: (#{result1}/#{target})*100",
       "variables": "result, target, result1",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{result1}/#{result})*100",
+          "numeratorField": "result1",
+          "denominatorField": "result",
+          "scale": 100
+        },
+        {
+          "field": "F13",
+          "formula": "(#{result1}/#{target})*100",
+          "numeratorField": "result1",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 6,
@@ -83,8 +326,27 @@
       "formulaCount": 2,
       "formulaText": "F3: (#{target}/#{total})*100 | F5: (#{result}/#{target})*100",
       "variables": "target, total, result",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{target}/#{total})*100",
+          "numeratorField": "target",
+          "denominatorField": "total",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 7,
@@ -96,7 +358,19 @@
       "formulaCount": 1,
       "formulaText": "F3: (#{result}/#{target})*100",
       "variables": "result, target",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "lower-is-better",
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
       "status": "approved-single-formula",
       "formulaField": "F3",
       "numeratorField": "result",
@@ -113,8 +387,188 @@
       "formulaCount": 25,
       "formulaText": "F3: (#{result}/#{target})*100 | F5: (#{1b260_1}/#{target})*100 | F9: (#{slow}/#{result})*100 | F11: (#{follow}/#{1b261})*100 | F22: (#{properly}/#{target})*100 | F25: (#{result_9}/#{target_9})*100 | F30: (#{slow_9}/#{result_9})*100 | F32: (#{follow_9}/#{1b261_9})*100 | F43: (#{properly_9}/#{target_9})*100 | F46: (#{result_18}/#{target_18})*100 | F51: (#{slow_18}/#{result_18})*100 | F53: (#{follow_18}/#{1b261_18})*100 | F64: (#{properly_18}/#{target_18})*100 | F67: (#{result_30}/#{target_30})*100 | F72: (#{slow_30}/#{result_30})*100 | F74: (#{follow_30}/#{1b261_30})*100 | F85: (#{properly_30}/#{target_30})*100 | F88: (#{result_42}/#{target_42})*100 | F93: (#{slow_42}/#{result_42})*100 | F95: (#{follow_42}/#{1b261_42})*100 | F106: (#{properly_42}/#{target_42})*100 | F109: (#{result_60}/#{target_60})*100 | F114: (#{slow_60}/#{result_60})*100 | F116: (#{follow_60}/#{1b261_60})*100 | F127: (#{properly_60}/#{target_60})*100",
       "variables": "result, target, 1b260_1, slow, follow, 1b261, properly, result_9, target_9, slow_9, follow_9, 1b261_9, properly_9, result_18, target_18, slow_18, follow_18, 1b261_18, properly_18, result_30, target_30, slow_30, follow_30, 1b261_30, properly_30, result_42, target_42, slow_42, follow_42, 1b261_42, properly_42, result_60, target_60, slow_60, follow_60, 1b261_60, properly_60",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{1b260_1}/#{target})*100",
+          "numeratorField": "1b260_1",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{slow}/#{result})*100",
+          "numeratorField": "slow",
+          "denominatorField": "result",
+          "scale": 100
+        },
+        {
+          "field": "F11",
+          "formula": "(#{follow}/#{1b261})*100",
+          "numeratorField": "follow",
+          "denominatorField": "1b261",
+          "scale": 100
+        },
+        {
+          "field": "F22",
+          "formula": "(#{properly}/#{target})*100",
+          "numeratorField": "properly",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F25",
+          "formula": "(#{result_9}/#{target_9})*100",
+          "numeratorField": "result_9",
+          "denominatorField": "target_9",
+          "scale": 100
+        },
+        {
+          "field": "F30",
+          "formula": "(#{slow_9}/#{result_9})*100",
+          "numeratorField": "slow_9",
+          "denominatorField": "result_9",
+          "scale": 100
+        },
+        {
+          "field": "F32",
+          "formula": "(#{follow_9}/#{1b261_9})*100",
+          "numeratorField": "follow_9",
+          "denominatorField": "1b261_9",
+          "scale": 100
+        },
+        {
+          "field": "F43",
+          "formula": "(#{properly_9}/#{target_9})*100",
+          "numeratorField": "properly_9",
+          "denominatorField": "target_9",
+          "scale": 100
+        },
+        {
+          "field": "F46",
+          "formula": "(#{result_18}/#{target_18})*100",
+          "numeratorField": "result_18",
+          "denominatorField": "target_18",
+          "scale": 100
+        },
+        {
+          "field": "F51",
+          "formula": "(#{slow_18}/#{result_18})*100",
+          "numeratorField": "slow_18",
+          "denominatorField": "result_18",
+          "scale": 100
+        },
+        {
+          "field": "F53",
+          "formula": "(#{follow_18}/#{1b261_18})*100",
+          "numeratorField": "follow_18",
+          "denominatorField": "1b261_18",
+          "scale": 100
+        },
+        {
+          "field": "F64",
+          "formula": "(#{properly_18}/#{target_18})*100",
+          "numeratorField": "properly_18",
+          "denominatorField": "target_18",
+          "scale": 100
+        },
+        {
+          "field": "F67",
+          "formula": "(#{result_30}/#{target_30})*100",
+          "numeratorField": "result_30",
+          "denominatorField": "target_30",
+          "scale": 100
+        },
+        {
+          "field": "F72",
+          "formula": "(#{slow_30}/#{result_30})*100",
+          "numeratorField": "slow_30",
+          "denominatorField": "result_30",
+          "scale": 100
+        },
+        {
+          "field": "F74",
+          "formula": "(#{follow_30}/#{1b261_30})*100",
+          "numeratorField": "follow_30",
+          "denominatorField": "1b261_30",
+          "scale": 100
+        },
+        {
+          "field": "F85",
+          "formula": "(#{properly_30}/#{target_30})*100",
+          "numeratorField": "properly_30",
+          "denominatorField": "target_30",
+          "scale": 100
+        },
+        {
+          "field": "F88",
+          "formula": "(#{result_42}/#{target_42})*100",
+          "numeratorField": "result_42",
+          "denominatorField": "target_42",
+          "scale": 100
+        },
+        {
+          "field": "F93",
+          "formula": "(#{slow_42}/#{result_42})*100",
+          "numeratorField": "slow_42",
+          "denominatorField": "result_42",
+          "scale": 100
+        },
+        {
+          "field": "F95",
+          "formula": "(#{follow_42}/#{1b261_42})*100",
+          "numeratorField": "follow_42",
+          "denominatorField": "1b261_42",
+          "scale": 100
+        },
+        {
+          "field": "F106",
+          "formula": "(#{properly_42}/#{target_42})*100",
+          "numeratorField": "properly_42",
+          "denominatorField": "target_42",
+          "scale": 100
+        },
+        {
+          "field": "F109",
+          "formula": "(#{result_60}/#{target_60})*100",
+          "numeratorField": "result_60",
+          "denominatorField": "target_60",
+          "scale": 100
+        },
+        {
+          "field": "F114",
+          "formula": "(#{slow_60}/#{result_60})*100",
+          "numeratorField": "slow_60",
+          "denominatorField": "result_60",
+          "scale": 100
+        },
+        {
+          "field": "F116",
+          "formula": "(#{follow_60}/#{1b261_60})*100",
+          "numeratorField": "follow_60",
+          "denominatorField": "1b261_60",
+          "scale": 100
+        },
+        {
+          "field": "F127",
+          "formula": "(#{properly_60}/#{target_60})*100",
+          "numeratorField": "properly_60",
+          "denominatorField": "target_60",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งแบบกลุ่ม แยกช่วงอายุ/ตัวชี้วัดย่อย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 9,
@@ -126,8 +580,41 @@
       "formulaCount": 4,
       "formulaText": "F8: (#{result}/#{target})*100 | F10: (#{total}/#{result})*100 | F12: (#{1b270}/#{total})*100 | F14: (#{1b27x}/#{total})*100",
       "variables": "result, target, total, 1b270, 1b27x",
+      "formulaDefinitions": [
+        {
+          "field": "F8",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F10",
+          "formula": "(#{total}/#{result})*100",
+          "numeratorField": "total",
+          "denominatorField": "result",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{1b270}/#{total})*100",
+          "numeratorField": "1b270",
+          "denominatorField": "total",
+          "scale": 100
+        },
+        {
+          "field": "F14",
+          "formula": "(#{1b27x}/#{total})*100",
+          "numeratorField": "1b27x",
+          "denominatorField": "total",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 10,
@@ -139,8 +626,34 @@
       "formulaCount": 3,
       "formulaText": "F3: (#{target}/#{total})*100 | F5: (#{result}/#{target})*100 | F8: (#{result1}/#{target1})*100",
       "variables": "target, total, result, result1, target1",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{target}/#{total})*100",
+          "numeratorField": "target",
+          "denominatorField": "total",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F8",
+          "formula": "(#{result1}/#{target1})*100",
+          "numeratorField": "result1",
+          "denominatorField": "target1",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "lower-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 11,
@@ -152,8 +665,48 @@
       "formulaCount": 5,
       "formulaText": "F3: (#{result}/#{target})*100 | F6: (#{resultq1}/#{targetq1})*100 | F9: (#{resultq2}/#{targetq2})*100 | F12: (#{resultq3}/#{targetq3})*100 | F15: (#{resultq4}/#{targetq4})*100",
       "variables": "result, target, resultq1, targetq1, resultq2, targetq2, resultq3, targetq3, resultq4, targetq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{resultq1}/#{targetq1})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq2}/#{targetq2})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{resultq3}/#{targetq3})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "targetq3",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{resultq4}/#{targetq4})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "targetq4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 12,
@@ -165,8 +718,125 @@
       "formulaCount": 16,
       "formulaText": "F3: (#{target_q1}/#{totalq1})*100 | F5: (#{result1_q1}/#{target_q1})*100 | F8: (#{result4_q1}/#{result2_q1}) | F11: (#{result5_q1}/#{result3_q1}) | F14: (#{target_q2}/#{totalq2})*100 | F16: (#{result1_q2}/#{target_q2})*100 | F19: (#{result4_q2}/#{result2_q2}) | F22: (#{result5_q2}/#{result3_q2}) | F25: (#{target_q3}/#{totalq3})*100 | F27: (#{result1_q3}/#{target_q3})*100 | F30: (#{result4_q3}/#{result2_q3}) | F33: (#{result5_q3}/#{result3_q3}) | F36: (#{target_q4}/#{totalq4})*100 | F38: (#{result1_q4}/#{target_q4})*100 | F41: (#{result4_q4}/#{result2_q4}) | F44: (#{result5_q4}/#{result3_q4})",
       "variables": "target_q1, totalq1, result1_q1, result4_q1, result2_q1, result5_q1, result3_q1, target_q2, totalq2, result1_q2, result4_q2, result2_q2, result5_q2, result3_q2, target_q3, totalq3, result1_q3, result4_q3, result2_q3, result5_q3, result3_q3, target_q4, totalq4, result1_q4, result4_q4, result2_q4, result5_q4, result3_q4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{target_q1}/#{totalq1})*100",
+          "numeratorField": "target_q1",
+          "denominatorField": "totalq1",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{result1_q1}/#{target_q1})*100",
+          "numeratorField": "result1_q1",
+          "denominatorField": "target_q1",
+          "scale": 100
+        },
+        {
+          "field": "F8",
+          "formula": "(#{result4_q1}/#{result2_q1})",
+          "numeratorField": "result4_q1",
+          "denominatorField": "result2_q1",
+          "scale": 1
+        },
+        {
+          "field": "F11",
+          "formula": "(#{result5_q1}/#{result3_q1})",
+          "numeratorField": "result5_q1",
+          "denominatorField": "result3_q1",
+          "scale": 1
+        },
+        {
+          "field": "F14",
+          "formula": "(#{target_q2}/#{totalq2})*100",
+          "numeratorField": "target_q2",
+          "denominatorField": "totalq2",
+          "scale": 100
+        },
+        {
+          "field": "F16",
+          "formula": "(#{result1_q2}/#{target_q2})*100",
+          "numeratorField": "result1_q2",
+          "denominatorField": "target_q2",
+          "scale": 100
+        },
+        {
+          "field": "F19",
+          "formula": "(#{result4_q2}/#{result2_q2})",
+          "numeratorField": "result4_q2",
+          "denominatorField": "result2_q2",
+          "scale": 1
+        },
+        {
+          "field": "F22",
+          "formula": "(#{result5_q2}/#{result3_q2})",
+          "numeratorField": "result5_q2",
+          "denominatorField": "result3_q2",
+          "scale": 1
+        },
+        {
+          "field": "F25",
+          "formula": "(#{target_q3}/#{totalq3})*100",
+          "numeratorField": "target_q3",
+          "denominatorField": "totalq3",
+          "scale": 100
+        },
+        {
+          "field": "F27",
+          "formula": "(#{result1_q3}/#{target_q3})*100",
+          "numeratorField": "result1_q3",
+          "denominatorField": "target_q3",
+          "scale": 100
+        },
+        {
+          "field": "F30",
+          "formula": "(#{result4_q3}/#{result2_q3})",
+          "numeratorField": "result4_q3",
+          "denominatorField": "result2_q3",
+          "scale": 1
+        },
+        {
+          "field": "F33",
+          "formula": "(#{result5_q3}/#{result3_q3})",
+          "numeratorField": "result5_q3",
+          "denominatorField": "result3_q3",
+          "scale": 1
+        },
+        {
+          "field": "F36",
+          "formula": "(#{target_q4}/#{totalq4})*100",
+          "numeratorField": "target_q4",
+          "denominatorField": "totalq4",
+          "scale": 100
+        },
+        {
+          "field": "F38",
+          "formula": "(#{result1_q4}/#{target_q4})*100",
+          "numeratorField": "result1_q4",
+          "denominatorField": "target_q4",
+          "scale": 100
+        },
+        {
+          "field": "F41",
+          "formula": "(#{result4_q4}/#{result2_q4})",
+          "numeratorField": "result4_q4",
+          "denominatorField": "result2_q4",
+          "scale": 1
+        },
+        {
+          "field": "F44",
+          "formula": "(#{result5_q4}/#{result3_q4})",
+          "numeratorField": "result5_q4",
+          "denominatorField": "result3_q4",
+          "scale": 1
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 13,
@@ -178,8 +848,69 @@
       "formulaCount": 8,
       "formulaText": "F3: (#{target_q1}/#{totalq1})*100 | F5: (#{result1_q1}/#{target_q1})*100 | F8: (#{target_q2}/#{totalq2})*100 | F10: (#{result1_q2}/#{target_q2})*100 | F13: (#{target_q3}/#{totalq3})*100 | F15: (#{result1_q3}/#{target_q3})*100 | F18: (#{target_q4}/#{totalq4})*100 | F20: (#{result1_q4}/#{target_q4})*100",
       "variables": "target_q1, totalq1, result1_q1, target_q2, totalq2, result1_q2, target_q3, totalq3, result1_q3, target_q4, totalq4, result1_q4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{target_q1}/#{totalq1})*100",
+          "numeratorField": "target_q1",
+          "denominatorField": "totalq1",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{result1_q1}/#{target_q1})*100",
+          "numeratorField": "result1_q1",
+          "denominatorField": "target_q1",
+          "scale": 100
+        },
+        {
+          "field": "F8",
+          "formula": "(#{target_q2}/#{totalq2})*100",
+          "numeratorField": "target_q2",
+          "denominatorField": "totalq2",
+          "scale": 100
+        },
+        {
+          "field": "F10",
+          "formula": "(#{result1_q2}/#{target_q2})*100",
+          "numeratorField": "result1_q2",
+          "denominatorField": "target_q2",
+          "scale": 100
+        },
+        {
+          "field": "F13",
+          "formula": "(#{target_q3}/#{totalq3})*100",
+          "numeratorField": "target_q3",
+          "denominatorField": "totalq3",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{result1_q3}/#{target_q3})*100",
+          "numeratorField": "result1_q3",
+          "denominatorField": "target_q3",
+          "scale": 100
+        },
+        {
+          "field": "F18",
+          "formula": "(#{target_q4}/#{totalq4})*100",
+          "numeratorField": "target_q4",
+          "denominatorField": "totalq4",
+          "scale": 100
+        },
+        {
+          "field": "F20",
+          "formula": "(#{result1_q4}/#{target_q4})*100",
+          "numeratorField": "result1_q4",
+          "denominatorField": "target_q4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 14,
@@ -191,8 +922,125 @@
       "formulaCount": 16,
       "formulaText": "F3: (#{targetq1}/#{totalq1})*100 | F5: (#{resultq1}/#{targetq1})*100 | F8: (#{a2q1}/#{b2q1}) | F11: (#{a3q1}/#{b3q1}) | F14: (#{targetq2}/#{totalq2})*100 | F16: (#{resultq2}/#{targetq2})*100 | F19: (#{a2q2}/#{b2q2}) | F22: (#{a3q2}/#{b3q2}) | F25: (#{targetq3}/#{totalq3})*100 | F27: (#{resultq3}/#{targetq3})*100 | F30: (#{a2q3}/#{b2q3}) | F33: (#{a3q3}/#{b3q3}) | F36: (#{targetq4}/#{totalq4})*100 | F38: (#{resultq4}/#{targetq4})*100 | F41: (#{a2q4}/#{b2q4}) | F44: (#{a3q4}/#{b3q4})",
       "variables": "targetq1, totalq1, resultq1, a2q1, b2q1, a3q1, b3q1, targetq2, totalq2, resultq2, a2q2, b2q2, a3q2, b3q2, targetq3, totalq3, resultq3, a2q3, b2q3, a3q3, b3q3, targetq4, totalq4, resultq4, a2q4, b2q4, a3q4, b3q4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{targetq1}/#{totalq1})*100",
+          "numeratorField": "targetq1",
+          "denominatorField": "totalq1",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{resultq1}/#{targetq1})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F8",
+          "formula": "(#{a2q1}/#{b2q1})",
+          "numeratorField": "a2q1",
+          "denominatorField": "b2q1",
+          "scale": 1
+        },
+        {
+          "field": "F11",
+          "formula": "(#{a3q1}/#{b3q1})",
+          "numeratorField": "a3q1",
+          "denominatorField": "b3q1",
+          "scale": 1
+        },
+        {
+          "field": "F14",
+          "formula": "(#{targetq2}/#{totalq2})*100",
+          "numeratorField": "targetq2",
+          "denominatorField": "totalq2",
+          "scale": 100
+        },
+        {
+          "field": "F16",
+          "formula": "(#{resultq2}/#{targetq2})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        },
+        {
+          "field": "F19",
+          "formula": "(#{a2q2}/#{b2q2})",
+          "numeratorField": "a2q2",
+          "denominatorField": "b2q2",
+          "scale": 1
+        },
+        {
+          "field": "F22",
+          "formula": "(#{a3q2}/#{b3q2})",
+          "numeratorField": "a3q2",
+          "denominatorField": "b3q2",
+          "scale": 1
+        },
+        {
+          "field": "F25",
+          "formula": "(#{targetq3}/#{totalq3})*100",
+          "numeratorField": "targetq3",
+          "denominatorField": "totalq3",
+          "scale": 100
+        },
+        {
+          "field": "F27",
+          "formula": "(#{resultq3}/#{targetq3})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "targetq3",
+          "scale": 100
+        },
+        {
+          "field": "F30",
+          "formula": "(#{a2q3}/#{b2q3})",
+          "numeratorField": "a2q3",
+          "denominatorField": "b2q3",
+          "scale": 1
+        },
+        {
+          "field": "F33",
+          "formula": "(#{a3q3}/#{b3q3})",
+          "numeratorField": "a3q3",
+          "denominatorField": "b3q3",
+          "scale": 1
+        },
+        {
+          "field": "F36",
+          "formula": "(#{targetq4}/#{totalq4})*100",
+          "numeratorField": "targetq4",
+          "denominatorField": "totalq4",
+          "scale": 100
+        },
+        {
+          "field": "F38",
+          "formula": "(#{resultq4}/#{targetq4})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "targetq4",
+          "scale": 100
+        },
+        {
+          "field": "F41",
+          "formula": "(#{a2q4}/#{b2q4})",
+          "numeratorField": "a2q4",
+          "denominatorField": "b2q4",
+          "scale": 1
+        },
+        {
+          "field": "F44",
+          "formula": "(#{a3q4}/#{b3q4})",
+          "numeratorField": "a3q4",
+          "denominatorField": "b3q4",
+          "scale": 1
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 15,
@@ -204,8 +1052,83 @@
       "formulaCount": 10,
       "formulaText": "F3: (#{result_n}/#{target_n})*100 | F6: (#{resultq1_n}/#{targetq1_n})*100 | F9: (#{resultq2_n}/#{targetq2_n})*100 | F12: (#{resultq3_n}/#{targetq3_n})*100 | F15: (#{resultq4_n}/#{targetq4_n})*100 | F18: (#{result}/#{target})*100 | F21: (#{resultq1}/#{targetq1})*100 | F24: (#{resultq2}/#{targetq2})*100 | F27: (#{resultq3}/#{targetq3})*100 | F30: (#{resultq4}/#{targetq4})*100",
       "variables": "result_n, target_n, resultq1_n, targetq1_n, resultq2_n, targetq2_n, resultq3_n, targetq3_n, resultq4_n, targetq4_n, result, target, resultq1, targetq1, resultq2, targetq2, resultq3, targetq3, resultq4, targetq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result_n}/#{target_n})*100",
+          "numeratorField": "result_n",
+          "denominatorField": "target_n",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{resultq1_n}/#{targetq1_n})*100",
+          "numeratorField": "resultq1_n",
+          "denominatorField": "targetq1_n",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq2_n}/#{targetq2_n})*100",
+          "numeratorField": "resultq2_n",
+          "denominatorField": "targetq2_n",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{resultq3_n}/#{targetq3_n})*100",
+          "numeratorField": "resultq3_n",
+          "denominatorField": "targetq3_n",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{resultq4_n}/#{targetq4_n})*100",
+          "numeratorField": "resultq4_n",
+          "denominatorField": "targetq4_n",
+          "scale": 100
+        },
+        {
+          "field": "F18",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F21",
+          "formula": "(#{resultq1}/#{targetq1})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F24",
+          "formula": "(#{resultq2}/#{targetq2})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        },
+        {
+          "field": "F27",
+          "formula": "(#{resultq3}/#{targetq3})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "targetq3",
+          "scale": 100
+        },
+        {
+          "field": "F30",
+          "formula": "(#{resultq4}/#{targetq4})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "targetq4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 16,
@@ -217,8 +1140,34 @@
       "formulaCount": 3,
       "formulaText": "F3: (#{target}/#{total})*100 | F5: (#{result}/#{target})*100 | F8: (#{result1}/#{target1})*100",
       "variables": "target, total, result, result1, target1",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{target}/#{total})*100",
+          "numeratorField": "target",
+          "denominatorField": "total",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F8",
+          "formula": "(#{result1}/#{target1})*100",
+          "numeratorField": "result1",
+          "denominatorField": "target1",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "lower-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 17,
@@ -230,8 +1179,27 @@
       "formulaCount": 2,
       "formulaText": "F3: (#{result1}/#{target1})*100 | F6: (#{result2}/#{target2})*100",
       "variables": "result1, target1, result2, target2",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result1}/#{target1})*100",
+          "numeratorField": "result1",
+          "denominatorField": "target1",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{result2}/#{target2})*100",
+          "numeratorField": "result2",
+          "denominatorField": "target2",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 18,
@@ -243,8 +1211,55 @@
       "formulaCount": 6,
       "formulaText": "F3: (#{target}/#{total})*100 | F5: (#{result1}/#{target})*100 | F7: (#{result}/#{target})*100 | F9: (#{result3}/#{target})*100 | F11: (#{result4}/#{target})*100 | F13: (#{result5}/#{target})*100",
       "variables": "target, total, result1, result, result3, result4, result5",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{target}/#{total})*100",
+          "numeratorField": "target",
+          "denominatorField": "total",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{result1}/#{target})*100",
+          "numeratorField": "result1",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F7",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{result3}/#{target})*100",
+          "numeratorField": "result3",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F11",
+          "formula": "(#{result4}/#{target})*100",
+          "numeratorField": "result4",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F13",
+          "formula": "(#{result5}/#{target})*100",
+          "numeratorField": "result5",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 19,
@@ -256,8 +1271,48 @@
       "formulaCount": 5,
       "formulaText": "F3: (#{result}/#{target})*100 | F6: (#{resultq1}/#{targetq1})*100 | F9: (#{resultq2}/#{targetq2})*100 | F12: (#{resultq3}/#{targetq3})*100 | F15: (#{resultq4}/#{targetq4})*100",
       "variables": "result, target, resultq1, targetq1, resultq2, targetq2, resultq3, targetq3, resultq4, targetq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{resultq1}/#{targetq1})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq2}/#{targetq2})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{resultq3}/#{targetq3})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "targetq3",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{resultq4}/#{targetq4})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "targetq4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละ; เลือกสูตรวัคซีนหลัก 1 ค่า + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 20,
@@ -269,8 +1324,48 @@
       "formulaCount": 5,
       "formulaText": "F3: (#{result}/#{target})*100 | F6: (#{resultq1}/#{targetq1})*100 | F9: (#{resultq2}/#{targetq2})*100 | F12: (#{resultq3}/#{targetq3})*100 | F15: (#{resultq4}/#{targetq4})*100",
       "variables": "result, target, resultq1, targetq1, resultq2, targetq2, resultq3, targetq3, resultq4, targetq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{resultq1}/#{targetq1})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq2}/#{targetq2})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{resultq3}/#{targetq3})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "targetq3",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{resultq4}/#{targetq4})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "targetq4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละ; เลือกสูตรวัคซีนหลัก 1 ค่า + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 21,
@@ -282,8 +1377,48 @@
       "formulaCount": 5,
       "formulaText": "F3: (#{result}/#{target})*100 | F6: (#{resultq1}/#{targetq1})*100 | F9: (#{resultq2}/#{targetq2})*100 | F12: (#{resultq3}/#{targetq3})*100 | F15: (#{resultq4}/#{targetq4})*100",
       "variables": "result, target, resultq1, targetq1, resultq2, targetq2, resultq3, targetq3, resultq4, targetq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{resultq1}/#{targetq1})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq2}/#{targetq2})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{resultq3}/#{targetq3})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "targetq3",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{resultq4}/#{targetq4})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "targetq4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละ; เลือกสูตรวัคซีนหลัก 1 ค่า + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 22,
@@ -295,8 +1430,48 @@
       "formulaCount": 5,
       "formulaText": "F3: (#{result}/#{target})*100 | F6: (#{resultq1}/#{targetq1})*100 | F9: (#{resultq2}/#{targetq2})*100 | F12: (#{resultq3}/#{targetq3})*100 | F15: (#{resultq4}/#{targetq4})*100",
       "variables": "result, target, resultq1, targetq1, resultq2, targetq2, resultq3, targetq3, resultq4, targetq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{resultq1}/#{targetq1})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq2}/#{targetq2})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{resultq3}/#{targetq3})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "targetq3",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{resultq4}/#{targetq4})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "targetq4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละ; เลือกสูตรวัคซีนหลัก 1 ค่า + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 23,
@@ -308,8 +1483,34 @@
       "formulaCount": 3,
       "formulaText": "F3: (#{resultv1q1}/#{targetq1})*100 | F6: (#{resultv1q2}/#{targetq2})*100 | F8: (#{resultm2q2}/#{targetq2})*100",
       "variables": "resultv1q1, targetq1, resultv1q2, targetq2, resultm2q2",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{resultv1q1}/#{targetq1})*100",
+          "numeratorField": "resultv1q1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{resultv1q2}/#{targetq2})*100",
+          "numeratorField": "resultv1q2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        },
+        {
+          "field": "F8",
+          "formula": "(#{resultm2q2}/#{targetq2})*100",
+          "numeratorField": "resultm2q2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละ; เลือกสูตรวัคซีนหลัก 1 ค่า + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 24,
@@ -321,8 +1522,27 @@
       "formulaCount": 2,
       "formulaText": "F3: (#{result1}/#{target1})*100 | F6: (#{result2}/#{target2})*100",
       "variables": "result1, target1, result2, target2",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result1}/#{target1})*100",
+          "numeratorField": "result1",
+          "denominatorField": "target1",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{result2}/#{target2})*100",
+          "numeratorField": "result2",
+          "denominatorField": "target2",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละ; เลือกสูตรวัคซีนหลัก 1 ค่า + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 25,
@@ -334,8 +1554,48 @@
       "formulaCount": 5,
       "formulaText": "F3: (#{result}/#{target})*100 | F6: (#{resultq1}/#{targetq1})*100 | F9: (#{resultq2}/#{targetq2})*100 | F12: (#{resultq3}/#{targetq3})*100 | F15: (#{resultq4}/#{targetq4})*100",
       "variables": "result, target, resultq1, targetq1, resultq2, targetq2, resultq3, targetq3, resultq4, targetq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{resultq1}/#{targetq1})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq2}/#{targetq2})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{resultq3}/#{targetq3})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "targetq3",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{resultq4}/#{targetq4})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "targetq4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละ; เลือกสูตรวัคซีนหลัก 1 ค่า + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 26,
@@ -347,8 +1607,48 @@
       "formulaCount": 5,
       "formulaText": "F3: (#{result}/#{target})*100 | F6: (#{resultq1}/#{targetq1})*100 | F9: (#{resultq2}/#{targetq2})*100 | F12: (#{resultq3}/#{targetq3})*100 | F15: (#{resultq4}/#{targetq4})*100",
       "variables": "result, target, resultq1, targetq1, resultq2, targetq2, resultq3, targetq3, resultq4, targetq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{resultq1}/#{targetq1})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq2}/#{targetq2})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{resultq3}/#{targetq3})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "targetq3",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{resultq4}/#{targetq4})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "targetq4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละ; เลือกสูตรวัคซีนหลัก 1 ค่า + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 27,
@@ -360,8 +1660,48 @@
       "formulaCount": 5,
       "formulaText": "F3: (#{result}/#{target})*100 | F5: (#{resultq1}/#{target})*100 | F7: (#{resultq2}/#{target})*100 | F9: (#{resultq3}/#{target})*100 | F11: (#{resultq4}/#{target})*100",
       "variables": "result, target, resultq1, resultq2, resultq3, resultq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{resultq1}/#{target})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F7",
+          "formula": "(#{resultq2}/#{target})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq3}/#{target})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F11",
+          "formula": "(#{resultq4}/#{target})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 28,
@@ -373,8 +1713,48 @@
       "formulaCount": 5,
       "formulaText": "F3: (#{result}/#{target})*100 | F5: (#{resultq1}/#{target})*100 | F7: (#{resultq2}/#{target})*100 | F9: (#{resultq3}/#{target})*100 | F11: (#{resultq4}/#{target})*100",
       "variables": "result, target, resultq1, resultq2, resultq3, resultq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{resultq1}/#{target})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F7",
+          "formula": "(#{resultq2}/#{target})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq3}/#{target})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F11",
+          "formula": "(#{resultq4}/#{target})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 29,
@@ -386,8 +1766,34 @@
       "formulaCount": 3,
       "formulaText": "F3: (#{result}/#{target})*100 | F5: (#{result1}/#{target})*100 | F7: (#{result2}/#{target})*100",
       "variables": "result, target, result1, result2",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{result1}/#{target})*100",
+          "numeratorField": "result1",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F7",
+          "formula": "(#{result2}/#{target})*100",
+          "numeratorField": "result2",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 30,
@@ -399,8 +1805,83 @@
       "formulaCount": 10,
       "formulaText": "F3: (#{fitneg}/#{target})*100 | F5: (#{result}/#{target})*100 | F8: (#{fitnegq1}/#{resultq1})*100 | F10: (#{fitposq1}/#{resultq1})*100 | F13: (#{fitnegq2}/#{resultq2})*100 | F15: (#{fitposq2}/#{resultq2})*100 | F18: (#{fitnegq3}/#{resultq3})*100 | F20: (#{fitposq3}/#{resultq3})*100 | F23: (#{fitnegq4}/#{resultq4})*100 | F25: (#{fitposq4}/#{resultq4})*100",
       "variables": "fitneg, target, result, fitnegq1, resultq1, fitposq1, fitnegq2, resultq2, fitposq2, fitnegq3, resultq3, fitposq3, fitnegq4, resultq4, fitposq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{fitneg}/#{target})*100",
+          "numeratorField": "fitneg",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F8",
+          "formula": "(#{fitnegq1}/#{resultq1})*100",
+          "numeratorField": "fitnegq1",
+          "denominatorField": "resultq1",
+          "scale": 100
+        },
+        {
+          "field": "F10",
+          "formula": "(#{fitposq1}/#{resultq1})*100",
+          "numeratorField": "fitposq1",
+          "denominatorField": "resultq1",
+          "scale": 100
+        },
+        {
+          "field": "F13",
+          "formula": "(#{fitnegq2}/#{resultq2})*100",
+          "numeratorField": "fitnegq2",
+          "denominatorField": "resultq2",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{fitposq2}/#{resultq2})*100",
+          "numeratorField": "fitposq2",
+          "denominatorField": "resultq2",
+          "scale": 100
+        },
+        {
+          "field": "F18",
+          "formula": "(#{fitnegq3}/#{resultq3})*100",
+          "numeratorField": "fitnegq3",
+          "denominatorField": "resultq3",
+          "scale": 100
+        },
+        {
+          "field": "F20",
+          "formula": "(#{fitposq3}/#{resultq3})*100",
+          "numeratorField": "fitposq3",
+          "denominatorField": "resultq3",
+          "scale": 100
+        },
+        {
+          "field": "F23",
+          "formula": "(#{fitnegq4}/#{resultq4})*100",
+          "numeratorField": "fitnegq4",
+          "denominatorField": "resultq4",
+          "scale": 100
+        },
+        {
+          "field": "F25",
+          "formula": "(#{fitposq4}/#{resultq4})*100",
+          "numeratorField": "fitposq4",
+          "denominatorField": "resultq4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งแบบกลุ่มหรือซ้อน แยกผล FIT",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 31,
@@ -412,8 +1893,83 @@
       "formulaCount": 10,
       "formulaText": "F3: (#{result}/#{target})*100 | F3: (#{result}/#{target})*100 | F9: (#{result2}/#{target})*100 | F14: (#{result3}/#{target})*100 | F18: (#{result4}/#{target})*100 | F22: (#{result5}/#{target})*100 | F26: (#{result6}/#{target})*100 | F31: (#{result7}/#{target})*100 | F35: (#{result8}/#{target})*100 | F39: (#{result9}/#{target})*100",
       "variables": "result, target, result2, result3, result4, result5, result6, result7, result8, result9",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{result2}/#{target})*100",
+          "numeratorField": "result2",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F14",
+          "formula": "(#{result3}/#{target})*100",
+          "numeratorField": "result3",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F18",
+          "formula": "(#{result4}/#{target})*100",
+          "numeratorField": "result4",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F22",
+          "formula": "(#{result5}/#{target})*100",
+          "numeratorField": "result5",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F26",
+          "formula": "(#{result6}/#{target})*100",
+          "numeratorField": "result6",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F31",
+          "formula": "(#{result7}/#{target})*100",
+          "numeratorField": "result7",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F35",
+          "formula": "(#{result8}/#{target})*100",
+          "numeratorField": "result8",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F39",
+          "formula": "(#{result9}/#{target})*100",
+          "numeratorField": "result9",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 32,
@@ -425,8 +1981,27 @@
       "formulaCount": 2,
       "formulaText": "F4: (#{result1q1}/#{targetq1})*100 | F9: (#{result1q2}/#{targetq2})*100",
       "variables": "result1q1, targetq1, result1q2, targetq2",
+      "formulaDefinitions": [
+        {
+          "field": "F4",
+          "formula": "(#{result1q1}/#{targetq1})*100",
+          "numeratorField": "result1q1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{result1q2}/#{targetq2})*100",
+          "numeratorField": "result1q2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 33,
@@ -438,8 +2013,27 @@
       "formulaCount": 2,
       "formulaText": "F6: (#{result}/#{target})*100 | F7: (#{target}-#{result})",
       "variables": "result, target",
+      "formulaDefinitions": [
+        {
+          "field": "F6",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F7",
+          "formula": "(#{target}-#{result})",
+          "numeratorField": "target",
+          "denominatorField": "result",
+          "scale": 1
+        }
+      ],
+      "chartType": "กราฟแท่งซ้อน แยกกลุ่มความสามารถ ADL",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 34,
@@ -451,7 +2045,19 @@
       "formulaCount": 1,
       "formulaText": "F3: (#{result}/#{target})*100",
       "variables": "result, target",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "lower-is-better",
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
       "status": "approved-single-formula",
       "formulaField": "F3",
       "numeratorField": "result",
@@ -468,8 +2074,62 @@
       "formulaCount": 7,
       "formulaText": "F1: (#{result_13}/#{target_13})*100 | F2: (#{non_follow180_13}/#{target_13})*100 | F3: (#{result}/#{target})*100 | F6: (#{resultq1}/#{targetq1})*100 | F9: (#{resultq2}/#{targetq2})*100 | F12: (#{resultq3}/#{targetq3})*100 | F15: (#{resultq4}/#{targetq4})*100",
       "variables": "result_13, target_13, non_follow180_13, result, target, resultq1, targetq1, resultq2, targetq2, resultq3, targetq3, resultq4, targetq4",
+      "formulaDefinitions": [
+        {
+          "field": "F1",
+          "formula": "(#{result_13}/#{target_13})*100",
+          "numeratorField": "result_13",
+          "denominatorField": "target_13",
+          "scale": 100
+        },
+        {
+          "field": "F2",
+          "formula": "(#{non_follow180_13}/#{target_13})*100",
+          "numeratorField": "non_follow180_13",
+          "denominatorField": "target_13",
+          "scale": 100
+        },
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{resultq1}/#{targetq1})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "targetq1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq2}/#{targetq2})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "targetq2",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{resultq3}/#{targetq3})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "targetq3",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{resultq4}/#{targetq4})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "targetq4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 36,
@@ -481,8 +2141,90 @@
       "formulaCount": 11,
       "formulaText": "F1: (#{result_13}/#{target_13})*100 | F2: (#{r_home_bp_13}/#{target_13})*100 | F3: (#{r_hosp_bp_13}/#{target_13})*100 | F4: (#{non_follow90_13}/#{target_13})*100 | F5: (#{result}/#{target})*100 | F6: (#{r1}/#{target})*100 | F7: (#{r2}/#{target})*100 | F8: (#{r_q1}/#{t_q1})*100 | F9: (#{r_q2}/#{t_q2})*100 | F10: (#{r_q3}/#{t_q3})*100 | F11: (#{r_q4}/#{t_q4})*100",
       "variables": "result_13, target_13, r_home_bp_13, r_hosp_bp_13, non_follow90_13, result, target, r1, r2, r_q1, t_q1, r_q2, t_q2, r_q3, t_q3, r_q4, t_q4",
+      "formulaDefinitions": [
+        {
+          "field": "F1",
+          "formula": "(#{result_13}/#{target_13})*100",
+          "numeratorField": "result_13",
+          "denominatorField": "target_13",
+          "scale": 100
+        },
+        {
+          "field": "F2",
+          "formula": "(#{r_home_bp_13}/#{target_13})*100",
+          "numeratorField": "r_home_bp_13",
+          "denominatorField": "target_13",
+          "scale": 100
+        },
+        {
+          "field": "F3",
+          "formula": "(#{r_hosp_bp_13}/#{target_13})*100",
+          "numeratorField": "r_hosp_bp_13",
+          "denominatorField": "target_13",
+          "scale": 100
+        },
+        {
+          "field": "F4",
+          "formula": "(#{non_follow90_13}/#{target_13})*100",
+          "numeratorField": "non_follow90_13",
+          "denominatorField": "target_13",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{r1}/#{target})*100",
+          "numeratorField": "r1",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F7",
+          "formula": "(#{r2}/#{target})*100",
+          "numeratorField": "r2",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F8",
+          "formula": "(#{r_q1}/#{t_q1})*100",
+          "numeratorField": "r_q1",
+          "denominatorField": "t_q1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{r_q2}/#{t_q2})*100",
+          "numeratorField": "r_q2",
+          "denominatorField": "t_q2",
+          "scale": 100
+        },
+        {
+          "field": "F10",
+          "formula": "(#{r_q3}/#{t_q3})*100",
+          "numeratorField": "r_q3",
+          "denominatorField": "t_q3",
+          "scale": 100
+        },
+        {
+          "field": "F11",
+          "formula": "(#{r_q4}/#{t_q4})*100",
+          "numeratorField": "r_q4",
+          "denominatorField": "t_q4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 37,
@@ -494,7 +2236,19 @@
       "formulaCount": 1,
       "formulaText": "F3: (#{result}/#{target})*100",
       "variables": "result, target",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
       "status": "approved-single-formula",
       "formulaField": "F3",
       "numeratorField": "result",
@@ -511,8 +2265,69 @@
       "formulaCount": 8,
       "formulaText": "F3: (#{hba1c}/#{target})*100 | F5: (#{result}/#{target})*100 | F9: (#{result_ncom}/#{target_ncom})*100 | F13: (#{result_com}/#{target_com})*100 | F16: (#{hba1c1}/#{target1})*100 | F18: (#{result1}/#{target1})*100 | F22: (#{result_ncom1}/#{target_ncom1})*100 | F26: (#{result_com1}/#{target_com1})*100",
       "variables": "hba1c, target, result, result_ncom, target_ncom, result_com, target_com, hba1c1, target1, result1, result_ncom1, target_ncom1, result_com1, target_com1",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{hba1c}/#{target})*100",
+          "numeratorField": "hba1c",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{result_ncom}/#{target_ncom})*100",
+          "numeratorField": "result_ncom",
+          "denominatorField": "target_ncom",
+          "scale": 100
+        },
+        {
+          "field": "F13",
+          "formula": "(#{result_com}/#{target_com})*100",
+          "numeratorField": "result_com",
+          "denominatorField": "target_com",
+          "scale": 100
+        },
+        {
+          "field": "F16",
+          "formula": "(#{hba1c1}/#{target1})*100",
+          "numeratorField": "hba1c1",
+          "denominatorField": "target1",
+          "scale": 100
+        },
+        {
+          "field": "F18",
+          "formula": "(#{result1}/#{target1})*100",
+          "numeratorField": "result1",
+          "denominatorField": "target1",
+          "scale": 100
+        },
+        {
+          "field": "F22",
+          "formula": "(#{result_ncom1}/#{target_ncom1})*100",
+          "numeratorField": "result_ncom1",
+          "denominatorField": "target_ncom1",
+          "scale": 100
+        },
+        {
+          "field": "F26",
+          "formula": "(#{result_com1}/#{target_com1})*100",
+          "numeratorField": "result_com1",
+          "denominatorField": "target_com1",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 39,
@@ -524,8 +2339,41 @@
       "formulaCount": 4,
       "formulaText": "F3: (#{result}/#{target})*100 | F5: (#{result_2}/#{target})*100 | F6: (#{result1}/#{target1})*100 | F8: (#{result1_2}/#{target1})*100",
       "variables": "result, target, result_2, result1, target1, result1_2",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{result_2}/#{target})*100",
+          "numeratorField": "result_2",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{result1}/#{target1})*100",
+          "numeratorField": "result1",
+          "denominatorField": "target1",
+          "scale": 100
+        },
+        {
+          "field": "F8",
+          "formula": "(#{result1_2}/#{target1})*100",
+          "numeratorField": "result1_2",
+          "denominatorField": "target1",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 40,
@@ -537,8 +2385,27 @@
       "formulaCount": 2,
       "formulaText": "F3: (#{result}/#{target})*100 | F6: (#{result1}/#{target1})*100",
       "variables": "result, target, result1, target1",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{result1}/#{target1})*100",
+          "numeratorField": "result1",
+          "denominatorField": "target1",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 41,
@@ -550,8 +2417,27 @@
       "formulaCount": 2,
       "formulaText": "F3: (#{result}/#{target})*100 | F8: (#{result1}/#{target1})*100",
       "variables": "result, target, result1, target1",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F8",
+          "formula": "(#{result1}/#{target1})*100",
+          "numeratorField": "result1",
+          "denominatorField": "target1",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 42,
@@ -563,8 +2449,27 @@
       "formulaCount": 2,
       "formulaText": "F3: (#{result}/#{target})*100 | F8: (#{result1}/#{target1})*100",
       "variables": "result, target, result1, target1",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F8",
+          "formula": "(#{result1}/#{target1})*100",
+          "numeratorField": "result1",
+          "denominatorField": "target1",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 43,
@@ -576,8 +2481,27 @@
       "formulaCount": 2,
       "formulaText": "F3: (#{result}/#{target})*100 | F8: (#{result_1}/#{target_1})*100",
       "variables": "result, target, result_1, target_1",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F8",
+          "formula": "(#{result_1}/#{target_1})*100",
+          "numeratorField": "result_1",
+          "denominatorField": "target_1",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 44,
@@ -589,7 +2513,19 @@
       "formulaCount": 1,
       "formulaText": "F3: (#{result}/#{target})*100",
       "variables": "result, target",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
       "status": "approved-single-formula",
       "formulaField": "F3",
       "numeratorField": "result",
@@ -606,8 +2542,41 @@
       "formulaCount": 4,
       "formulaText": "F6: (#{result}/#{target})*100 | F8: (#{result_bp2}/#{target})*100 | F15: (#{result_f}/#{target_f})*100 | F17: (#{result_bp2_f}/#{target_f})*100",
       "variables": "result, target, result_bp2, result_f, target_f, result_bp2_f",
+      "formulaDefinitions": [
+        {
+          "field": "F6",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F8",
+          "formula": "(#{result_bp2}/#{target})*100",
+          "numeratorField": "result_bp2",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{result_f}/#{target_f})*100",
+          "numeratorField": "result_f",
+          "denominatorField": "target_f",
+          "scale": 100
+        },
+        {
+          "field": "F17",
+          "formula": "(#{result_bp2_f}/#{target_f})*100",
+          "numeratorField": "result_bp2_f",
+          "denominatorField": "target_f",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 46,
@@ -619,7 +2588,19 @@
       "formulaCount": 1,
       "formulaText": "F3: (#{result}/#{target})*100",
       "variables": "result, target",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
       "status": "approved-single-formula",
       "formulaField": "F3",
       "numeratorField": "result",
@@ -636,7 +2617,19 @@
       "formulaCount": 1,
       "formulaText": "F3: (#{result}/#{target})*100",
       "variables": "result, target",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
       "status": "approved-single-formula",
       "formulaField": "F3",
       "numeratorField": "result",
@@ -653,7 +2646,19 @@
       "formulaCount": 1,
       "formulaText": "F3: (#{result}/#{target})*100",
       "variables": "result, target",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
       "status": "approved-single-formula",
       "formulaField": "F3",
       "numeratorField": "result",
@@ -670,7 +2675,19 @@
       "formulaCount": 1,
       "formulaText": "F3: (#{result}/#{target})*100",
       "variables": "result, target",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
       "status": "approved-single-formula",
       "formulaField": "F3",
       "numeratorField": "result",
@@ -687,7 +2704,19 @@
       "formulaCount": 1,
       "formulaText": "F3: (#{result}/#{target})*100",
       "variables": "result, target",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
       "status": "approved-single-formula",
       "formulaField": "F3",
       "numeratorField": "result",
@@ -704,7 +2733,19 @@
       "formulaCount": 1,
       "formulaText": "F3: (#{result}/#{target})*100",
       "variables": "result, target",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
       "status": "approved-single-formula",
       "formulaField": "F3",
       "numeratorField": "result",
@@ -721,8 +2762,27 @@
       "formulaCount": 2,
       "formulaText": "F3: (#{result}/#{target})*100 | F5: (#{result1}/#{result})*100",
       "variables": "result, target, result1",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{result1}/#{result})*100",
+          "numeratorField": "result1",
+          "denominatorField": "result",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 53,
@@ -734,8 +2794,27 @@
       "formulaCount": 2,
       "formulaText": "F3: (#{result}/#{target})*100 | F5: (#{result1}/#{result})*100",
       "variables": "result, target, result1",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{result1}/#{result})*100",
+          "numeratorField": "result1",
+          "denominatorField": "result",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 54,
@@ -747,8 +2826,34 @@
       "formulaCount": 3,
       "formulaText": "F3: (#{result}/#{target})*100 | F6: (#{result1}/#{target1})*100 | F9: (#{result2}/#{target2})*100",
       "variables": "result, target, result1, target1, result2, target2",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{result1}/#{target1})*100",
+          "numeratorField": "result1",
+          "denominatorField": "target1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{result2}/#{target2})*100",
+          "numeratorField": "result2",
+          "denominatorField": "target2",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 55,
@@ -760,7 +2865,19 @@
       "formulaCount": 1,
       "formulaText": "F3: (#{result}/#{target})*100",
       "variables": "result, target",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
       "status": "approved-single-formula",
       "formulaField": "F3",
       "numeratorField": "result",
@@ -777,7 +2894,19 @@
       "formulaCount": 1,
       "formulaText": "F3: (#{result}/#{target})*100",
       "variables": "result, target",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
       "status": "approved-single-formula",
       "formulaField": "F3",
       "numeratorField": "result",
@@ -794,8 +2923,27 @@
       "formulaCount": 2,
       "formulaText": "F3: (#{result}/#{target})*100 | F9: (#{result9q}/#{target})*100",
       "variables": "result, target, result9q",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{result9q}/#{target})*100",
+          "numeratorField": "result9q",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 58,
@@ -807,8 +2955,48 @@
       "formulaCount": 5,
       "formulaText": "F3: (#{result}/#{target})*100 | F6: (#{tm_service_q1}/#{op_service_q1})*100 | F9: (#{tm_service_q2}/#{op_service_q2})*100 | F12: (#{tm_service_q3}/#{op_service_q3})*100 | F15: (#{tm_service_q4}/#{op_service_q4})*100",
       "variables": "result, target, tm_service_q1, op_service_q1, tm_service_q2, op_service_q2, tm_service_q3, op_service_q3, tm_service_q4, op_service_q4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F6",
+          "formula": "(#{tm_service_q1}/#{op_service_q1})*100",
+          "numeratorField": "tm_service_q1",
+          "denominatorField": "op_service_q1",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{tm_service_q2}/#{op_service_q2})*100",
+          "numeratorField": "tm_service_q2",
+          "denominatorField": "op_service_q2",
+          "scale": 100
+        },
+        {
+          "field": "F12",
+          "formula": "(#{tm_service_q3}/#{op_service_q3})*100",
+          "numeratorField": "tm_service_q3",
+          "denominatorField": "op_service_q3",
+          "scale": 100
+        },
+        {
+          "field": "F15",
+          "formula": "(#{tm_service_q4}/#{op_service_q4})*100",
+          "numeratorField": "tm_service_q4",
+          "denominatorField": "op_service_q4",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 59,
@@ -820,8 +3008,48 @@
       "formulaCount": 5,
       "formulaText": "F3: (#{result}/#{target})*100 | F5: (#{resultq1}/#{target})*100 | F7: (#{resultq2}/#{target})*100 | F9: (#{resultq3}/#{target})*100 | F11: (#{resultq4}/#{target})*100",
       "variables": "result, target, resultq1, resultq2, resultq3, resultq4",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{resultq1}/#{target})*100",
+          "numeratorField": "resultq1",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F7",
+          "formula": "(#{resultq2}/#{target})*100",
+          "numeratorField": "resultq2",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F9",
+          "formula": "(#{resultq3}/#{target})*100",
+          "numeratorField": "resultq3",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F11",
+          "formula": "(#{resultq4}/#{target})*100",
+          "numeratorField": "resultq4",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 60,
@@ -833,7 +3061,19 @@
       "formulaCount": 1,
       "formulaText": "F3: (#{result}/#{target})*100",
       "variables": "result, target",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
       "status": "approved-single-formula",
       "formulaField": "F3",
       "numeratorField": "result",
@@ -850,8 +3090,34 @@
       "formulaCount": 3,
       "formulaText": "F1: (#{remiss}/#{regist})*100 | F2: (#{remiss}/#{target})*100 | F3: (#{regist}/#{target})*100",
       "variables": "remiss, regist, target",
+      "formulaDefinitions": [
+        {
+          "field": "F1",
+          "formula": "(#{remiss}/#{regist})*100",
+          "numeratorField": "remiss",
+          "denominatorField": "regist",
+          "scale": 100
+        },
+        {
+          "field": "F2",
+          "formula": "(#{remiss}/#{target})*100",
+          "numeratorField": "remiss",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F3",
+          "formula": "(#{regist}/#{target})*100",
+          "numeratorField": "regist",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     },
     {
       "order": 62,
@@ -863,8 +3129,34 @@
       "formulaCount": 3,
       "formulaText": "F3: (#{ri}/#{target})*100 | F5: (#{ad}/#{target})*100 | F7: (#{result}/#{target})*100",
       "variables": "ri, target, ad, result",
+      "formulaDefinitions": [
+        {
+          "field": "F3",
+          "formula": "(#{ri}/#{target})*100",
+          "numeratorField": "ri",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F5",
+          "formula": "(#{ad}/#{target})*100",
+          "numeratorField": "ad",
+          "denominatorField": "target",
+          "scale": 100
+        },
+        {
+          "field": "F7",
+          "formula": "(#{result}/#{target})*100",
+          "numeratorField": "result",
+          "denominatorField": "target",
+          "scale": 100
+        }
+      ],
+      "chartType": "กราฟแท่งร้อยละรายหน่วย + เส้นเป้าหมาย",
       "direction": "higher-is-better",
-      "status": "pending-primary-metric"
+      "goal": null,
+      "goalSource": "รอยืนยันจาก KPI Template ปี 2569",
+      "status": "hdc-direct-multi-formula"
     }
   ]
 }

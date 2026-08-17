@@ -146,6 +146,9 @@ const kpiState = {
   approvedDefinitions: [],
   approvedMetadata: null,
   currentDefinition: null,
+  currentChartSeries: [],
+  currentFormulaSeries: [],
+  currentSeriesField: "",
   reports: [],
   hospitals: [],
   currentRows: [],
@@ -207,12 +210,14 @@ const kpiEls = {
   metricTarget: document.querySelector("#metricTarget"),
   metricResultLabel: document.querySelector("#metricResultLabel"),
   metricResult: document.querySelector("#metricResult"),
+  metricRatioLabel: document.querySelector("#metricRatioLabel"),
   metricRatio: document.querySelector("#metricRatio"),
   metricGapLabel: document.querySelector("#metricGapLabel"),
   metricGap: document.querySelector("#metricGap"),
   tableTargetLabel: document.querySelector("#tableTargetLabel"),
   tableResultLabel: document.querySelector("#tableResultLabel"),
   tableGapLabel: document.querySelector("#tableGapLabel"),
+  tableRatioLabel: document.querySelector("#tableRatioLabel"),
   approvedNotice: document.querySelector("#approvedKpiNotice"),
   approvedTitle: document.querySelector("#approvedKpiTitle"),
   approvedFormula: document.querySelector("#approvedKpiFormula"),
@@ -222,6 +227,9 @@ const kpiEls = {
   approvedChartList: document.querySelector("#approvedChartList"),
   approvedChartNote: document.querySelector("#approvedChartNote"),
   approvedChartSource: document.querySelector("#approvedChartSource"),
+  approvedMetricSelector: document.querySelector("#approvedMetricSelector"),
+  approvedMetricSelect: document.querySelector("#approvedMetricSelect"),
+  approvedChartLegend: document.querySelector("#approvedChartLegend"),
   insightPanel: document.querySelector("#kpiInsightPanel"),
   insightGap: document.querySelector("#insightGap"),
   insightGapNote: document.querySelector("#insightGapNote"),
@@ -488,6 +496,66 @@ function isFormulaVerifiedDefinition(definition = kpiState.currentDefinition) {
   return definition?.status === "approved-single-formula";
 }
 
+function isDirectHdcDefinition(definition = kpiState.currentDefinition) {
+  return definition?.status === "hdc-direct-multi-formula";
+}
+
+function getDefinitionFormula(definition, field) {
+  return (definition?.formulaDefinitions || []).find((item) => item.field === field) || null;
+}
+
+function normalizeFormulaSeries(jsonc, definition) {
+  let columns = jsonc;
+  if (typeof columns === "string") {
+    try {
+      columns = JSON.parse(columns);
+    } catch (_error) {
+      columns = [];
+    }
+  }
+  if (!Array.isArray(columns)) columns = [];
+
+  const seen = new Set();
+  const series = columns
+    .filter((column) => column?.type === "F" && column.column_name && !seen.has(column.column_name))
+    .map((column) => {
+      seen.add(column.column_name);
+      const saved = getDefinitionFormula(definition, column.column_name);
+      const formula = column.formula || saved?.formula || "";
+      return {
+        field: column.column_name,
+        formula,
+        numeratorField: saved?.numeratorField || null,
+        denominatorField: saved?.denominatorField || null,
+        scale: Number(saved?.scale) || (/\*\s*100\b/.test(formula) ? 100 : 1),
+        isChart: Number(column.is_chart) === 1,
+        digits: Number.isFinite(Number(column.digit_number)) ? Number(column.digit_number) : 2
+      };
+    });
+
+  if (series.length) return series;
+  return (definition?.formulaDefinitions || []).map((item) => ({
+    field: item.field,
+    formula: item.formula || "",
+    numeratorField: item.numeratorField || null,
+    denominatorField: item.denominatorField || null,
+    scale: Number(item.scale) || 1,
+    isChart: false,
+    digits: 2
+  }));
+}
+
+function getCurrentSeries() {
+  return kpiState.currentFormulaSeries.find((series) => series.field === kpiState.currentSeriesField)
+    || kpiState.currentChartSeries[0]
+    || kpiState.currentFormulaSeries[0]
+    || null;
+}
+
+function isCurrentPercentMetric() {
+  return (getCurrentSeries()?.scale || 100) === 100;
+}
+
 async function loadApprovedKpiDefinitions() {
   const response = await fetch(APPROVED_KPI_DATA_URL, { cache: "no-store" });
   if (!response.ok) throw new Error(`โหลดรายการ KPI รพ.สต. ไม่สำเร็จ (${response.status})`);
@@ -619,42 +687,43 @@ function getRatio(row, target, result) {
   return null;
 }
 
-function normalizeKpiRow(row, definition = null) {
-  if (isFormulaVerifiedDefinition(definition)) {
-    const denominator = toNumber(row[definition.denominatorField]);
-    const numerator = toNumber(row[definition.numeratorField]);
-    const hdcRatio = toNumber(row[definition.formulaField]);
-    const calculatedRatio = denominator > 0 && numerator !== null ? (numerator / denominator) * 100 : null;
-    const ratio = calculatedRatio ?? hdcRatio;
-    const formulaMismatch = calculatedRatio !== null && hdcRatio !== null
+function normalizeKpiRow(row, definition = null, selectedSeries = null) {
+  if (definition) {
+    const fallbackSeries = getDefinitionFormula(definition, definition.formulaField)
+      || definition.formulaDefinitions?.[0]
+      || null;
+    const series = selectedSeries || fallbackSeries;
+    const denominatorField = series?.denominatorField || definition.denominatorField;
+    const numeratorField = series?.numeratorField || definition.numeratorField;
+    const formulaField = series?.field || definition.formulaField;
+    const metricScale = Number(series?.scale) || 100;
+    const denominator = denominatorField ? toNumber(row[denominatorField]) : null;
+    const numerator = numeratorField ? toNumber(row[numeratorField]) : null;
+    const hdcRatio = formulaField ? toNumber(row[formulaField]) : null;
+    const formulaVerified = isFormulaVerifiedDefinition(definition)
+      && formulaField === definition.formulaField;
+    const calculatedRatio = formulaVerified && denominator > 0 && numerator !== null
+      ? (numerator / denominator) * metricScale
+      : null;
+    const ratio = formulaVerified ? (calculatedRatio ?? hdcRatio) : hdcRatio;
+    const formulaMismatch = formulaVerified && calculatedRatio !== null && hdcRatio !== null
       ? Math.abs(calculatedRatio - hdcRatio) > 0.01
       : false;
     const [codeFromName, nameFromName] = String(row.a_name || "").split(/:(.*)/s);
     return {
       code: String(row.a_code || codeFromName || "").trim(),
       name: String(nameFromName || row.a_name || "").trim(),
-      target: denominator,
-      result: numerator,
+      target: denominator ?? findValueByPrefix(row, "target") ?? toNumber(row.c),
+      result: numerator ?? findValueByPrefix(row, "result") ?? toNumber(row.b),
       ratio,
       hdcRatio,
       calculatedRatio,
       formulaMismatch,
-      formulaVerified: true,
-      raw: row
-    };
-  }
-  if (definition) {
-    const [codeFromName, nameFromName] = String(row.a_name || "").split(/:(.*)/s);
-    return {
-      code: String(row.a_code || codeFromName || "").trim(),
-      name: String(nameFromName || row.a_name || "").trim(),
-      target: findValueByPrefix(row, "target") ?? toNumber(row.c),
-      result: findValueByPrefix(row, "result") ?? toNumber(row.b),
-      ratio: null,
-      hdcRatio: null,
-      calculatedRatio: null,
-      formulaMismatch: false,
-      formulaVerified: false,
+      formulaVerified,
+      hdcCalculated: !formulaVerified && hdcRatio !== null,
+      metricField: formulaField || "",
+      metricScale,
+      metricCanAggregate: Boolean(denominatorField && numeratorField),
       raw: row
     };
   }
@@ -678,6 +747,51 @@ function formatNumber(value, digits = 0) {
     maximumFractionDigits: digits,
     minimumFractionDigits: digits
   });
+}
+
+function formatMetricValue(value, digits = 2, scale = null) {
+  if (!Number.isFinite(value)) return "-";
+  const metricScale = scale ?? getCurrentSeries()?.scale ?? 100;
+  return `${formatNumber(value, digits)}${metricScale === 100 ? "%" : ""}`;
+}
+
+function performanceLevel(value, definition = kpiState.currentDefinition) {
+  if (!Number.isFinite(value)) return 0;
+  const direction = definition?.direction || "higher-is-better";
+  const goal = toNumber(definition?.goal);
+  let score;
+  if (goal !== null && goal > 0) {
+    score = direction === "lower-is-better"
+      ? (value <= goal ? 100 : (goal / value) * 100)
+      : (value / goal) * 100;
+    if (score >= 100) return 5;
+    if (score >= 90) return 4;
+    if (score >= 80) return 3;
+    if (score >= 70) return 2;
+    return 1;
+  }
+
+  const bounded = Math.min(Math.max(value, 0), 100);
+  score = direction === "lower-is-better" ? 100 - bounded : bounded;
+  if (score >= 90) return 5;
+  if (score >= 80) return 4;
+  if (score >= 70) return 3;
+  if (score >= 60) return 2;
+  return 1;
+}
+
+function performanceLegend(definition = kpiState.currentDefinition) {
+  const hasGoal = toNumber(definition?.goal) !== null;
+  const labels = hasGoal
+    ? ["ต่ำกว่าเป้ามาก", "ต่ำกว่าเป้า", "เฝ้าระวัง", "ใกล้เป้า", "ผ่านเป้า"]
+    : ["ต้องเร่งแก้ไข", "ต่ำ", "เฝ้าระวัง", "ดี", "ดีมาก"];
+  return {
+    hasGoal,
+    labels,
+    note: hasGoal
+      ? `เทียบเป้าหมาย ${formatMetricValue(definition.goal, 2)}`
+      : "สี 5 ระดับเบื้องต้นจากค่า 0–100; ยังไม่ใช้ตัดสินผ่าน KPI จนกว่าจะยืนยันเป้าหมายปี 2569"
+  };
 }
 
 function formatThaiDateTime(value) {
@@ -728,7 +842,7 @@ function getAllSummaryUnitCode() {
 function getAllSummaryDisplayRows() {
   const selectedCode = getAllSummaryUnitCode();
   return kpiState.allSummary.map((item) => {
-    if (item.status !== "สำเร็จ") {
+    if (!["สำเร็จ", "ผลคำนวณ HDC"].includes(item.status)) {
       return {
         ...item,
         unitsLabel: selectedCode === "ALL" ? "-" : getUnitLabel(selectedCode, { short: true }),
@@ -754,6 +868,7 @@ function getAllSummaryDisplayRows() {
       result: hasSelectedUnitData ? summary.result : null,
       gap: hasSelectedUnitData ? summary.gap : null,
       ratio: hasSelectedUnitData ? summary.ratio : null,
+      metricScale: hasSelectedUnitData ? summary.metricScale : item.metricScale,
       status: hasSelectedUnitData ? item.status : "ไม่มีข้อมูลหน่วยนี้"
     };
   });
@@ -763,12 +878,12 @@ function renderAllSummaryScope() {
   if (!kpiEls.allSummaryScope) return;
   const selectedCode = getAllSummaryUnitCode();
   const rows = getAllSummaryDisplayRows();
-  const successCount = rows.filter((item) => item.status === "สำเร็จ").length;
-  const pendingCount = rows.filter((item) => item.status === "รอยืนยันสูตรหลัก").length;
+  const successCount = rows.filter((item) => ["สำเร็จ", "ผลคำนวณ HDC"].includes(item.status)).length;
+  const directHdcCount = rows.filter((item) => item.status === "ผลคำนวณ HDC").length;
   const noDataCount = rows.filter((item) => item.status === "ไม่มีข้อมูลหน่วยนี้").length;
   if (selectedCode === "ALL") {
-    const pendingNote = pendingCount ? ` | รอยืนยันสูตรหลัก ${formatNumber(pendingCount)} รายการ` : "";
-    kpiEls.allSummaryScope.textContent = `แสดงภาพรวมทุกหน่วยบริการ จาก KPI ${formatNumber(rows.length)} รายการ${pendingNote}`;
+    const directHdcNote = directHdcCount ? ` | ใช้ผลคำนวณ HDC ${formatNumber(directHdcCount)} รายการ` : "";
+    kpiEls.allSummaryScope.textContent = `แสดงภาพรวมทุกหน่วยบริการ จาก KPI ${formatNumber(rows.length)} รายการ${directHdcNote}`;
     return;
   }
   const noDataNote = noDataCount ? ` | ไม่มีข้อมูลของหน่วยนี้ ${formatNumber(noDataCount)} รายการ` : "";
@@ -778,19 +893,23 @@ function renderAllSummaryScope() {
 function summarizeRows(rows) {
   const target = rows.reduce((sum, row) => sum + (row.target || 0), 0);
   const result = rows.reduce((sum, row) => sum + (row.result || 0), 0);
-  const pendingFormula = isApprovedKpiMode()
-    && (rows.some((row) => row.formulaVerified === false)
-      || (!rows.length && !isFormulaVerifiedDefinition()));
-  if (pendingFormula) return { target, result, gap: null, ratio: null };
   const ratios = rows.map((row) => row.ratio).filter((value) => Number.isFinite(value));
-  const ratio = target > 0 ? (result / target) * 100 : ratios.length ? ratios.reduce((sum, value) => sum + value, 0) / ratios.length : null;
-  const gap = target || result ? (isApprovedKpiMode() ? target - result : result - target) : null;
-  return { target, result, gap, ratio };
+  const metricScale = rows.find((row) => Number.isFinite(row.metricScale))?.metricScale || 100;
+  const canAggregate = rows.some((row) => row.metricCanAggregate);
+  const ratio = canAggregate && target > 0
+    ? (result / target) * metricScale
+    : ratios.length
+      ? ratios.reduce((sum, value) => sum + value, 0) / ratios.length
+      : null;
+  const gap = canAggregate && (target || result)
+    ? (isApprovedKpiMode() ? target - result : result - target)
+    : null;
+  return { target, result, gap, ratio, metricScale };
 }
 
 function rowGap(row) {
   if (row.target === null || row.target === undefined || row.result === null || row.result === undefined) return null;
-  if (isApprovedKpiMode() && row.formulaVerified === false) return null;
+  if (isApprovedKpiMode() && !row.metricCanAggregate) return null;
   return isApprovedKpiMode() ? row.target - row.result : row.result - row.target;
 }
 
@@ -830,16 +949,13 @@ function renderInsightList(element, rows, direction) {
   element.innerHTML = rows.map((row, index) => `
     <li>
       <span>${index + 1}. ${row.name || row.code}</span>
-      <strong class="${ratioClass(row.ratio)}">${formatNumber(row.ratio, 2)}%</strong>
+      <strong class="${ratioClass(row.ratio)}">${formatMetricValue(row.ratio, 2, row.metricScale)}</strong>
     </li>
   `).join("");
 }
 
 function buildQualityWarnings(rows, summary) {
   if (!rows.length) return ["ยังไม่มีข้อมูลรายหน่วยบริการ"];
-  if (isApprovedKpiMode() && !isFormulaVerifiedDefinition()) {
-    return ["ยังไม่คำนวณร้อยละหรือจัดอันดับ เพราะรายงานนี้มีหลายสูตรและยังไม่ได้ยืนยันสูตรหลัก"];
-  }
   const warnings = [];
   const zeroTargets = rows.filter((row) => row.target === 0 && (row.result || 0) > 0).length;
   const missingRatios = rows.filter((row) => !Number.isFinite(row.ratio)).length;
@@ -857,6 +973,7 @@ function buildQualityWarnings(rows, summary) {
   if (formulaMismatches) warnings.push(`มี ${formatNumber(formulaMismatches)} หน่วยที่ค่าคำนวณใหม่ไม่ตรงกับ ${kpiState.currentDefinition?.formulaField || "สูตร HDC"}`);
   if (highDenominator) warnings.push(`มี ${formatNumber(highDenominator)} หน่วยที่ denominator สูงกว่าค่ากลางมาก ควรตรวจ TYPEAREA/DISCHARGE`);
   if (summary.target === 0 && summary.result > 0) warnings.push("เป้าหมายรวมเป็นศูนย์แต่มีผลงาน ควรตรวจแฟ้ม PERSON/SERVICE");
+  if (isApprovedKpiMode() && isDirectHdcDefinition()) warnings.push("สูตรหลายชุด: ใช้ค่าผลลัพธ์ที่ HDC คำนวณและระบุเป็นกราฟโดยตรง");
   if (!warnings.length) warnings.push("ไม่พบสัญญาณผิดปกติจาก target/result/rate ในรายงานนี้");
   return warnings.slice(0, 4);
 }
@@ -872,7 +989,7 @@ function renderInsightPanel(rows, summary) {
 
   if (kpiEls.insightGap) kpiEls.insightGap.textContent = formatGap(summary.gap);
   if (kpiEls.insightGapNote) {
-    const ratioText = summary.ratio === null ? "ยังไม่มีร้อยละ" : `ร้อยละรวม ${formatNumber(summary.ratio, 2)}%`;
+    const ratioText = summary.ratio === null ? "ยังไม่มีค่าผลลัพธ์" : `ค่ารวม/เฉลี่ย ${formatMetricValue(summary.ratio, 2, summary.metricScale)}`;
     kpiEls.insightGapNote.textContent = `${formatNumber(rows.length)} หน่วยบริการ | ${ratioText}`;
   }
 
@@ -912,14 +1029,6 @@ async function loadTrendSummary() {
   const report = getCurrentReport();
   if (!report?.report_code || !kpiEls.loadTrend) return;
 
-  if (isApprovedKpiMode() && !isFormulaVerifiedDefinition(report.approvedDefinition)) {
-    if (kpiEls.insightTrend) kpiEls.insightTrend.textContent = "รอยืนยันสูตรหลัก";
-    if (kpiEls.insightTrendNote) kpiEls.insightTrendNote.textContent = "ยังไม่คำนวณ Trend เพื่อป้องกันการเลือกสูตรผิดจากรายงานหลายสูตร";
-    kpiState.lastTrend = null;
-    renderDistrictBrief();
-    return;
-  }
-
   kpiEls.loadTrend.disabled = true;
   if (kpiEls.insightTrend) kpiEls.insightTrend.textContent = "กำลังคำนวณ";
   if (kpiEls.insightTrendNote) kpiEls.insightTrendNote.textContent = "ตรวจ snapshot และข้อมูลสดย้อนหลัง";
@@ -929,10 +1038,10 @@ async function loadTrendSummary() {
     const response = await getTrendProviderResponse(report.report_code, String(year));
     if (!response) continue;
     try {
-      const { rows } = normalizeProviderRowsResponse(response, report.report_code);
+      const { rows } = normalizeProviderRowsResponse(response, report.report_code, kpiState.currentSeriesField);
       const summary = summarizeRows(filterTrendRows(rows));
       if (Number.isFinite(summary.ratio)) {
-        points.push({ year, ratio: summary.ratio });
+        points.push({ year, ratio: summary.ratio, metricScale: summary.metricScale });
       }
     } catch (_error) {
       // ข้ามปีที่ HDC ต้นทางไม่มีโครงข้อมูลแบบ provider
@@ -954,11 +1063,11 @@ async function loadTrendSummary() {
   if (kpiEls.insightTrend) {
     kpiEls.insightTrend.textContent = previous
       ? `${latest.ratio >= previous.ratio ? "เพิ่ม" : "ลด"} ${formatNumber(Math.abs(latest.ratio - previous.ratio), 2)} จุด`
-      : `${formatNumber(latest.ratio, 2)}%`;
+      : formatMetricValue(latest.ratio, 2, latest.metricScale);
   }
   if (kpiEls.insightTrendNote) {
     kpiEls.insightTrendNote.textContent = ordered
-      .map((point) => `${point.year}: ${formatNumber(point.ratio, 2)}%`)
+      .map((point) => `${point.year}: ${formatMetricValue(point.ratio, 2, point.metricScale)}`)
       .join(" | ");
   }
   kpiState.lastTrend = { reportName: report.report_name, latest, previous, points: ordered };
@@ -1035,7 +1144,7 @@ function getTrendSummary() {
     return { hasData: false, label: "รอข้อมูลย้อนหลัง", detail: "ยังไม่ได้คำนวณ Trend 5 ปี — กดปุ่ม คำนวณ Trend 5 ปี ที่การ์ด Insight ด้านล่าง", points: [] };
   }
   if (!trend.previous) {
-    return { hasData: true, label: `${formatNumber(trend.latest.ratio, 1)}%`, detail: `${trend.reportName} (${trend.latest.year})`, points: trend.points };
+    return { hasData: true, label: formatMetricValue(trend.latest.ratio, 1, trend.latest.metricScale), detail: `${trend.reportName} (${trend.latest.year})`, points: trend.points };
   }
   const diff = trend.latest.ratio - trend.previous.ratio;
   const lowerIsBetter = kpiState.currentDefinition?.direction === "lower-is-better";
@@ -1131,7 +1240,7 @@ function renderDistrictBrief() {
       const rows = brief.units.units.map((row, index) => `
         <li>
           <span>${index + 1}. ${row.name || row.code}</span>
-          <strong class="${ratioClass(row.ratio)}">${formatNumber(row.ratio, 1)}%</strong>
+          <strong class="${ratioClass(row.ratio)}">${formatMetricValue(row.ratio, 1, row.metricScale)}</strong>
         </li>
       `);
       if (brief.units.missingCount) {
@@ -1169,75 +1278,137 @@ function renderApprovedModeContext() {
   const approved = isApprovedKpiMode();
   const definition = kpiState.currentDefinition;
   const formulaVerified = isFormulaVerifiedDefinition(definition);
+  const directHdc = isDirectHdcDefinition(definition);
+  const series = getCurrentSeries();
+  const percentMetric = isCurrentPercentMetric();
   if (kpiEls.approvedNotice) kpiEls.approvedNotice.hidden = !approved;
   if (kpiEls.approvedChart) kpiEls.approvedChart.hidden = !approved;
 
-  if (kpiEls.metricTargetLabel) kpiEls.metricTargetLabel.textContent = approved ? (formulaVerified ? "ตัวหารรวม" : "target ดิบรวม") : "เป้าหมายรวม";
-  if (kpiEls.metricResultLabel) kpiEls.metricResultLabel.textContent = approved ? (formulaVerified ? "ตัวตั้งรวม" : "result ดิบรวม") : "ผลงานรวม";
-  if (kpiEls.metricGapLabel) kpiEls.metricGapLabel.textContent = approved ? (formulaVerified ? "คงเหลือ (ตัวหาร−ตัวตั้ง)" : "ยังไม่คำนวณ Gap") : "Gap รวม";
-  if (kpiEls.tableTargetLabel) kpiEls.tableTargetLabel.textContent = approved ? (formulaVerified ? "ตัวหาร" : "target ดิบ") : "เป้าหมาย";
-  if (kpiEls.tableResultLabel) kpiEls.tableResultLabel.textContent = approved ? (formulaVerified ? "ตัวตั้ง" : "result ดิบ") : "ผลงาน";
-  if (kpiEls.tableGapLabel) kpiEls.tableGapLabel.textContent = approved ? (formulaVerified ? "คงเหลือ" : "Gap (รอสูตร)") : "Gap";
+  if (kpiEls.metricTargetLabel) kpiEls.metricTargetLabel.textContent = approved ? `${series?.denominatorField || "ตัวหาร"} รวม` : "เป้าหมายรวม";
+  if (kpiEls.metricResultLabel) kpiEls.metricResultLabel.textContent = approved ? `${series?.numeratorField || "ตัวตั้ง"} รวม` : "ผลงานรวม";
+  if (kpiEls.metricRatioLabel) kpiEls.metricRatioLabel.textContent = approved ? (percentMetric ? "ร้อยละรวม/เฉลี่ย" : "ค่าผลลัพธ์รวม/เฉลี่ย") : "ร้อยละเฉลี่ย";
+  if (kpiEls.metricGapLabel) kpiEls.metricGapLabel.textContent = approved ? "คงเหลือ (ตัวหาร−ตัวตั้ง)" : "Gap รวม";
+  if (kpiEls.tableTargetLabel) kpiEls.tableTargetLabel.textContent = approved ? (series?.denominatorField || "ตัวหาร") : "เป้าหมาย";
+  if (kpiEls.tableResultLabel) kpiEls.tableResultLabel.textContent = approved ? (series?.numeratorField || "ตัวตั้ง") : "ผลงาน";
+  if (kpiEls.tableGapLabel) kpiEls.tableGapLabel.textContent = approved ? "คงเหลือ" : "Gap";
+  if (kpiEls.tableRatioLabel) kpiEls.tableRatioLabel.textContent = approved ? (percentMetric ? "ร้อยละ HDC" : "ค่าผลลัพธ์ HDC") : "ร้อยละ";
 
   if (!approved || !definition) return;
   const metadata = kpiState.approvedMetadata || {};
-  if (kpiEls.approvedNotice) kpiEls.approvedNotice.classList.toggle("pending-formula", !formulaVerified);
+  if (kpiEls.approvedNotice) {
+    kpiEls.approvedNotice.classList.remove("pending-formula");
+    kpiEls.approvedNotice.classList.toggle("hdc-direct", directHdc);
+  }
   if (kpiEls.approvedTitle) kpiEls.approvedTitle.textContent = `${definition.id} · ${definition.title}`;
   if (kpiEls.approvedFormula) {
     if (formulaVerified) {
       kpiEls.approvedFormula.textContent = `สูตร HDC: ${definition.formula} | ตัวตั้ง ${definition.numeratorField} | ตัวหาร ${definition.denominatorField} | ผลลัพธ์ ${definition.formulaField}`;
     } else {
-      const formulaPreview = String(definition.formulaText || "")
-        .split(" | ")
-        .slice(0, 3)
-        .join(" | ");
-      const moreFormulaNote = definition.formulaCount > 3 ? ` | และอีก ${definition.formulaCount - 3} สูตร` : "";
-      kpiEls.approvedFormula.textContent = `พบ ${definition.formulaCount || "หลาย"} สูตรในรายงาน · รอยืนยันสูตรหลักก่อนคำนวณ${formulaPreview ? ` | ${formulaPreview}${moreFormulaNote}` : ""}`;
+      kpiEls.approvedFormula.textContent = series
+        ? `ใช้ผล HDC โดยตรง: ${series.field} = ${series.formula || "สูตรจาก HDC"} · ไม่คำนวณทับค่าต้นทาง`
+        : `พบ ${definition.formulaCount || "หลาย"} สูตรในรายงาน · รอข้อมูลโครงสร้างจาก HDC`;
     }
   }
   if (kpiEls.approvedDirection) {
     const direction = definition.direction === "lower-is-better" ? "ยิ่งต่ำยิ่งดี" : "ยิ่งสูงยิ่งดี";
     kpiEls.approvedDirection.textContent = formulaVerified
       ? `${direction} · ตรวจสูตรแล้ว ${metadata.approvedTotal || 13}/${metadata.selectionTotal || 62}`
-      : `${direction} · รอยืนยันสูตรหลัก ${metadata.pendingReviewTotal || 49} ข้อ`;
+      : `${direction} · ใช้ผลคำนวณ HDC โดยตรง ${metadata.directHdcTotal || 49} ข้อ`;
   }
   if (kpiEls.approvedChartTitle) {
-    kpiEls.approvedChartTitle.textContent = "กราฟแท่งแนวตั้งร้อยละรายหน่วยบริการ";
+    kpiEls.approvedChartTitle.textContent = `กราฟแท่งแนวตั้ง${series ? ` · ${series.field}` : ""}`;
   }
   if (kpiEls.approvedChartNote) {
-    kpiEls.approvedChartNote.textContent = formulaVerified
-      ? "แกน Y 0–100% · คำนวณจากตัวตั้ง/ตัวหารและตรวจเทียบ F3 ของ HDC · ยังไม่แสดงเส้นเกณฑ์จนกว่าจะยืนยัน KPI Template 2569"
-      : "ยังไม่สร้างกราฟหรือร้อยละ เพราะรายงานนี้มีหลายสูตรและยังไม่ได้ยืนยันสูตรหลัก";
+    const chartCount = kpiState.currentChartSeries.length;
+    kpiEls.approvedChartNote.textContent = chartCount
+      ? `${definition.chartType || "กราฟตาม HDC"} · HDC ระบุ is_chart ${chartCount} ชุด${formulaVerified ? " · ตรวจเทียบสูตรแล้ว" : " · ใช้ค่าที่ HDC คำนวณโดยตรง"}`
+      : "HDC ไม่ได้กำหนดคอลัมน์ is_chart=1 ในรายงานนี้ จึงไม่สร้างกราฟแทนเอง";
   }
   if (kpiEls.approvedChartSource) {
     kpiEls.approvedChartSource.textContent = dataStatus.lastTableSource === "live" ? "HDC Public สด" : "Snapshot HDC Public";
   }
 }
 
+function renderApprovedMetricSelector() {
+  if (!kpiEls.approvedMetricSelector || !kpiEls.approvedMetricSelect) return;
+  const series = kpiState.currentChartSeries;
+  kpiEls.approvedMetricSelector.hidden = series.length <= 1;
+  kpiEls.approvedMetricSelect.innerHTML = series.map((item) => (
+    `<option value="${escapeHtml(item.field)}">${escapeHtml(`${item.field} · ${item.formula || "ค่าคำนวณ HDC"}`)}</option>`
+  )).join("");
+  if (series.some((item) => item.field === kpiState.currentSeriesField)) {
+    kpiEls.approvedMetricSelect.value = kpiState.currentSeriesField;
+  }
+}
+
+function selectApprovedMetric(field) {
+  const series = kpiState.currentChartSeries.find((item) => item.field === field);
+  if (!series || !kpiState.currentDefinition) return;
+  kpiState.currentSeriesField = series.field;
+  kpiState.currentRows = kpiState.currentRows.map((row) => (
+    normalizeKpiRow(row.raw, kpiState.currentDefinition, series)
+  ));
+  resetTrendInsight();
+  renderCurrentRows();
+}
+
+function niceAxisMaximum(values, scale) {
+  if (scale === 100) return 100;
+  const max = Math.max(...values.filter(Number.isFinite), 0);
+  if (max <= 1) return 1;
+  const magnitude = 10 ** Math.floor(Math.log10(max));
+  return Math.ceil((max * 1.08) / magnitude) * magnitude;
+}
+
+function renderApprovedChartLegend(series) {
+  if (!kpiEls.approvedChartLegend) return;
+  const hasGoal = toNumber(kpiState.currentDefinition?.goal) !== null;
+  const useBands = series?.scale === 100 || hasGoal;
+  if (!useBands) {
+    kpiEls.approvedChartLegend.hidden = false;
+    kpiEls.approvedChartLegend.innerHTML = '<span class="approved-legend-note">ค่าชุดนี้ไม่ใช่สเกลร้อยละ จึงใช้สีเดียวเพื่อไม่ตีความระดับผลงานผิด</span>';
+    return;
+  }
+  const legend = performanceLegend();
+  kpiEls.approvedChartLegend.hidden = false;
+  kpiEls.approvedChartLegend.innerHTML = `${legend.labels.map((label, index) => `
+    <span class="approved-legend-item"><i class="performance-${index + 1}"></i>${escapeHtml(label)}</span>`).join("")}
+    <span class="approved-legend-note">${escapeHtml(legend.note)}</span>`;
+}
+
 function renderApprovedBarChart(rows) {
   if (!kpiEls.approvedChartList || !isApprovedKpiMode()) return;
-  if (!isFormulaVerifiedDefinition()) {
+  renderApprovedMetricSelector();
+  const series = getCurrentSeries();
+  if (!kpiState.currentChartSeries.length) {
     kpiEls.approvedChartList.innerHTML = `
       <div class="approved-chart-placeholder">
-        <strong>รอยืนยันสูตรหลัก</strong>
-        <span>แสดงรายการ KPI และข้อมูลดิบได้ แต่จะไม่คำนวณเปอร์เซ็นต์หรือสร้างกราฟจากสูตรที่เดาเอง</span>
+        <strong>รายงาน HDC ไม่มีคอลัมน์กราฟ</strong>
+        <span>ยังแสดงค่าตารางที่ HDC คำนวณให้ แต่ไม่สร้างกราฟแทน เพราะต้นทางไม่ได้ระบุ is_chart=1</span>
       </div>`;
+    if (kpiEls.approvedChartLegend) kpiEls.approvedChartLegend.hidden = true;
     return;
   }
   if (!rows.length) {
     kpiEls.approvedChartList.innerHTML = '<p class="data-status">ไม่พบข้อมูลสำหรับสร้างกราฟ</p>';
+    if (kpiEls.approvedChartLegend) kpiEls.approvedChartLegend.hidden = true;
     return;
   }
+  const values = rows.map((row) => row.ratio).filter(Number.isFinite);
+  const axisMax = niceAxisMaximum(values, series?.scale || 100);
+  const ticks = [axisMax, axisMax * 0.75, axisMax * 0.5, axisMax * 0.25, 0];
+  const useBands = series?.scale === 100 || toNumber(kpiState.currentDefinition?.goal) !== null;
   const columns = rows.map((row) => {
     const hasRatio = Number.isFinite(row.ratio);
-    const height = hasRatio ? Math.min(Math.max(row.ratio, 0), 100) : 0;
+    const height = hasRatio ? Math.min(Math.max((row.ratio / axisMax) * 100, 0), 100) : 0;
     const mismatch = row.formulaMismatch ? " · สูตรไม่ตรง F3" : "";
-    const title = `${row.code} ${row.name || row.code}: ${hasRatio ? `${formatNumber(row.ratio, 2)}%` : "ไม่มีข้อมูล"}${mismatch}`;
+    const level = useBands ? performanceLevel(row.ratio) : 0;
+    const title = `${row.code} ${row.name || row.code}: ${hasRatio ? formatMetricValue(row.ratio, 2, row.metricScale) : "ไม่มีข้อมูล"}${mismatch}`;
     return `
       <div class="approved-chart-column" title="${escapeHtml(title)}">
-        <span class="approved-chart-value">${hasRatio ? `${formatNumber(row.ratio, 1)}%` : "-"}</span>
+        <span class="approved-chart-value">${hasRatio ? formatMetricValue(row.ratio, 1, row.metricScale) : "-"}</span>
         <div class="approved-chart-track" aria-hidden="true">
-          <div class="approved-chart-bar${hasRatio ? "" : " no-data"}" style="height:${height}%"></div>
+          <div class="approved-chart-bar${hasRatio ? ` performance-${level}` : " no-data"}" style="height:${height}%"></div>
         </div>
         <span class="approved-chart-code">${escapeHtml(row.code)}</span>
       </div>`;
@@ -1245,13 +1416,14 @@ function renderApprovedBarChart(rows) {
   kpiEls.approvedChartList.innerHTML = `
     <div class="approved-column-chart">
       <div class="approved-y-axis" aria-hidden="true">
-        <span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span>
+        ${ticks.map((tick) => `<span>${formatMetricValue(tick, tick % 1 ? 1 : 0, series?.scale)}</span>`).join("")}
       </div>
       <div class="approved-plot-scroll" tabindex="0" aria-label="เลื่อนแนวนอนเพื่อดูหน่วยบริการทั้งหมด">
         <div class="approved-plot">${columns}</div>
       </div>
     </div>
-    <p class="approved-chart-help">แกน X แสดงรหัสหน่วยบริการ · ชี้หรือแตะแท่งเพื่อดูชื่อเต็มและค่าร้อยละ</p>`;
+    <p class="approved-chart-help">แกน X แสดงรหัสหน่วยบริการ · ตัวเลขอยู่ที่ปลายแท่ง · ชี้หรือแตะเพื่อดูชื่อเต็ม</p>`;
+  renderApprovedChartLegend(series);
 }
 
 function renderCurrentRows() {
@@ -1263,7 +1435,7 @@ function renderCurrentRows() {
   kpiEls.metricUnits.textContent = formatNumber(rows.length);
   kpiEls.metricTarget.textContent = formatNumber(summary.target);
   kpiEls.metricResult.textContent = formatNumber(summary.result);
-  kpiEls.metricRatio.textContent = summary.ratio === null ? "-" : `${formatNumber(summary.ratio, 2)}%`;
+  kpiEls.metricRatio.textContent = formatMetricValue(summary.ratio, 2, summary.metricScale);
   if (kpiEls.metricGap) kpiEls.metricGap.textContent = formatGap(summary.gap);
   renderInsightPanel(rows, summary);
   renderDistrictBrief();
@@ -1281,7 +1453,7 @@ function renderCurrentRows() {
       <td>${formatNumber(row.target)}</td>
       <td>${formatNumber(row.result)}</td>
       <td><span class="gap-pill ${gapClass(rowGap(row))}">${formatGap(rowGap(row))}</span></td>
-      <td><span class="ratio-pill ${ratioClass(row.ratio)}">${row.ratio === null ? "-" : `${formatNumber(row.ratio, 2)}%`}</span></td>
+      <td><span class="ratio-pill ${ratioClass(row.ratio)}">${formatMetricValue(row.ratio, 2, row.metricScale)}</span></td>
       <td>${kpiState.lastDateCom || "-"}</td>
     </tr>
   `).join("");
@@ -1314,16 +1486,30 @@ function buildProviderDataPath(reportCode, budgetYear = getSelectedBudgetYear())
   return `reports/province/data/${reportCode}?${params.toString()}`;
 }
 
-function normalizeProviderRowsResponse(response, reportCode = "") {
+function normalizeProviderRowsResponse(response, reportCode = "", preferredSeriesField = "") {
   if (!response.ok) throw new Error(response.error || "HDC API error");
   const source = response.rows?.[0] || {};
   const allowedCodes = getHospitalCodes();
   const data = Array.isArray(source.data) ? source.data : [];
   const definition = isApprovedKpiMode() ? getApprovedDefinition(reportCode) : null;
+  const formulaSeries = definition ? normalizeFormulaSeries(source.jsonc, definition) : [];
+  const chartSeries = formulaSeries.filter((series) => series.isChart);
+  const selectedSeries = chartSeries.find((series) => series.field === preferredSeriesField)
+    || chartSeries[0]
+    || formulaSeries.find((series) => series.field === preferredSeriesField)
+    || formulaSeries[0]
+    || null;
   const rows = data
-    .map((row) => normalizeKpiRow(row, definition))
+    .map((row) => normalizeKpiRow(row, definition, selectedSeries))
     .filter((row) => !allowedCodes.size || allowedCodes.has(row.code) || isAllowedServiceUnit(row));
-  return { rows, dateCom: source.datecom || "", label: source.label || "" };
+  return {
+    rows,
+    dateCom: source.datecom || "",
+    label: source.label || "",
+    formulaSeries,
+    chartSeries,
+    selectedSeries
+  };
 }
 
 // preferLive=false (default): เส้นทางเดิม snapshot-first เมื่อออนไลน์ / live-first เมื่อเปิดจากเครื่องไทย (ดู hdcGet)
@@ -1333,10 +1519,10 @@ function normalizeProviderRowsResponse(response, reportCode = "") {
 // ลองดึงสดจาก HDC ก่อนเสมอไม่ว่าจะเปิดจากที่ไหน ถ้าดึงไม่ได้ (เช่น Vercel เข้า HDC ไม่ได้เลย
 // ตามที่อธิบายใน scripts/README.md) ให้ fallback มา snapshot แทน พร้อมบันทึกแหล่งข้อมูลไว้ใน
 // dataStatus ให้ UI แสดงเวลาที่ดึงสดล่าสุด/ข้อความ fallback ได้
-async function fetchProviderRows(reportCode, budgetYear = getSelectedBudgetYear(), { preferLive = false } = {}) {
+async function fetchProviderRows(reportCode, budgetYear = getSelectedBudgetYear(), { preferLive = false, preferredSeriesField = "" } = {}) {
   if (!preferLive) {
     const response = await hdcGet("hdc", buildProviderDataPath(reportCode, budgetYear));
-    return normalizeProviderRowsResponse(response, reportCode);
+    return normalizeProviderRowsResponse(response, reportCode, preferredSeriesField);
   }
 
   const path = buildProviderDataPath(reportCode, budgetYear);
@@ -1344,12 +1530,12 @@ async function fetchProviderRows(reportCode, budgetYear = getSelectedBudgetYear(
     const response = await fetchProxy("hdc", path, 12000);
     dataStatus.lastLiveFetchAt = new Date();
     dataStatus.lastTableSource = "live";
-    return normalizeProviderRowsResponse(response, reportCode);
+    return normalizeProviderRowsResponse(response, reportCode, preferredSeriesField);
   } catch (liveError) {
     const snapshot = await getSnapshot("hdc", path);
     if (snapshot) {
       dataStatus.lastTableSource = "snapshot-fallback";
-      return normalizeProviderRowsResponse(snapshot, reportCode);
+      return normalizeProviderRowsResponse(snapshot, reportCode, preferredSeriesField);
     }
     throw liveError;
   }
@@ -1364,13 +1550,23 @@ async function loadCurrentKpi({ preferLive = true } = {}) {
   kpiState.currentDefinition = isApprovedKpiMode()
     ? (report.approvedDefinition || getApprovedDefinition(report.report_code))
     : null;
+  kpiState.currentChartSeries = [];
+  kpiState.currentFormulaSeries = [];
+  kpiState.currentSeriesField = "";
   renderApprovedModeContext();
   resetTrendInsight();
   dataStatus.lastTableSource = null;
   setKpiStatus(`กำลังโหลดข้อมูลรายหน่วยบริการ: ${report.report_name}`);
   try {
-    const { rows, dateCom } = await fetchProviderRows(report.report_code, undefined, { preferLive });
+    const { rows, dateCom, chartSeries = [], formulaSeries = [], selectedSeries = null } = await fetchProviderRows(
+      report.report_code,
+      undefined,
+      { preferLive }
+    );
     kpiState.currentRows = rows;
+    kpiState.currentChartSeries = chartSeries;
+    kpiState.currentFormulaSeries = formulaSeries;
+    kpiState.currentSeriesField = selectedSeries?.field || "";
     kpiState.lastDateCom = dateCom;
     renderCurrentRows();
     const reportCountNote = kpiState.reportSkippedCount
@@ -1380,8 +1576,10 @@ async function loadCurrentKpi({ preferLive = true } = {}) {
       ? " | ตอนนี้เชื่อม HDC สดไม่ได้ จึงแสดงข้อมูลสำรองล่าสุดให้ดูก่อน"
       : "";
     const sourceLabel = dataStatus.lastTableSource === "live" ? "สดจาก HDC Public " : "";
-    const formulaNote = isApprovedKpiMode() && !isFormulaVerifiedDefinition()
-      ? " | แสดงข้อมูลดิบเท่านั้น ยังไม่คำนวณร้อยละ/กราฟจนกว่าจะยืนยันสูตรหลัก"
+    const formulaNote = isApprovedKpiMode() && isDirectHdcDefinition()
+      ? chartSeries.length
+        ? ` | ใช้ค่าที่ HDC คำนวณโดยตรง (${chartSeries.length} ชุดข้อมูลกราฟ)`
+        : " | HDC ไม่ได้กำหนดคอลัมน์ is_chart สำหรับรายงานนี้ จึงแสดงค่าตารางโดยไม่สร้างกราฟ"
       : "";
     setKpiStatus(
       `โหลดข้อมูล${sourceLabel}สำเร็จ ${rows.length} หน่วยบริการ (${dateCom || "ไม่ระบุวันที่ประมวลผล"})${reportCountNote}${formulaNote}${fallbackNote}`,
@@ -1390,6 +1588,9 @@ async function loadCurrentKpi({ preferLive = true } = {}) {
     renderTableDataStatus();
   } catch (error) {
     kpiState.currentRows = [];
+    kpiState.currentChartSeries = [];
+    kpiState.currentFormulaSeries = [];
+    kpiState.currentSeriesField = "";
     renderCurrentRows();
     updateDataSource("error");
     setKpiStatus(`โหลดข้อมูลไม่สำเร็จ: ${error.message}`, "error");
@@ -1518,7 +1719,7 @@ async function loadKpiReports({ preferLive = true } = {}) {
       const verification = isApprovedKpiMode()
         ? (isFormulaVerifiedDefinition(report.approvedDefinition)
           ? "[ตรวจสูตรแล้ว] "
-          : `[รอยืนยัน ${report.formulaCount || "หลาย"} สูตร] `)
+          : `[HDC คำนวณ ${report.formulaCount || "หลาย"} สูตร] `)
         : "";
       return `${verification}${report.weight || report.no || ""} ${report.report_group ? report.report_group + " > " : ""}${report.report_name}`.trim();
     },
@@ -1532,7 +1733,7 @@ async function loadKpiReports({ preferLive = true } = {}) {
   const skippedReportCount = kpiState.reportSkippedCount;
   setKpiStatus(
     isApprovedKpiMode()
-      ? `แสดงครบ ${kpiState.approvedDefinitions.length}/${kpiState.approvedMetadata?.selectionTotal || 62} KPI · ตรวจสูตรแล้ว ${kpiState.approvedMetadata?.approvedTotal || 13} · รอยืนยันสูตรหลัก ${kpiState.approvedMetadata?.pendingReviewTotal || 49} · หมวดนี้ ${kpiState.reports.length} รายการ`
+      ? `แสดงครบ ${kpiState.approvedDefinitions.length}/${kpiState.approvedMetadata?.selectionTotal || 62} KPI · ตรวจสูตรแล้ว ${kpiState.approvedMetadata?.approvedTotal || 13} · ใช้ผลคำนวณ HDC โดยตรง ${kpiState.approvedMetadata?.directHdcTotal || 49} · หมวดนี้ ${kpiState.reports.length} รายการ`
       : skippedReportCount
         ? `พบรายการจาก HDC ${sourceReportCount} รายการ ใช้งานได้ ${kpiState.reports.length} รายการ (ไม่มี report code ${skippedReportCount} รายการ)`
         : `พบรายงานที่มี report code ${kpiState.reports.length} รายการ`,
@@ -1714,7 +1915,8 @@ async function processAllKpis() {
         result: summary.result,
         gap: summary.gap,
         ratio: summary.ratio,
-        status: formulaVerified ? "สำเร็จ" : "รอยืนยันสูตรหลัก"
+        metricScale: summary.metricScale,
+        status: formulaVerified ? "สำเร็จ" : "ผลคำนวณ HDC"
       });
     } catch (error) {
       kpiState.allSummary.push({
@@ -1731,14 +1933,14 @@ async function processAllKpis() {
       });
     }
     renderAllSummary();
-    kpiEls.kpiProcessedCount.textContent = formatNumber(kpiState.allSummary.filter((item) => item.status === "สำเร็จ").length);
+    kpiEls.kpiProcessedCount.textContent = formatNumber(kpiState.allSummary.filter((item) => ["สำเร็จ", "ผลคำนวณ HDC"].includes(item.status)).length);
   }
 
   const successCount = kpiState.allSummary.filter((item) => item.status === "สำเร็จ").length;
-  const pendingCount = kpiState.allSummary.filter((item) => item.status === "รอยืนยันสูตรหลัก").length;
+  const directHdcCount = kpiState.allSummary.filter((item) => item.status === "ผลคำนวณ HDC").length;
   const failCount = kpiState.allSummary.filter((item) => item.status === "ไม่สำเร็จ").length;
-  const pendingText = pendingCount ? ` / รอยืนยันสูตรหลัก ${pendingCount}` : "";
-  setKpiStatus(`ประมวลผลครบ ${reports.length} รายการ: คำนวณสำเร็จ ${successCount}${pendingText} / ไม่สำเร็จ ${failCount}`, failCount ? "" : "success");
+  const directHdcText = directHdcCount ? ` / ผลคำนวณ HDC ${directHdcCount}` : "";
+  setKpiStatus(`ประมวลผลครบ ${reports.length} รายการ: ตรวจสูตรแล้ว ${successCount}${directHdcText} / ไม่สำเร็จ ${failCount}`, failCount ? "" : "success");
   kpiEls.processAll.disabled = false;
   renderDistrictBrief();
 }
@@ -1753,7 +1955,7 @@ function renderAllSummary() {
       <td>${formatNumber(item.target)}</td>
       <td>${formatNumber(item.result)}</td>
       <td><span class="gap-pill ${gapClass(item.gap)}">${formatGap(item.gap)}</span></td>
-      <td><span class="ratio-pill ${ratioClass(item.ratio)}">${item.ratio === null ? "-" : `${formatNumber(item.ratio, 2)}%`}</span></td>
+      <td><span class="ratio-pill ${ratioClass(item.ratio)}">${formatMetricValue(item.ratio, 2, item.metricScale)}</span></td>
       <td>${item.status}</td>
     </tr>
   `).join("");
@@ -2102,6 +2304,7 @@ kpiEls.catalog?.addEventListener("change", async () => {
 kpiEls.year?.addEventListener("change", loadKpiReports);
 kpiEls.report?.addEventListener("change", loadCurrentKpi);
 kpiEls.unit?.addEventListener("change", renderCurrentRows);
+kpiEls.approvedMetricSelect?.addEventListener("change", (event) => selectApprovedMetric(event.target.value));
 kpiEls.allSummaryUnit?.addEventListener("change", () => {
   renderAllSummary();
   renderDistrictBrief();
