@@ -218,6 +218,7 @@ const kpiEls = {
   approvedFormula: document.querySelector("#approvedKpiFormula"),
   approvedDirection: document.querySelector("#approvedKpiDirection"),
   approvedChart: document.querySelector("#approvedBarChart"),
+  approvedChartTitle: document.querySelector("#approvedChartTitle"),
   approvedChartList: document.querySelector("#approvedChartList"),
   approvedChartNote: document.querySelector("#approvedChartNote"),
   approvedChartSource: document.querySelector("#approvedChartSource"),
@@ -483,6 +484,10 @@ function isApprovedKpiMode() {
   return kpiState.mode === "rpst-approved";
 }
 
+function isFormulaVerifiedDefinition(definition = kpiState.currentDefinition) {
+  return definition?.status === "approved-single-formula";
+}
+
 async function loadApprovedKpiDefinitions() {
   const response = await fetch(APPROVED_KPI_DATA_URL, { cache: "no-store" });
   if (!response.ok) throw new Error(`โหลดรายการ KPI รพ.สต. ไม่สำเร็จ (${response.status})`);
@@ -492,7 +497,7 @@ async function loadApprovedKpiDefinitions() {
   kpiState.approvedDefinitions = items.filter((item) => {
     if (!item?.reportCode || seenCodes.has(item.reportCode)) return false;
     seenCodes.add(item.reportCode);
-    return item.status === "approved-single-formula";
+    return true;
   });
   kpiState.approvedMetadata = payload;
   kpiState.approvedCatalogs = [...new Set(kpiState.approvedDefinitions.map((item) => item.group))]
@@ -615,7 +620,7 @@ function getRatio(row, target, result) {
 }
 
 function normalizeKpiRow(row, definition = null) {
-  if (definition) {
+  if (isFormulaVerifiedDefinition(definition)) {
     const denominator = toNumber(row[definition.denominatorField]);
     const numerator = toNumber(row[definition.numeratorField]);
     const hdcRatio = toNumber(row[definition.formulaField]);
@@ -634,6 +639,22 @@ function normalizeKpiRow(row, definition = null) {
       hdcRatio,
       calculatedRatio,
       formulaMismatch,
+      formulaVerified: true,
+      raw: row
+    };
+  }
+  if (definition) {
+    const [codeFromName, nameFromName] = String(row.a_name || "").split(/:(.*)/s);
+    return {
+      code: String(row.a_code || codeFromName || "").trim(),
+      name: String(nameFromName || row.a_name || "").trim(),
+      target: findValueByPrefix(row, "target") ?? toNumber(row.c),
+      result: findValueByPrefix(row, "result") ?? toNumber(row.b),
+      ratio: null,
+      hdcRatio: null,
+      calculatedRatio: null,
+      formulaMismatch: false,
+      formulaVerified: false,
       raw: row
     };
   }
@@ -743,9 +764,11 @@ function renderAllSummaryScope() {
   const selectedCode = getAllSummaryUnitCode();
   const rows = getAllSummaryDisplayRows();
   const successCount = rows.filter((item) => item.status === "สำเร็จ").length;
+  const pendingCount = rows.filter((item) => item.status === "รอยืนยันสูตรหลัก").length;
   const noDataCount = rows.filter((item) => item.status === "ไม่มีข้อมูลหน่วยนี้").length;
   if (selectedCode === "ALL") {
-    kpiEls.allSummaryScope.textContent = `แสดงภาพรวมทุกหน่วยบริการ จาก KPI ที่ประมวลผลแล้ว ${formatNumber(rows.length)} รายการ`;
+    const pendingNote = pendingCount ? ` | รอยืนยันสูตรหลัก ${formatNumber(pendingCount)} รายการ` : "";
+    kpiEls.allSummaryScope.textContent = `แสดงภาพรวมทุกหน่วยบริการ จาก KPI ${formatNumber(rows.length)} รายการ${pendingNote}`;
     return;
   }
   const noDataNote = noDataCount ? ` | ไม่มีข้อมูลของหน่วยนี้ ${formatNumber(noDataCount)} รายการ` : "";
@@ -755,6 +778,10 @@ function renderAllSummaryScope() {
 function summarizeRows(rows) {
   const target = rows.reduce((sum, row) => sum + (row.target || 0), 0);
   const result = rows.reduce((sum, row) => sum + (row.result || 0), 0);
+  const pendingFormula = isApprovedKpiMode()
+    && (rows.some((row) => row.formulaVerified === false)
+      || (!rows.length && !isFormulaVerifiedDefinition()));
+  if (pendingFormula) return { target, result, gap: null, ratio: null };
   const ratios = rows.map((row) => row.ratio).filter((value) => Number.isFinite(value));
   const ratio = target > 0 ? (result / target) * 100 : ratios.length ? ratios.reduce((sum, value) => sum + value, 0) / ratios.length : null;
   const gap = target || result ? (isApprovedKpiMode() ? target - result : result - target) : null;
@@ -763,6 +790,7 @@ function summarizeRows(rows) {
 
 function rowGap(row) {
   if (row.target === null || row.target === undefined || row.result === null || row.result === undefined) return null;
+  if (isApprovedKpiMode() && row.formulaVerified === false) return null;
   return isApprovedKpiMode() ? row.target - row.result : row.result - row.target;
 }
 
@@ -809,6 +837,9 @@ function renderInsightList(element, rows, direction) {
 
 function buildQualityWarnings(rows, summary) {
   if (!rows.length) return ["ยังไม่มีข้อมูลรายหน่วยบริการ"];
+  if (isApprovedKpiMode() && !isFormulaVerifiedDefinition()) {
+    return ["ยังไม่คำนวณร้อยละหรือจัดอันดับ เพราะรายงานนี้มีหลายสูตรและยังไม่ได้ยืนยันสูตรหลัก"];
+  }
   const warnings = [];
   const zeroTargets = rows.filter((row) => row.target === 0 && (row.result || 0) > 0).length;
   const missingRatios = rows.filter((row) => !Number.isFinite(row.ratio)).length;
@@ -880,6 +911,14 @@ function filterTrendRows(rows) {
 async function loadTrendSummary() {
   const report = getCurrentReport();
   if (!report?.report_code || !kpiEls.loadTrend) return;
+
+  if (isApprovedKpiMode() && !isFormulaVerifiedDefinition(report.approvedDefinition)) {
+    if (kpiEls.insightTrend) kpiEls.insightTrend.textContent = "รอยืนยันสูตรหลัก";
+    if (kpiEls.insightTrendNote) kpiEls.insightTrendNote.textContent = "ยังไม่คำนวณ Trend เพื่อป้องกันการเลือกสูตรผิดจากรายงานหลายสูตร";
+    kpiState.lastTrend = null;
+    renderDistrictBrief();
+    return;
+  }
 
   kpiEls.loadTrend.disabled = true;
   if (kpiEls.insightTrend) kpiEls.insightTrend.textContent = "กำลังคำนวณ";
@@ -1129,28 +1168,46 @@ function renderDistrictBrief() {
 function renderApprovedModeContext() {
   const approved = isApprovedKpiMode();
   const definition = kpiState.currentDefinition;
+  const formulaVerified = isFormulaVerifiedDefinition(definition);
   if (kpiEls.approvedNotice) kpiEls.approvedNotice.hidden = !approved;
   if (kpiEls.approvedChart) kpiEls.approvedChart.hidden = !approved;
 
-  if (kpiEls.metricTargetLabel) kpiEls.metricTargetLabel.textContent = approved ? "ตัวหารรวม" : "เป้าหมายรวม";
-  if (kpiEls.metricResultLabel) kpiEls.metricResultLabel.textContent = approved ? "ตัวตั้งรวม" : "ผลงานรวม";
-  if (kpiEls.metricGapLabel) kpiEls.metricGapLabel.textContent = approved ? "คงเหลือ (ตัวหาร−ตัวตั้ง)" : "Gap รวม";
-  if (kpiEls.tableTargetLabel) kpiEls.tableTargetLabel.textContent = approved ? "ตัวหาร" : "เป้าหมาย";
-  if (kpiEls.tableResultLabel) kpiEls.tableResultLabel.textContent = approved ? "ตัวตั้ง" : "ผลงาน";
-  if (kpiEls.tableGapLabel) kpiEls.tableGapLabel.textContent = approved ? "คงเหลือ" : "Gap";
+  if (kpiEls.metricTargetLabel) kpiEls.metricTargetLabel.textContent = approved ? (formulaVerified ? "ตัวหารรวม" : "target ดิบรวม") : "เป้าหมายรวม";
+  if (kpiEls.metricResultLabel) kpiEls.metricResultLabel.textContent = approved ? (formulaVerified ? "ตัวตั้งรวม" : "result ดิบรวม") : "ผลงานรวม";
+  if (kpiEls.metricGapLabel) kpiEls.metricGapLabel.textContent = approved ? (formulaVerified ? "คงเหลือ (ตัวหาร−ตัวตั้ง)" : "ยังไม่คำนวณ Gap") : "Gap รวม";
+  if (kpiEls.tableTargetLabel) kpiEls.tableTargetLabel.textContent = approved ? (formulaVerified ? "ตัวหาร" : "target ดิบ") : "เป้าหมาย";
+  if (kpiEls.tableResultLabel) kpiEls.tableResultLabel.textContent = approved ? (formulaVerified ? "ตัวตั้ง" : "result ดิบ") : "ผลงาน";
+  if (kpiEls.tableGapLabel) kpiEls.tableGapLabel.textContent = approved ? (formulaVerified ? "คงเหลือ" : "Gap (รอสูตร)") : "Gap";
 
   if (!approved || !definition) return;
   const metadata = kpiState.approvedMetadata || {};
+  if (kpiEls.approvedNotice) kpiEls.approvedNotice.classList.toggle("pending-formula", !formulaVerified);
   if (kpiEls.approvedTitle) kpiEls.approvedTitle.textContent = `${definition.id} · ${definition.title}`;
   if (kpiEls.approvedFormula) {
-    kpiEls.approvedFormula.textContent = `สูตร HDC: ${definition.formula} | ตัวตั้ง ${definition.numeratorField} | ตัวหาร ${definition.denominatorField} | ผลลัพธ์ ${definition.formulaField}`;
+    if (formulaVerified) {
+      kpiEls.approvedFormula.textContent = `สูตร HDC: ${definition.formula} | ตัวตั้ง ${definition.numeratorField} | ตัวหาร ${definition.denominatorField} | ผลลัพธ์ ${definition.formulaField}`;
+    } else {
+      const formulaPreview = String(definition.formulaText || "")
+        .split(" | ")
+        .slice(0, 3)
+        .join(" | ");
+      const moreFormulaNote = definition.formulaCount > 3 ? ` | และอีก ${definition.formulaCount - 3} สูตร` : "";
+      kpiEls.approvedFormula.textContent = `พบ ${definition.formulaCount || "หลาย"} สูตรในรายงาน · รอยืนยันสูตรหลักก่อนคำนวณ${formulaPreview ? ` | ${formulaPreview}${moreFormulaNote}` : ""}`;
+    }
   }
   if (kpiEls.approvedDirection) {
     const direction = definition.direction === "lower-is-better" ? "ยิ่งต่ำยิ่งดี" : "ยิ่งสูงยิ่งดี";
-    kpiEls.approvedDirection.textContent = `${direction} · ผ่านตรวจสูตร ${metadata.approvedTotal || 13}/${metadata.selectionTotal || 62}`;
+    kpiEls.approvedDirection.textContent = formulaVerified
+      ? `${direction} · ตรวจสูตรแล้ว ${metadata.approvedTotal || 13}/${metadata.selectionTotal || 62}`
+      : `${direction} · รอยืนยันสูตรหลัก ${metadata.pendingReviewTotal || 49} ข้อ`;
+  }
+  if (kpiEls.approvedChartTitle) {
+    kpiEls.approvedChartTitle.textContent = "กราฟแท่งแนวตั้งร้อยละรายหน่วยบริการ";
   }
   if (kpiEls.approvedChartNote) {
-    kpiEls.approvedChartNote.textContent = "คำนวณใหม่จากตัวตั้งและตัวหาร แล้วตรวจเทียบ F3 ของ HDC; ยังไม่แสดงเส้นเกณฑ์จนกว่าจะยืนยัน KPI Template 2569";
+    kpiEls.approvedChartNote.textContent = formulaVerified
+      ? "แกน Y 0–100% · คำนวณจากตัวตั้ง/ตัวหารและตรวจเทียบ F3 ของ HDC · ยังไม่แสดงเส้นเกณฑ์จนกว่าจะยืนยัน KPI Template 2569"
+      : "ยังไม่สร้างกราฟหรือร้อยละ เพราะรายงานนี้มีหลายสูตรและยังไม่ได้ยืนยันสูตรหลัก";
   }
   if (kpiEls.approvedChartSource) {
     kpiEls.approvedChartSource.textContent = dataStatus.lastTableSource === "live" ? "HDC Public สด" : "Snapshot HDC Public";
@@ -1159,21 +1216,42 @@ function renderApprovedModeContext() {
 
 function renderApprovedBarChart(rows) {
   if (!kpiEls.approvedChartList || !isApprovedKpiMode()) return;
+  if (!isFormulaVerifiedDefinition()) {
+    kpiEls.approvedChartList.innerHTML = `
+      <div class="approved-chart-placeholder">
+        <strong>รอยืนยันสูตรหลัก</strong>
+        <span>แสดงรายการ KPI และข้อมูลดิบได้ แต่จะไม่คำนวณเปอร์เซ็นต์หรือสร้างกราฟจากสูตรที่เดาเอง</span>
+      </div>`;
+    return;
+  }
   if (!rows.length) {
     kpiEls.approvedChartList.innerHTML = '<p class="data-status">ไม่พบข้อมูลสำหรับสร้างกราฟ</p>';
     return;
   }
-  kpiEls.approvedChartList.innerHTML = rows.map((row) => {
+  const columns = rows.map((row) => {
     const hasRatio = Number.isFinite(row.ratio);
-    const width = hasRatio ? Math.min(Math.max(row.ratio, 0), 100) : 0;
+    const height = hasRatio ? Math.min(Math.max(row.ratio, 0), 100) : 0;
     const mismatch = row.formulaMismatch ? " · สูตรไม่ตรง F3" : "";
+    const title = `${row.code} ${row.name || row.code}: ${hasRatio ? `${formatNumber(row.ratio, 2)}%` : "ไม่มีข้อมูล"}${mismatch}`;
     return `
-      <div class="approved-chart-row">
-        <span class="approved-chart-name" title="${escapeHtml(`${row.code} ${row.name}`)}">${escapeHtml(row.code)} · ${escapeHtml(row.name || row.code)}</span>
-        <div class="approved-chart-track" aria-hidden="true"><div class="approved-chart-bar${hasRatio ? "" : " no-data"}" style="width:${width}%"></div></div>
-        <span class="approved-chart-value">${hasRatio ? `${formatNumber(row.ratio, 2)}%` : "-"}${escapeHtml(mismatch)}</span>
+      <div class="approved-chart-column" title="${escapeHtml(title)}">
+        <span class="approved-chart-value">${hasRatio ? `${formatNumber(row.ratio, 1)}%` : "-"}</span>
+        <div class="approved-chart-track" aria-hidden="true">
+          <div class="approved-chart-bar${hasRatio ? "" : " no-data"}" style="height:${height}%"></div>
+        </div>
+        <span class="approved-chart-code">${escapeHtml(row.code)}</span>
       </div>`;
   }).join("");
+  kpiEls.approvedChartList.innerHTML = `
+    <div class="approved-column-chart">
+      <div class="approved-y-axis" aria-hidden="true">
+        <span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span>
+      </div>
+      <div class="approved-plot-scroll" tabindex="0" aria-label="เลื่อนแนวนอนเพื่อดูหน่วยบริการทั้งหมด">
+        <div class="approved-plot">${columns}</div>
+      </div>
+    </div>
+    <p class="approved-chart-help">แกน X แสดงรหัสหน่วยบริการ · ชี้หรือแตะแท่งเพื่อดูชื่อเต็มและค่าร้อยละ</p>`;
 }
 
 function renderCurrentRows() {
@@ -1302,8 +1380,11 @@ async function loadCurrentKpi({ preferLive = true } = {}) {
       ? " | ตอนนี้เชื่อม HDC สดไม่ได้ จึงแสดงข้อมูลสำรองล่าสุดให้ดูก่อน"
       : "";
     const sourceLabel = dataStatus.lastTableSource === "live" ? "สดจาก HDC Public " : "";
+    const formulaNote = isApprovedKpiMode() && !isFormulaVerifiedDefinition()
+      ? " | แสดงข้อมูลดิบเท่านั้น ยังไม่คำนวณร้อยละ/กราฟจนกว่าจะยืนยันสูตรหลัก"
+      : "";
     setKpiStatus(
-      `โหลดข้อมูล${sourceLabel}สำเร็จ ${rows.length} หน่วยบริการ (${dateCom || "ไม่ระบุวันที่ประมวลผล"})${reportCountNote}${fallbackNote}`,
+      `โหลดข้อมูล${sourceLabel}สำเร็จ ${rows.length} หน่วยบริการ (${dateCom || "ไม่ระบุวันที่ประมวลผล"})${reportCountNote}${formulaNote}${fallbackNote}`,
       fallbackNote ? "" : "success"
     );
     renderTableDataStatus();
@@ -1404,7 +1485,7 @@ async function fetchStandardReports(subcatalogId) {
 async function loadKpiReports({ preferLive = true } = {}) {
   const catalogId = kpiEls.catalog.value;
   const standardMode = isStandardDataMode();
-  setKpiStatus(isApprovedKpiMode() ? "กำลังโหลด KPI รพ.สต. ที่ผ่านตรวจสูตร..." : standardMode ? "กำลังโหลดรายการรายงานมาตรฐาน..." : "กำลังโหลดรายการ KPI...");
+  setKpiStatus(isApprovedKpiMode() ? "กำลังโหลด KPI รพ.สต. สำคัญครบ 62 ข้อ..." : standardMode ? "กำลังโหลดรายการรายงานมาตรฐาน..." : "กำลังโหลดรายการ KPI...");
   let sourceReportCount = 0;
   if (isApprovedKpiMode()) {
     kpiState.reports = kpiState.approvedDefinitions
@@ -1433,15 +1514,25 @@ async function loadKpiReports({ preferLive = true } = {}) {
     kpiEls.report,
     kpiState.reports,
     (report) => report.report_code,
-    (report) => `${report.weight || report.no || ""} ${report.report_group ? report.report_group + " > " : ""}${report.report_name}`.trim(),
+    (report) => {
+      const verification = isApprovedKpiMode()
+        ? (isFormulaVerifiedDefinition(report.approvedDefinition)
+          ? "[ตรวจสูตรแล้ว] "
+          : `[รอยืนยัน ${report.formulaCount || "หลาย"} สูตร] `)
+        : "";
+      return `${verification}${report.weight || report.no || ""} ${report.report_group ? report.report_group + " > " : ""}${report.report_name}`.trim();
+    },
     "เลือกรายงาน"
   );
-  if (kpiState.reports.length) kpiEls.report.selectedIndex = 1;
+  if (kpiState.reports.length) {
+    const verifiedIndex = kpiState.reports.findIndex((report) => isFormulaVerifiedDefinition(report.approvedDefinition));
+    kpiEls.report.selectedIndex = isApprovedKpiMode() && verifiedIndex >= 0 ? verifiedIndex + 1 : 1;
+  }
   kpiEls.kpiCatalogCount.textContent = formatNumber(kpiState.reports.length);
   const skippedReportCount = kpiState.reportSkippedCount;
   setKpiStatus(
     isApprovedKpiMode()
-      ? `ชุดทดลองที่ผ่านตรวจสูตรแล้ว ${kpiState.approvedDefinitions.length}/${kpiState.approvedMetadata?.selectionTotal || 62} KPI · หมวดนี้ ${kpiState.reports.length} รายการ`
+      ? `แสดงครบ ${kpiState.approvedDefinitions.length}/${kpiState.approvedMetadata?.selectionTotal || 62} KPI · ตรวจสูตรแล้ว ${kpiState.approvedMetadata?.approvedTotal || 13} · รอยืนยันสูตรหลัก ${kpiState.approvedMetadata?.pendingReviewTotal || 49} · หมวดนี้ ${kpiState.reports.length} รายการ`
       : skippedReportCount
         ? `พบรายการจาก HDC ${sourceReportCount} รายการ ใช้งานได้ ${kpiState.reports.length} รายการ (ไม่มี report code ${skippedReportCount} รายการ)`
         : `พบรายงานที่มี report code ${kpiState.reports.length} รายการ`,
@@ -1612,6 +1703,7 @@ async function processAllKpis() {
     try {
       const { rows, dateCom } = await fetchProviderRows(report.report_code);
       const summary = summarizeRows(rows);
+      const formulaVerified = !isApprovedKpiMode() || isFormulaVerifiedDefinition(report.approvedDefinition);
       kpiState.allSummary.push({
         reportCode: report.report_code,
         name: report.report_name,
@@ -1622,7 +1714,7 @@ async function processAllKpis() {
         result: summary.result,
         gap: summary.gap,
         ratio: summary.ratio,
-        status: "สำเร็จ"
+        status: formulaVerified ? "สำเร็จ" : "รอยืนยันสูตรหลัก"
       });
     } catch (error) {
       kpiState.allSummary.push({
@@ -1643,8 +1735,10 @@ async function processAllKpis() {
   }
 
   const successCount = kpiState.allSummary.filter((item) => item.status === "สำเร็จ").length;
-  const failCount = reports.length - successCount;
-  setKpiStatus(`ประมวลผลครบ ${reports.length} รายการ: สำเร็จ ${successCount} / ไม่สำเร็จ ${failCount}`, failCount ? "" : "success");
+  const pendingCount = kpiState.allSummary.filter((item) => item.status === "รอยืนยันสูตรหลัก").length;
+  const failCount = kpiState.allSummary.filter((item) => item.status === "ไม่สำเร็จ").length;
+  const pendingText = pendingCount ? ` / รอยืนยันสูตรหลัก ${pendingCount}` : "";
+  setKpiStatus(`ประมวลผลครบ ${reports.length} รายการ: คำนวณสำเร็จ ${successCount}${pendingText} / ไม่สำเร็จ ${failCount}`, failCount ? "" : "success");
   kpiEls.processAll.disabled = false;
   renderDistrictBrief();
 }
