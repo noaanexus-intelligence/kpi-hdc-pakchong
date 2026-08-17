@@ -2373,3 +2373,139 @@ main {
     margin-top: 10px;
   }
 }
+
+.approved-kpi-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 14px 0;
+  padding: 14px 16px;
+  border: 1px solid #9cd9cc;
+  border-radius: 12px;
+  background: #edf9f6;
+  color: #164d45;
+}
+
+.approved-kpi-notice[hidden],
+.approved-bar-chart[hidden] {
+  display: none;
+}
+
+.approved-kpi-notice strong {
+  display: block;
+  color: #087963;
+}
+
+.approved-kpi-notice p {
+  margin: 3px 0 0;
+  font-size: 13px;
+}
+
+.approved-kpi-notice > span {
+  flex: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff;
+  color: #087963;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.approved-bar-chart {
+  margin: 16px 0 18px;
+  padding: 18px;
+  border: 1px solid #dbe7e4;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.approved-chart-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.approved-chart-heading h3 {
+  margin: 0;
+  color: #173047;
+  font-size: 17px;
+}
+
+.approved-chart-heading p {
+  margin: 4px 0 0;
+  color: #68798a;
+  font-size: 12px;
+}
+
+.approved-chart-heading > strong {
+  color: #087963;
+  font-size: 12px;
+}
+
+.approved-chart-list {
+  display: grid;
+  gap: 9px;
+  max-height: 540px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.approved-chart-row {
+  display: grid;
+  grid-template-columns: minmax(170px, 1.15fr) minmax(220px, 2fr) 70px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.approved-chart-name {
+  overflow: hidden;
+  color: #33475b;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.approved-chart-track {
+  overflow: hidden;
+  height: 13px;
+  border-radius: 999px;
+  background: #eaf0f2;
+}
+
+.approved-chart-bar {
+  min-width: 2px;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0a8f76, #20b890);
+}
+
+.approved-chart-bar.no-data {
+  width: 0 !important;
+  min-width: 0;
+}
+
+.approved-chart-value {
+  color: #173047;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .approved-kpi-notice,
+  .approved-chart-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .approved-chart-row {
+    grid-template-columns: 1fr 64px;
+  }
+
+  .approved-chart-name {
+    grid-column: 1 / -1;
+  }
+}

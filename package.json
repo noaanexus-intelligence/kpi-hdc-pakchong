@@ -4,7 +4,8 @@
   "private": true,
   "description": "Static HDC dashboard for Pak Chong — no bundler, no build step. package.json exists only for local TypeScript checking of api/*.ts.",
   "scripts": {
-    "test": "tsc --noEmit",
+    "test": "tsc --noEmit && npm run validate:kpi",
+    "validate:kpi": "node scripts/validate-approved-kpis.mjs",
     "snapshot": "node scripts/snapshot.mjs"
   },
   "devDependencies": {
