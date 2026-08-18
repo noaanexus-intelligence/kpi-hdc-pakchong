@@ -347,6 +347,7 @@
         <label>
           <span>ประเภทข้อมูล</span>
           <select id="dataModeSelect">
+            <option value="rpst-approved">KPI รพ.สต. สำคัญ (ครบ 62 ข้อ)</option>
             <option value="standard">รายงานมาตรฐานครบทุกหมวด</option>
             <option value="service-plan">Service Plan 17 สาขา</option>
             <option value="kpi">ตัวชี้วัด KPI</option>
@@ -384,6 +385,14 @@
 
       <div class="data-status" id="kpiStatus">กำลังเตรียมการเชื่อมต่อข้อมูล HDC...</div>
 
+      <div class="approved-kpi-notice" id="approvedKpiNotice" hidden>
+        <div>
+          <strong id="approvedKpiTitle">ชุด KPI รพ.สต. ที่ตรวจสูตรแล้ว</strong>
+          <p id="approvedKpiFormula">ใช้สูตรที่ระบุจาก HDC เท่านั้น</p>
+        </div>
+        <span id="approvedKpiDirection">13/62 พร้อมทดลอง</span>
+      </div>
+
       <div class="sync-audit-card" id="syncAuditCard" hidden>
         <div>
           <strong id="syncAuditTitle">สถานะ Sync HDC</strong>
@@ -398,22 +407,40 @@
           <strong id="metricUnits">-</strong>
         </article>
         <article>
-          <span>เป้าหมายรวม</span>
+          <span id="metricTargetLabel">เป้าหมายรวม</span>
           <strong id="metricTarget">-</strong>
         </article>
         <article>
-          <span>ผลงานรวม</span>
+          <span id="metricResultLabel">ผลงานรวม</span>
           <strong id="metricResult">-</strong>
         </article>
         <article>
-          <span>ร้อยละเฉลี่ย</span>
+          <span id="metricRatioLabel">ร้อยละเฉลี่ย</span>
           <strong id="metricRatio">-</strong>
         </article>
         <article>
-          <span>Gap รวม</span>
+          <span id="metricGapLabel">Gap รวม</span>
           <strong id="metricGap">-</strong>
         </article>
       </div>
+
+      <section class="approved-bar-chart" id="approvedBarChart" hidden aria-label="กราฟแท่งแนวตั้งร้อยละรายหน่วยบริการ">
+        <div class="approved-chart-heading">
+          <div>
+            <h3 id="approvedChartTitle">กราฟแท่งแนวตั้งร้อยละรายหน่วยบริการ</h3>
+            <p id="approvedChartNote">คำนวณจากตัวตั้งและตัวหารตามสูตร HDC ที่ตรวจแล้ว</p>
+          </div>
+          <div class="approved-chart-tools">
+            <label id="approvedMetricSelector" hidden>
+              <span>ชุดข้อมูลกราฟจาก HDC</span>
+              <select id="approvedMetricSelect"></select>
+            </label>
+            <strong id="approvedChartSource">Snapshot HDC</strong>
+          </div>
+        </div>
+        <div class="approved-chart-list" id="approvedChartList"></div>
+        <div class="approved-chart-legend" id="approvedChartLegend" hidden></div>
+      </section>
 
       <div class="insight-panel" id="kpiInsightPanel" aria-label="Insight รายงานที่เลือก">
         <article class="insight-card">
@@ -453,10 +480,10 @@
             <tr>
               <th>รหัส</th>
               <th>หน่วยบริการ</th>
-              <th>เป้าหมาย</th>
-              <th>ผลงาน</th>
-              <th>Gap</th>
-              <th>ร้อยละ</th>
+              <th id="tableTargetLabel">เป้าหมาย</th>
+              <th id="tableResultLabel">ผลงาน</th>
+              <th id="tableGapLabel">Gap</th>
+              <th id="tableRatioLabel">ร้อยละ</th>
               <th>วันที่ประมวลผล</th>
             </tr>
           </thead>
