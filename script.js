@@ -1406,9 +1406,9 @@ function renderApprovedBarChart(rows) {
     const title = `${row.code} ${row.name || row.code}: ${hasRatio ? formatMetricValue(row.ratio, 2, row.metricScale) : "ไม่มีข้อมูล"}${mismatch}`;
     return `
       <div class="approved-chart-column" title="${escapeHtml(title)}">
-        <span class="approved-chart-value">${hasRatio ? formatMetricValue(row.ratio, 1, row.metricScale) : "-"}</span>
-        <div class="approved-chart-track" aria-hidden="true">
-          <div class="approved-chart-bar${hasRatio ? ` performance-${level}` : " no-data"}" style="height:${height}%"></div>
+        <div class="approved-chart-track" style="--bar-height:${height}%" aria-hidden="true">
+          <span class="approved-chart-value${hasRatio ? "" : " no-data"}">${hasRatio ? formatMetricValue(row.ratio, 1, row.metricScale) : "-"}</span>
+          <div class="approved-chart-bar${hasRatio ? ` performance-${level}` : " no-data"}"></div>
         </div>
         <span class="approved-chart-code">${escapeHtml(row.code)}</span>
       </div>`;

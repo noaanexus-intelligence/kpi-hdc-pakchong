@@ -2559,7 +2559,7 @@ main {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-rows: 24px 260px 48px;
+  grid-template-rows: 284px 48px;
   width: 36px;
   flex: 1 0 36px;
   align-items: end;
@@ -2567,18 +2567,23 @@ main {
 }
 
 .approved-chart-track {
+  position: relative;
   display: flex;
   width: 28px;
   height: 260px;
   align-items: flex-end;
+  align-self: end;
+  overflow: visible;
 }
 
 .approved-chart-bar {
   width: 100%;
+  height: var(--bar-height, 0%);
   min-height: 2px;
   border: 1px solid #087963;
   border-radius: 4px 4px 0 0;
   background: #0a8f76;
+  transition: height 240ms ease-out;
 }
 
 .approved-chart-bar.performance-1,
@@ -2618,11 +2623,24 @@ main {
 }
 
 .approved-chart-value {
+  position: absolute;
+  bottom: calc(var(--bar-height, 0%) + 4px);
+  left: 50%;
+  z-index: 2;
   color: #173047;
   font-size: 10px;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: bottom 240ms ease-out;
   white-space: nowrap;
+}
+
+.approved-chart-value.no-data {
+  bottom: 4px;
+  color: #8b9aa6;
 }
 
 .approved-chart-code {
