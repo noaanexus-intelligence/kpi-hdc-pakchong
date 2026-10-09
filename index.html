@@ -161,7 +161,7 @@
         </div>
       </div>
       <div class="countdown">
-        <span>สิ้นปีงบประมาณ 2569</span>
+        <span>สิ้นปีงบประมาณ <span id="fiscalYearLabel">-</span></span>
         <strong id="timeLeft">-</strong>
       </div>
     </section>
@@ -260,7 +260,7 @@
             <span class="spark" data-icon="spark"></span>
             <div>
               <h2>สรุปสถานการณ์ HDC อำเภอปากช่อง</h2>
-              <p>ภาพรวมตัวชี้วัดสำคัญ ความเสี่ยงรายงาน และคุณภาพข้อมูล ปีงบประมาณ 2569</p>
+              <p>ภาพรวมตัวชี้วัดสำคัญ ความเสี่ยงรายงาน และคุณภาพข้อมูล ปีงบประมาณ <span class="js-display-year">-</span></p>
             </div>
             <span class="source-badge" id="briefStatusBadge">กำลังวิเคราะห์ข้อมูล HDC...</span>
           </div>
@@ -361,8 +361,9 @@
         <label>
           <span>ปีงบประมาณ</span>
           <select id="kpiYearSelect">
-            <option>2569</option>
+            <option>-</option>
           </select>
+          <small id="kpiYearNote" class="year-note" hidden></small>
         </label>
         <label class="wide-field">
           <span>รายงาน/ตัวชี้วัด</span>

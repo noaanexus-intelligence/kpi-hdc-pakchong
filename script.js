@@ -73,6 +73,14 @@ document.querySelectorAll(".quick-card").forEach((button) => {
 
 const timeLeft = document.querySelector("#timeLeft");
 
+// ปีงบประมาณ พ.ศ. ปัจจุบัน (ปีงบเริ่ม 1 ต.ค.) — ต้องตรงกับ CURRENT_FY ใน scripts/snapshot.mjs
+function currentFiscalYear(now = new Date()) {
+  return now.getFullYear() + 543 + (now.getMonth() >= 9 ? 1 : 0);
+}
+
+const fiscalYearLabel = document.querySelector("#fiscalYearLabel");
+if (fiscalYearLabel) fiscalYearLabel.textContent = String(currentFiscalYear());
+
 function getFiscalYearEndSeconds() {
   const now = new Date();
   const endYear = now.getFullYear();
@@ -151,6 +159,8 @@ const kpiState = {
   dataSource: "checking",
   snapshotGeneratedAt: "",
   syncAudit: null,
+  defaultYear: "",
+  yearsWithData: [],
   lastDateCom: "",
   currentReportName: "",
   lastTrend: null
@@ -491,9 +501,28 @@ function setOptions(select, rows, getValue, getLabel, placeholder = "") {
 }
 
 function getSelectedBudgetYear() {
-  if (isStandardDataMode()) return kpiEls.year.value || "2569";
+  const fallback = kpiState.defaultYear || String(currentFiscalYear());
+  if (isStandardDataMode()) return kpiEls.year.value || fallback;
   const option = kpiEls.year.options[kpiEls.year.selectedIndex];
-  return option?.dataset.byear || option?.textContent || "2569";
+  return option?.dataset.byear || option?.textContent || fallback;
+}
+
+// แจ้งเมื่อปีงบปัจจุบัน HDC ยังไม่ประมวลผล และอัปเดตปีที่แสดงในหัวข้อสรุป
+function renderYearNote() {
+  const selectedYear = getSelectedBudgetYear();
+  document.querySelectorAll(".js-display-year").forEach((el) => { el.textContent = selectedYear; });
+  const note = document.querySelector("#kpiYearNote");
+  if (!note) return;
+  const currentYear = String(currentFiscalYear());
+  const currentHasData = kpiState.yearsWithData?.includes(currentYear);
+  if (!isStandardDataMode() || currentHasData || !kpiState.yearsWithData?.length) {
+    note.hidden = true;
+    return;
+  }
+  note.textContent = selectedYear === currentYear
+    ? `HDC ยังไม่ประมวลผลปีงบ ${currentYear} — ข้อมูลอาจยังว่าง`
+    : `HDC ยังไม่ประมวลผลปีงบ ${currentYear} จึงแสดงปีงบ ${selectedYear}`;
+  note.hidden = false;
 }
 
 function normalizeUnitName(value) {
@@ -1163,7 +1192,7 @@ async function loadCurrentKpi({ preferLive = true } = {}) {
 
 function fillYearsForCatalog(catalog) {
   if (isStandardDataMode()) {
-    const currentYear = new Date().getFullYear() + 543;
+    const currentYear = currentFiscalYear();
     kpiEls.year.innerHTML = "";
     [currentYear, currentYear - 1, currentYear - 2, currentYear - 3, currentYear - 4].forEach((year) => {
       const option = document.createElement("option");
@@ -1171,6 +1200,10 @@ function fillYearsForCatalog(catalog) {
       option.textContent = String(year);
       kpiEls.year.appendChild(option);
     });
+    if (kpiState.defaultYear && Array.from(kpiEls.year.options).some((o) => o.value === kpiState.defaultYear)) {
+      kpiEls.year.value = kpiState.defaultYear;
+    }
+    renderYearNote();
     return;
   }
   const years = Array.isArray(catalog?.sub_menu) ? catalog.sub_menu : [];
@@ -1295,6 +1328,9 @@ async function loadInitialKpiData() {
 
     // หน้าเว็บเปิดมาให้เห็นเวลา snapshot ล่าสุดทันที — dashboard/insight/brief ใช้ snapshot เป็นหลัก (ดู scripts/README.md)
     dataStatus.snapshotGeneratedAt = manifest?.generatedAt ? new Date(manifest.generatedAt) : null;
+    // snapshot เลือกปีที่ HDC มีข้อมูลแล้วไว้ให้ (ต้นปีงบ ปีใหม่ยังว่าง -> ใช้ปีก่อน)
+    kpiState.defaultYear = String(manifest?.defaultYear || manifest?.year || "");
+    kpiState.yearsWithData = (manifest?.yearsWithData || []).map(String);
     renderTableDataStatus();
 
     kpiState.catalogs = catalogResponse.rows || [];
@@ -1824,6 +1860,7 @@ kpiEls.catalog?.addEventListener("change", async () => {
   await loadKpiReports();
 });
 
+kpiEls.year?.addEventListener("change", renderYearNote);
 kpiEls.year?.addEventListener("change", loadKpiReports);
 kpiEls.report?.addEventListener("change", loadCurrentKpi);
 kpiEls.unit?.addEventListener("change", renderCurrentRows);

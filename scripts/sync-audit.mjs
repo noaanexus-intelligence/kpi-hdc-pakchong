@@ -16,7 +16,8 @@ const SNAPSHOT_DIR = join(ROOT, "data", "snapshot");
 const OUT_FILE = join(ROOT, "data", "sync-audit.json");
 
 const HDC_BASE = "https://api-hdc.moph.go.th/v1/";
-const YEAR = process.env.HDC_YEAR || "2569";
+// ตรวจปี default ที่หน้าเว็บแสดง (manifest.defaultYear จาก snapshot.mjs) — ระบุเองได้ด้วย HDC_AUDIT_YEAR
+let YEAR = process.env.HDC_AUDIT_YEAR || "";
 const HDC_CONFIG = { zone: "09", provinceCode: "30", districtCode: "3021" };
 
 const ALLOWED_SERVICE_UNIT_CODES = new Set([
@@ -173,6 +174,8 @@ function ageHours(iso) {
 
 async function main() {
   const manifest = JSON.parse(await readFile(join(SNAPSHOT_DIR, "manifest.json"), "utf8"));
+  YEAR ||= String(manifest.defaultYear || manifest.year || "");
+  if (!YEAR) throw new Error("manifest.json ไม่มีปีงบ — รัน scripts/snapshot.mjs ก่อน");
   const checks = [];
 
   for (const control of CONTROL_REPORTS) {

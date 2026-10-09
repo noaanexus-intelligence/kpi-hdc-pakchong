@@ -36,9 +36,13 @@ HDC API (`api-hdc.moph.go.th`, `api-center-hdc.moph.go.th`) **เข้าถึ
   เก็บเป็น `data/snapshot/snap_*.json` + `manifest.json` (map `"<kind> <path>" → ไฟล์`)
   - รันเอง: `node scripts/snapshot.mjs`  (ต้องอยู่ในไทย)
   - retry 5xx อัตโนมัติ 4 ครั้ง
+  - ดึง 2 ปีงบ (ปีที่แล้ว + ปีปัจจุบัน นับปีงบเริ่ม 1 ต.ค.) ระบุเองได้: `HDC_YEAR=2569,2570 node scripts/snapshot.mjs`
+  - `manifest.json` บอก `yearsWithData` (ปีที่ HDC ประมวลผลแล้ว = รายงานที่มีผลงาน > 0 ≥ ครึ่งหนึ่งของปีที่มากที่สุด — ต้นปีงบ HDC ส่งแถวครบแต่ผลงานเป็น 0)
+    และ `defaultYear` = ปีล่าสุดที่พร้อม — หน้าเว็บเลือกปีนี้ให้อัตโนมัติ และแจ้งเมื่อปีงบปัจจุบันยังไม่พร้อม
+  - `coverage.json` = ปี default (หน้าเว็บอ่าน) + `coverage-<ปี>.json` แยกทุกปี
 - `sync-audit.mjs` — ตรวจ control reports กับ HDC live แล้วสร้าง `data/sync-audit.json`
   เพื่อให้หน้าเว็บแสดงสถานะว่า snapshot ยังตรงกับ HDC live หรือเริ่ม stale
-  - รันเองหลัง snapshot: `node scripts/sync-audit.mjs`
+  - รันเองหลัง snapshot: `node scripts/sync-audit.mjs` (ตรวจ `defaultYear` ใน manifest — ระบุเองได้ด้วย `HDC_AUDIT_YEAR`)
 - `refresh-and-push.ps1` — รัน snapshot แล้ว `git commit` + `git push` (สำหรับ Task Scheduler)
   ตอนนี้จะรัน `sync-audit.mjs` ต่อท้าย และ commit ทั้ง `data/snapshot` กับ `data/sync-audit.json`
 
@@ -60,7 +64,7 @@ HDC API (`api-hdc.moph.go.th`, `api-center-hdc.moph.go.th`) **เข้าถึ
 
 ```powershell
 $action  = New-ScheduledTaskAction -Execute "powershell.exe" `
-  -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$HOME\OneDrive\เอกสาร\KPI_HDC_PC\scripts\refresh-and-push.ps1`""
+  -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$HOME\kpi-hdc-pakchong\scripts\refresh-and-push.ps1`""
 $trigger = New-ScheduledTaskTrigger -Daily -At 2:00am
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -WakeToRun
 Register-ScheduledTask -TaskName "KPI-HDC-Snapshot" -Action $action -Trigger $trigger `
@@ -68,7 +72,8 @@ Register-ScheduledTask -TaskName "KPI-HDC-Snapshot" -Action $action -Trigger $tr
 ```
 
 - รันทดสอบทันที: `Start-ScheduledTask -TaskName "KPI-HDC-Snapshot"`
-- ดู log: `Get-Content "$HOME\OneDrive\เอกสาร\KPI_HDC_PC\scripts\refresh.log" -Tail 30`
+- ดู log: `Get-Content "$HOME\kpi-hdc-pakchong\scripts\refresh.log" -Tail 30`
 - ลบ: `Unregister-ScheduledTask -TaskName "KPI-HDC-Snapshot" -Confirm:$false`
 
+> อย่าเก็บ repo ไว้ใน OneDrive — ถ้าโฟลเดอร์ถูกย้าย task จะหาสคริปต์ไม่เจอและล้มเงียบ ๆ (0xFFFD0000) ข้อมูลเคยค้างตั้งแต่ 24 ก.ค. 2569 ด้วยสาเหตุนี้
 > เครื่องต้องเปิดตอนถึงเวลา และ git ต้อง push ได้โดยไม่ถามรหัส (credential manager จำไว้แล้ว)

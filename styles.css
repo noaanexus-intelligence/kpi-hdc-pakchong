@@ -2373,3 +2373,11 @@ main {
     margin-top: 10px;
   }
 }
+
+.year-note {
+  display: block;
+  margin-top: 4px;
+  color: #a86a00;
+  font-size: 12px;
+  line-height: 1.4;
+}

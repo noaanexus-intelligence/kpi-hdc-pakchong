@@ -27,7 +27,13 @@ const OUT_DIR = join(ROOT, "data", "snapshot");
 const HDC_BASE = "https://api-hdc.moph.go.th/v1/";
 const CENTER_BASE = "https://api-center-hdc.moph.go.th/v1/";
 const HDC_CONFIG = { zone: "09", provinceCode: "30", districtCode: "3021" };
-const YEAR = process.env.HDC_YEAR || "2569"; // ปีงบประมาณ default ของหน้าเว็บ (โหมด standard)
+// ปีงบ พ.ศ. ปัจจุบัน (เริ่ม 1 ต.ค.) — ต้องตรงกับ currentFiscalYear ใน script.js
+// ค่าเริ่มต้นดึงปีที่แล้วกับปีนี้ เพราะต้นปีงบ HDC ยังไม่ประมวลผลปีใหม่ (ระบุปีเองได้: HDC_YEAR=2569,2570)
+const now = new Date();
+const CURRENT_FY = now.getFullYear() + 543 + (now.getMonth() >= 9 ? 1 : 0);
+const YEARS = process.env.HDC_YEAR
+  ? process.env.HDC_YEAR.split(",").map((y) => y.trim()).filter(Boolean)
+  : [String(CURRENT_FY - 1), String(CURRENT_FY)];
 const CATEGORY_LIMIT = process.env.HDC_CATEGORY_LIMIT ? Number(process.env.HDC_CATEGORY_LIMIT) : Infinity;
 
 const UPSTREAM_HEADERS = {
@@ -38,10 +44,10 @@ const UPSTREAM_HEADERS = {
 };
 
 // ---- path builders (ต้องตรงกับ script.js เป๊ะ เพื่อให้ key ตรงกัน) ----
-function buildProviderDataPath(reportCode) {
+function buildProviderDataPath(reportCode, year) {
   const params = new URLSearchParams({
     table_display: "provider",
-    year: YEAR,
+    year,
     month: "ALL",
     zone: HDC_CONFIG.zone,
     province_code: HDC_CONFIG.provinceCode,
@@ -64,7 +70,7 @@ function buildProviderDataPath(reportCode) {
 const baseFor = (kind) => (kind === "center" ? CENTER_BASE : HDC_BASE);
 
 // ---- fetch + เก็บไฟล์ พร้อมลงทะเบียนใน manifest ----
-const manifest = { generatedAt: "", year: YEAR, entries: {} };
+const manifest = { generatedAt: "", year: "", years: YEARS, yearsWithData: [], defaultYear: "", entries: {} };
 const dataCache = new Map(); // key -> parsed JSON (เก็บไว้กันซ้ำ คืนข้อมูลจริงได้แม้ key เคย snap แล้วในรอบนี้)
 const errors = [];
 let counter = 0;
@@ -142,23 +148,28 @@ function dedupeByReportCode(reports) {
 }
 
 // ---- coverage: สถานะ success/no_data/error ต่อรายงาน (ครบทุกหมวด ไม่ใช่แค่ Service Plan) ----
-const coverageReports = [];
+const coverageByYear = new Map(YEARS.map((y) => [y, []]));
 
-async function snapReportAndTrackCoverage(category, sub, report) {
+async function snapReportAndTrackCoverage(category, sub, report, year) {
+  const coverageReports = coverageByYear.get(year);
   const reportCode = String(report.report_code).trim();
   const startedAt = Date.now();
   const errorsBefore = errors.length;
-  const data = await snap("hdc", buildProviderDataPath(reportCode));
+  const data = await snap("hdc", buildProviderDataPath(reportCode, year));
   const durationMs = Date.now() - startedAt;
   const failed = errors.length > errorsBefore;
 
   let status = "error";
   let rowCount = 0;
+  let hasResult = false;
   let error;
   if (failed) {
     error = errors[errors.length - 1]?.error;
   } else {
-    rowCount = normalizePakchongRows(data?.rows).length;
+    const rows = normalizePakchongRows(data?.rows);
+    rowCount = rows.length;
+    // ต้นปีงบ HDC ส่งแถวครบทุกหน่วยแต่ผลงานเป็น 0 ทั้งหมด — ใช้ผลงาน > 0 บอกว่าประมวลผลแล้วจริง
+    hasResult = rows.some((r) => Number(r.result) > 0);
     status = rowCount > 0 ? "success" : "no_data";
   }
 
@@ -172,6 +183,7 @@ async function snapReportAndTrackCoverage(category, sub, report) {
     depth: report.depth ?? 0,
     status,
     rowCount,
+    hasResult,
     error,
     durationMs,
   });
@@ -199,10 +211,11 @@ function buildCoverageGroups(reports) {
   }));
 }
 
-async function writeCoverageFile() {
+async function writeCoverageFile(year, fileName) {
+  const coverageReports = coverageByYear.get(year);
   const coverage = {
     generatedAt: new Date().toISOString(),
-    year: YEAR,
+    year,
     summary: buildCoverageSummary(coverageReports),
     groups: buildCoverageGroups(coverageReports),
     errors: coverageReports
@@ -210,7 +223,7 @@ async function writeCoverageFile() {
       .map((r) => ({ reportCode: r.reportCode, title: r.title, category: r.category, error: r.error })),
     reports: coverageReports,
   };
-  await writeFile(join(OUT_DIR, "coverage.json"), JSON.stringify(coverage), "utf8");
+  await writeFile(join(OUT_DIR, fileName), JSON.stringify(coverage), "utf8");
   return coverage;
 }
 
@@ -219,7 +232,7 @@ async function main() {
   await rm(OUT_DIR, { recursive: true, force: true });
   await mkdir(OUT_DIR, { recursive: true });
 
-  console.log(`[snapshot] ปีงบ ${YEAR} — เริ่มดึง`);
+  console.log(`[snapshot] ปีงบ ${YEARS.join(", ")} — เริ่มดึง`);
 
   // 1) lookups เริ่มต้น (loadInitialKpiData)
   await snap("hdc", "lookup/kpi/catalog");
@@ -243,22 +256,35 @@ async function main() {
       const sourceReportCount = leaves.length;
       const reports = dedupeByReportCode(leaves.filter((r) => r.report_code && r.active !== false));
       reportTotal += reports.length;
-      for (const report of reports) {
-        await snapReportAndTrackCoverage(category, sub, report);
+      for (const year of YEARS) {
+        for (const report of reports) {
+          await snapReportAndTrackCoverage(category, sub, report, year);
+        }
       }
-      console.log(`  ✓ [${category.name}] ${optionText(sub)} — ${reports.length}/${sourceReportCount} รายงานที่มี report_code`);
+      console.log(`  ✓ [${category.name}] ${optionText(sub)} — ${reports.length}/${sourceReportCount} รายงานที่มี report_code × ${YEARS.length} ปี`);
     }
   }
 
+  // ปีที่ HDC ประมวลผลแล้ว = จำนวนรายงานที่มีผลงาน > 0 ได้ >= ครึ่งหนึ่งของปีที่มากที่สุด
+  // (ต้นปีงบใหม่ HDC ส่งแถวครบแต่ผลงานเป็น 0 — นับแค่ "มีแถว" จะเลือกปีที่ยังว่างผิด ๆ)
+  // ปี default ของหน้าเว็บ = ปีล่าสุดที่พร้อม
+  const resultCount = (y) => coverageByYear.get(y).filter((r) => r.hasResult).length;
+  const maxResult = Math.max(0, ...YEARS.map(resultCount));
+  manifest.yearsWithData = YEARS.filter((y) => maxResult > 0 && resultCount(y) >= maxResult / 2);
+  manifest.defaultYear = manifest.yearsWithData.at(-1) || YEARS.at(-1);
+  manifest.year = manifest.defaultYear;
   manifest.generatedAt = new Date().toISOString();
   manifest.errorCount = errors.length;
   manifest.errors = errors;
   await writeFile(join(OUT_DIR, "manifest.json"), JSON.stringify(manifest, null, 2), "utf8");
 
-  const coverage = await writeCoverageFile();
+  // coverage.json = ปี default (หน้าเว็บอ่านไฟล์นี้) + coverage-<ปี>.json แยกทุกปี
+  for (const year of YEARS) await writeCoverageFile(year, `coverage-${year}.json`);
+  const coverage = await writeCoverageFile(manifest.defaultYear, "coverage.json");
   console.log(
-    `[snapshot] เสร็จ: ${counter} ไฟล์, ${categories.length} หมวด, ${reportTotal} รายงาน, lookup error ${errors.length}` +
-      ` | coverage: สำเร็จ ${coverage.summary.success}, ไม่มีข้อมูล ${coverage.summary.noData}, error ${coverage.summary.error}`,
+    `[snapshot] เสร็จ: ${counter} ไฟล์, ${categories.length} หมวด, ${reportTotal} รายงาน × ${YEARS.length} ปี, lookup error ${errors.length}` +
+      ` | ปีที่มีข้อมูล: ${manifest.yearsWithData.join(", ") || "-"} | default ${manifest.defaultYear}` +
+      ` | coverage ${manifest.defaultYear}: สำเร็จ ${coverage.summary.success}, ไม่มีข้อมูล ${coverage.summary.noData}, error ${coverage.summary.error}`,
   );
 
   // ถ้าดึง lookup เริ่มต้นไม่ได้เลย = upstream ใช้ไม่ได้ -> exit 1 (กัน push ของเสีย)
