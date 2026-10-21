@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T01:59:59.203Z",
+  "generatedAt": "2026-10-21T02:00:53.698Z",
   "year": "2569",
   "years": [
     "2569",
@@ -2883,7 +2883,7 @@
     },
     {
       "key": "hdc reports/province/data/343b3670ccb93a18bcc1951a41d239f5?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
-      "error": "HTTP 500"
+      "error": "HTTP 502"
     },
     {
       "key": "hdc reports/province/data/d58534279f78467bea5e48ae9cbd28ef?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
@@ -2899,7 +2899,7 @@
     },
     {
       "key": "hdc reports/province/data/343b3670ccb93a18bcc1951a41d239f5?table_display=provider&year=2570&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
-      "error": "HTTP 500"
+      "error": "HTTP 502"
     },
     {
       "key": "hdc reports/province/data/d58534279f78467bea5e48ae9cbd28ef?table_display=provider&year=2570&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
