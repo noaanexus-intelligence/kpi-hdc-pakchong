@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-21T02:00:54.940Z",
+  "generatedAt": "2026-10-23T03:49:09.173Z",
   "year": "2569",
   "status": "synced",
   "summary": {
@@ -8,7 +8,7 @@
     "stale": 0,
     "missing": 0,
     "errors": 0,
-    "snapshotGeneratedAt": "2026-10-21T02:00:53.698Z",
+    "snapshotGeneratedAt": "2026-10-23T03:49:08.605Z",
     "snapshotAgeHours": 0,
     "snapshotErrorCount": 407,
     "snapshotEntries": 1344
@@ -21,14 +21,14 @@
       "path": "reports/province/data/00366a85bd3c2b6932a228df29137252?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
       "status": "synced",
       "live": {
-        "datecom": "14 ตุลาคม 2569",
+        "datecom": "21 ตุลาคม 2569",
         "units": 24,
         "target": 285,
         "result": 57,
         "ratio": 20
       },
       "snapshot": {
-        "datecom": "14 ตุลาคม 2569",
+        "datecom": "21 ตุลาคม 2569",
         "units": 24,
         "target": 285,
         "result": 57,
@@ -44,14 +44,14 @@
       "path": "reports/province/data/abt2t2k4z4xeqzytwbave?table_display=provider&year=2569&month=ALL&zone=09&province_code=30&district_code=3021&subdistrict_code=ALL&department_code=ALL&organization_type=ALL&ministry=ALL&hospital=ALL&service_plan=ALL&jurisdiction_code=ALL&freeze_month=ALL&mental_code=ALL&mental_group_code=ALL&custom=%5B%5D",
       "status": "synced",
       "live": {
-        "datecom": "20 ตุลาคม 2569",
+        "datecom": "23 ตุลาคม 2569",
         "units": 24,
         "target": 4364,
         "result": 2937,
         "ratio": 67.3006
       },
       "snapshot": {
-        "datecom": "20 ตุลาคม 2569",
+        "datecom": "23 ตุลาคม 2569",
         "units": 24,
         "target": 4364,
         "result": 2937,
