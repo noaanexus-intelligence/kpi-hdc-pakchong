@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-23T03:49:09.173Z",
+  "generatedAt": "2026-10-24T03:17:33.655Z",
   "year": "2569",
   "status": "synced",
   "summary": {
@@ -8,7 +8,7 @@
     "stale": 0,
     "missing": 0,
     "errors": 0,
-    "snapshotGeneratedAt": "2026-10-23T03:49:08.605Z",
+    "snapshotGeneratedAt": "2026-10-24T03:17:33.124Z",
     "snapshotAgeHours": 0,
     "snapshotErrorCount": 407,
     "snapshotEntries": 1344
