@@ -81,18 +81,23 @@ const MAX_TRIES = 4; // upstream HDC flaky — retry 5xx/timeout
 // เป็นแค่ background sync (รันแยกจากหน้าเว็บหลักเสมอ) ดังนั้นรอนานขึ้นตรงนี้ไม่กระทบผู้ใช้ที่เปิดหน้าเว็บ
 const UPSTREAM_5XX_BACKOFF_MS = [2000, 5000, 10000];
 const FETCH_TIMEOUT_MS = 15000; // ตัด request ที่ค้าง/ไม่ตอบ ไม่ให้รอบ snapshot ค้างนาน (fail เร็ว -> retry เร็ว)
+// รอบ retry ท้ายสุด: รายงานที่ยัง error หลังรอบแรก ลองใหม่อีกครั้งหลังพักให้ HDC ฟื้น
+// (retry ใน snap() ห่างกันไม่กี่วินาที ช่วยไม่ได้ถ้า HDC ล่มเป็นช่วง ๆ)
+// ~190 จาก ~204 รายงานที่ error ต่อปี ตอบ 502 ซ้ำทุกวัน (เสียที่ต้นทาง) จึงลองแค่ครั้งเดียว ไม่ backoff ซ้ำอีกชั่วโมง
+// ปิดได้ด้วย HDC_RETRY_PASS_DELAY_MS=-1
+const RETRY_PASS_DELAY_MS = process.env.HDC_RETRY_PASS_DELAY_MS ? Number(process.env.HDC_RETRY_PASS_DELAY_MS) : 60000;
 
-async function snap(kind, path) {
+async function snap(kind, path, { maxTries = MAX_TRIES } = {}) {
   const key = `${kind} ${path}`;
   if (manifest.entries[key]) return dataCache.get(key) ?? null; // กันซ้ำ แต่คืนข้อมูลที่เคยดึงได้ในรอบนี้
   const target = baseFor(kind) + path;
   let lastErr = "";
-  for (let attempt = 1; attempt <= MAX_TRIES; attempt += 1) {
+  for (let attempt = 1; attempt <= maxTries; attempt += 1) {
     try {
       const res = await fetch(target, { headers: UPSTREAM_HEADERS, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
       if (!res.ok) {
         lastErr = `HTTP ${res.status}`;
-        if (res.status >= 500 && attempt < MAX_TRIES) {
+        if (res.status >= 500 && attempt < maxTries) {
           const delay = (res.status === 500 || res.status === 502)
             ? UPSTREAM_5XX_BACKOFF_MS[attempt - 1]
             : 600 * attempt;
@@ -110,11 +115,11 @@ async function snap(kind, path) {
       return data;
     } catch (err) {
       lastErr = err.message;
-      if (attempt < MAX_TRIES) { await sleep(600 * attempt); continue; }
+      if (attempt < maxTries) { await sleep(600 * attempt); continue; }
     }
   }
   errors.push({ key, error: lastErr });
-  console.error(`  ✗ ${key.split("?")[0]} -> ${lastErr} (หลัง ${MAX_TRIES} ครั้ง)`);
+  console.error(`  ✗ ${key.split("?")[0]} -> ${lastErr} (หลัง ${maxTries} ครั้ง)`);
   return null;
 }
 
@@ -150,12 +155,37 @@ function dedupeByReportCode(reports) {
 // ---- coverage: สถานะ success/no_data/error ต่อรายงาน (ครบทุกหมวด ไม่ใช่แค่ Service Plan) ----
 const coverageByYear = new Map(YEARS.map((y) => [y, []]));
 
+const failedReportJobs = []; // งานที่ error ในรอบแรก -> ลองใหม่ใน retryFailedReports()
+
 async function snapReportAndTrackCoverage(category, sub, report, year) {
+  const entry = await measureReport(category, sub, report, year);
   const coverageReports = coverageByYear.get(year);
+  coverageReports.push(entry);
+  if (entry.status === "error") failedReportJobs.push({ category, sub, report, year, index: coverageReports.length - 1 });
+}
+
+async function retryFailedReports() {
+  if (!failedReportJobs.length || RETRY_PASS_DELAY_MS < 0) return 0;
+  console.log(`[snapshot] รอบ retry: ${failedReportJobs.length} รายงานที่ error — พัก ${RETRY_PASS_DELAY_MS / 1000} วินาทีก่อนลองใหม่`);
+  await sleep(RETRY_PASS_DELAY_MS);
+  let recovered = 0;
+  for (const job of failedReportJobs) {
+    const key = `hdc ${buildProviderDataPath(String(job.report.report_code).trim(), job.year)}`;
+    // ลบ error รอบแรกออก — ถ้ายังพังอีก snap() จะใส่ error ใหม่กลับเข้าไปเอง (manifest.errorCount จะได้ไม่นับซ้ำ)
+    for (let i = errors.length - 1; i >= 0; i -= 1) if (errors[i].key === key) errors.splice(i, 1);
+    const entry = await measureReport(job.category, job.sub, job.report, job.year, { maxTries: 1 });
+    coverageByYear.get(job.year)[job.index] = entry;
+    if (entry.status !== "error") recovered += 1;
+  }
+  console.log(`[snapshot] รอบ retry: ดึงสำเร็จเพิ่ม ${recovered}/${failedReportJobs.length} รายงาน`);
+  return recovered;
+}
+
+async function measureReport(category, sub, report, year, snapOptions) {
   const reportCode = String(report.report_code).trim();
   const startedAt = Date.now();
   const errorsBefore = errors.length;
-  const data = await snap("hdc", buildProviderDataPath(reportCode, year));
+  const data = await snap("hdc", buildProviderDataPath(reportCode, year), snapOptions);
   const durationMs = Date.now() - startedAt;
   const failed = errors.length > errorsBefore;
 
@@ -173,7 +203,7 @@ async function snapReportAndTrackCoverage(category, sub, report, year) {
     status = rowCount > 0 ? "success" : "no_data";
   }
 
-  coverageReports.push({
+  return {
     category: category.name,
     subcategory: optionText(sub),
     subcatalogId: sub.code,
@@ -186,7 +216,7 @@ async function snapReportAndTrackCoverage(category, sub, report, year) {
     hasResult,
     error,
     durationMs,
-  });
+  };
 }
 
 function buildCoverageSummary(reports) {
@@ -264,6 +294,9 @@ async function main() {
       console.log(`  ✓ [${category.name}] ${optionText(sub)} — ${reports.length}/${sourceReportCount} รายงานที่มี report_code × ${YEARS.length} ปี`);
     }
   }
+
+  // 3) ลองรายงานที่ error ใหม่อีกรอบ ก่อนสรุป yearsWithData/coverage
+  await retryFailedReports();
 
   // ปีที่ HDC ประมวลผลแล้ว = จำนวนรายงานที่มีผลงาน > 0 ได้ >= ครึ่งหนึ่งของปีที่มากที่สุด
   // (ต้นปีงบใหม่ HDC ส่งแถวครบแต่ผลงานเป็น 0 — นับแค่ "มีแถว" จะเลือกปีที่ยังว่างผิด ๆ)
