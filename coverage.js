@@ -28,7 +28,7 @@ function bgFormatNumber(value) {
 function bgFormatDate(iso) {
   if (!iso) return "-";
   try {
-    return new Date(iso).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" });
+    return new Date(iso).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Bangkok" });
   } catch (_error) {
     return iso;
   }
@@ -193,17 +193,94 @@ function exportBgErrorsCsv(errors) {
   URL.revokeObjectURL(url);
 }
 
-async function loadBackgroundCoverage() {
-  try {
-    const response = await fetch("data/snapshot/coverage.json", { cache: "no-store" });
-    if (!response.ok) {
-      renderBackgroundCoverage(null);
-      return;
-    }
-    renderBackgroundCoverage(await response.json());
-  } catch (_error) {
-    renderBackgroundCoverage(null);
+// ---- การ์ดสถานะข้อมูล HDC (หน้าแรก ใต้ลิงก์ด้านขวา) — สรุปสั้นของ coverage.json + sync-audit.json ----
+const statusEls = {
+  card: document.querySelector("#dataStatusCard"),
+  snapshot: document.querySelector("#dataStatusSnapshot"),
+  badge: document.querySelector("#dataStatusBadge"),
+  dateCom: document.querySelector("#dataStatusDateCom"),
+  fetched: document.querySelector("#dataStatusFetched"),
+  provinceOnlyRow: document.querySelector("#dataStatusProvinceOnlyRow"),
+  provinceOnly: document.querySelector("#dataStatusProvinceOnly"),
+  error: document.querySelector("#dataStatusError"),
+  audit: document.querySelector("#dataStatusAudit"),
+  meter: document.querySelector("#dataStatusMeter"),
+};
+
+const STALE_SNAPSHOT_HOURS = 48; // refresh รายวัน — เกิน 2 วันแปลว่างาน refresh หยุดไป
+const ERROR_SHARE_WARN = 0.05;
+
+function bgPercent(part, total) {
+  return total ? Math.round((part / total) * 100) : 0;
+}
+
+function dataStatusBadge(summary, audit, snapshotAgeHours) {
+  if (!summary) return { text: "ไม่มีข้อมูล", tone: "danger" };
+  if (audit && audit.status !== "synced") return { text: "ไม่ตรง HDC live", tone: "danger" };
+  if (snapshotAgeHours > STALE_SNAPSHOT_HOURS) return { text: "ข้อมูลเก่า", tone: "warn" };
+  if (summary.total && summary.error / summary.total > ERROR_SHARE_WARN) return { text: "ครบบางส่วน", tone: "warn" };
+  return { text: "พร้อมใช้", tone: "ok" };
+}
+
+function renderDataStatusCard(coverage, audit) {
+  if (!statusEls.card) return;
+  const s = coverage?.summary;
+  const generatedAt = coverage?.generatedAt ? new Date(coverage.generatedAt) : null;
+  const ageHours = generatedAt ? (Date.now() - generatedAt.getTime()) / 36e5 : Infinity;
+
+  if (statusEls.snapshot) {
+    statusEls.snapshot.textContent = s
+      ? `Snapshot ${bgFormatDate(coverage.generatedAt)} · ปีงบ ${coverage.year || "-"}`
+      : "ยังไม่มีข้อมูลจากรอบ snapshot";
+  }
+
+  const badge = dataStatusBadge(s, audit, ageHours);
+  if (statusEls.badge) {
+    statusEls.badge.textContent = badge.text;
+    statusEls.badge.className = `data-status-badge ${badge.tone}`;
+  }
+  if (!s) return;
+
+  // HDC ตอบได้ = มีแถว + ตอบว่าง (no_data ก็คือดึงสำเร็จ แค่ไม่มีข้อมูลของอำเภอ)
+  const answered = (s.success || 0) + (s.noData || 0);
+  if (statusEls.fetched) {
+    statusEls.fetched.textContent = `${bgFormatNumber(answered)}/${bgFormatNumber(s.total)} รายงาน (${bgPercent(answered, s.total)}%)`;
+  }
+  // provinceOnly มีใน coverage.json ที่สร้างจาก snapshot.mjs รุ่นที่แยกสถานะนี้แล้วเท่านั้น
+  if (statusEls.provinceOnlyRow) statusEls.provinceOnlyRow.hidden = !s.provinceOnly;
+  if (statusEls.provinceOnly) statusEls.provinceOnly.textContent = `${bgFormatNumber(s.provinceOnly)} รายงาน`;
+  if (statusEls.error) statusEls.error.textContent = `${bgFormatNumber(s.error)} รายงาน`;
+  if (statusEls.meter) statusEls.meter.style.width = `${bgPercent(s.total - (s.error || 0), s.total)}%`;
+
+  if (statusEls.audit) {
+    const a = audit?.summary;
+    statusEls.audit.textContent = a
+      ? `ตรง ${bgFormatNumber(a.synced)}/${bgFormatNumber(a.total)} รายงานตัวอย่าง`
+      : "ยังไม่ได้ตรวจ";
   }
 }
 
-if (bgEls.section) loadBackgroundCoverage();
+// script.js เรียกเมื่อโหลดรายงานได้ (datecom = วันที่ HDC ประมวลผลข้อมูลของรายงานนั้น)
+function updateDataStatusDateCom(dateCom) {
+  if (statusEls.dateCom) statusEls.dateCom.textContent = dateCom || "-";
+}
+
+async function fetchJson(path) {
+  try {
+    const response = await fetch(path, { cache: "no-store" });
+    return response.ok ? await response.json() : null;
+  } catch (_error) {
+    return null;
+  }
+}
+
+async function loadBackgroundCoverage() {
+  const [coverage, audit] = await Promise.all([
+    fetchJson("data/snapshot/coverage.json"),
+    statusEls.card ? fetchJson("data/sync-audit.json") : null,
+  ]);
+  renderBackgroundCoverage(coverage);
+  renderDataStatusCard(coverage, audit);
+}
+
+if (bgEls.section || statusEls.card) loadBackgroundCoverage();

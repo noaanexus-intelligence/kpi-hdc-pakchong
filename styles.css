@@ -1042,6 +1042,122 @@ main {
   color: var(--primary);
 }
 
+/* ลิงก์ด้านขวา/การ์ดสถานะข้อมูลเลื่อนไปยัง section เหล่านี้ — กันหัวข้อจมใต้ topbar ที่ sticky */
+#reportShortcuts,
+#backgroundSyncCoverage,
+#kpiCrosswalk {
+  scroll-margin-top: calc(var(--nav-height) + 16px);
+}
+
+/* ===== การ์ดสถานะข้อมูล HDC (ใต้ลิงก์ด้านขวาของหน้าแรก, เติมโดย coverage.js) ===== */
+.data-status-card {
+  display: flex;
+  flex-direction: column;
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #dfe8ef;
+  box-shadow: 0 10px 20px rgba(31, 53, 86, .06);
+}
+
+.data-status-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 10px;
+}
+
+.data-status-head .brief-icon {
+  margin-bottom: 0;
+}
+
+.data-status-head h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.data-status-head small {
+  display: block;
+  margin-top: 2px;
+  color: #74839a;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.data-status-badge {
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: #5d6d82;
+  background: var(--soft);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.data-status-badge.ok {
+  color: var(--primary-dark);
+  background: var(--mint);
+}
+
+.data-status-badge.warn {
+  color: #9b5d00;
+  background: #fff5d7;
+}
+
+.data-status-badge.danger {
+  color: #a33a3a;
+  background: #ffe7e7;
+}
+
+.data-status-list {
+  display: grid;
+  gap: 0;
+  margin: 12px 0 0;
+}
+
+.data-status-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-top: 1px dashed #e3eaf1;
+  font-size: 13px;
+}
+
+.data-status-list > div[hidden] {
+  display: none;
+}
+
+.data-status-list dt {
+  color: #5d6d82;
+}
+
+.data-status-list dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 700;
+  text-align: right;
+}
+
+.data-status-meter {
+  height: 6px;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #ffe7e7;
+}
+
+.data-status-meter span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+  transition: width .4s ease;
+}
+
 .report-shortcuts {
   display: grid;
   grid-template-columns: minmax(240px, .55fr) 1fr;

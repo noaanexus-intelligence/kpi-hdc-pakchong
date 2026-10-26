@@ -270,17 +270,6 @@ function localApiPath(kind, path) {
   return `/api/${kind}/${path.replace(/^\/+/, "")}`;
 }
 
-function formatThaiDateTime(value) {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleString("th-TH", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Asia/Bangkok"
-  });
-}
-
 function dataSourceLabel() {
   if (kpiState.dataSource === "live") return "HDC Public สด";
   if (kpiState.dataSource === "snapshot") return "Snapshot HDC Public";
@@ -612,10 +601,11 @@ function formatNumber(value, digits = 0) {
   });
 }
 
+// เดิมประกาศซ้ำ 2 ที่ ตัวหลัง (ไม่มี timeZone) ทับตัวแรก -> เวลาเพี้ยนบนเครื่องที่ไม่ได้ตั้งเขตเวลาไทย
 function formatThaiDateTime(value) {
   const date = value instanceof Date ? value : value ? new Date(value) : null;
   if (!date || Number.isNaN(date.getTime())) return "ไม่พบข้อมูล";
-  return date.toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" });
+  return date.toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Bangkok" });
 }
 
 function renderTableDataStatus() {
@@ -1166,6 +1156,7 @@ async function loadCurrentKpi({ preferLive = true } = {}) {
     const { rows, dateCom } = await fetchProviderRows(report.report_code, undefined, { preferLive });
     kpiState.currentRows = rows;
     kpiState.lastDateCom = dateCom;
+    if (typeof updateDataStatusDateCom === "function") updateDataStatusDateCom(dateCom); // การ์ดสถานะข้อมูล (coverage.js)
     renderCurrentRows();
     const reportCountNote = kpiState.reportSkippedCount
       ? ` | รายงานที่ดึงข้อมูลได้ ${kpiState.reports.length}/${kpiState.reportSourceCount} (ไม่มี report code ${kpiState.reportSkippedCount})`
