@@ -58,7 +58,11 @@ function bgStatusText(item) {
 
 // รวมการแปลงข้อความ error ดิบจาก HDC ต้นทาง (เช่น "HTTP 502") ให้อ่านเข้าใจง่ายขึ้นไว้ที่นี่ที่เดียว
 // ใช้ตรงนี้แทนการแสดง item.error ตรงๆ ทุกที่ที่โชว์ error log บนหน้าเว็บ
-function formatUpstreamError(error) {
+// upstreamMessage = HDC ตอบ error ของตัวรายงานเอง (SQL ฯลฯ) ทุกรอบ ทั้งระดับอำเภอและจังหวัด (ดู scripts/snapshot.mjs)
+function formatUpstreamError(error, upstreamMessage) {
+  if (upstreamMessage) {
+    return "รายงานนี้ใช้ไม่ได้ที่ HDC ต้นทาง (ตอบ error ทุกรอบ)";
+  }
   if (error === "HTTP 502") {
     return "HDC ต้นทางตอบ 502 ในรอบนี้";
   }
@@ -82,7 +86,7 @@ function summarizeErrorsByCategory(errors) {
 function countByError(errors) {
   const groups = new Map();
   errors.forEach((item) => {
-    const label = formatUpstreamError(item.error);
+    const label = formatUpstreamError(item.error, item.upstreamMessage);
     groups.set(label, (groups.get(label) || 0) + 1);
   });
   return Array.from(groups.entries())
@@ -106,7 +110,8 @@ function renderBackgroundCoverage(coverage) {
   }
   if (bgEls.total) {
     const s = coverage.summary || {};
-    bgEls.total.textContent = `สำเร็จ ${bgFormatNumber(s.success)} / ไม่มีข้อมูล ${bgFormatNumber(s.noData)} / error ${bgFormatNumber(s.error)} (รวม ${bgFormatNumber(s.total)} รายงาน)`;
+    const provinceOnlyText = s.provinceOnly ? ` / ไม่มีข้อมูลระดับอำเภอ ${bgFormatNumber(s.provinceOnly)}` : "";
+    bgEls.total.textContent = `สำเร็จ ${bgFormatNumber(s.success)} / ไม่มีข้อมูล ${bgFormatNumber(s.noData)}${provinceOnlyText} / error ${bgFormatNumber(s.error)} (รวม ${bgFormatNumber(s.total)} รายงาน)`;
   }
 
   if (bgEls.tableBody) {
@@ -118,11 +123,12 @@ function renderBackgroundCoverage(coverage) {
           <td>${bgFormatNumber(item.total)}</td>
           <td>${bgFormatNumber(item.success)}</td>
           <td>${bgFormatNumber(item.noData)}</td>
+          <td>${bgFormatNumber(item.provinceOnly ?? 0)}</td>
           <td>${bgFormatNumber(item.error)}</td>
           <td><span class="coverage-status ${bgStatusClass(item)}">${bgStatusText(item)}</span></td>
         </tr>
       `).join("")
-      : '<tr><td colspan="6">ไม่พบข้อมูล coverage</td></tr>';
+      : '<tr><td colspan="7">ไม่พบข้อมูล coverage</td></tr>';
   }
 
   const errors = coverage.errors || [];
@@ -167,7 +173,7 @@ function renderBackgroundCoverage(coverage) {
           <strong>${escapeHtml(item.title)}</strong>
           <small>${escapeHtml(item.reportCode)}</small>
         </td>
-        <td>${escapeHtml(formatUpstreamError(item.error))}</td>
+        <td>${escapeHtml(formatUpstreamError(item.error, item.upstreamMessage))}</td>
       </tr>
     `).join("");
   }
@@ -179,8 +185,8 @@ function renderBackgroundCoverage(coverage) {
 }
 
 function exportBgErrorsCsv(errors) {
-  const header = ["category", "reportCode", "title", "error"];
-  const body = errors.map((item) => [item.category || "", item.reportCode, item.title, item.error || ""]);
+  const header = ["category", "reportCode", "title", "error", "upstreamMessage"];
+  const body = errors.map((item) => [item.category || "", item.reportCode, item.title, item.error || "", item.upstreamMessage || ""]);
   const csv = [header, ...body]
     .map((line) => line.map((cell) => `"${String(cell ?? "").replaceAll('"', '""')}"`).join(","))
     .join("\n");

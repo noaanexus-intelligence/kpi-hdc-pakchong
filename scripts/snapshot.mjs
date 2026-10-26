@@ -5,8 +5,12 @@
 // แล้วหน้าเว็บจะ fallback มาอ่าน snapshot เมื่อเรียก proxy ไม่ได้ (ดู hdcGet ใน script.js)
 //
 // เดิมดึงเฉพาะหมวด "Service Plan" — ตอนนี้ดึงครบทุกหมวดของ standard catalog แล้ว
-// พร้อมคำนวณสถานะ success/no_data/error ต่อรายงาน เขียนเป็น data/snapshot/coverage.json
+// พร้อมคำนวณสถานะ success/no_data/province_only/error ต่อรายงาน เขียนเป็น data/snapshot/coverage.json
 // (coverage.js ใช้แสดงผลบนหน้าเว็บ — อ่านไฟล์นี้เฉยๆ ไม่เรียก live proxy)
+//
+// province_only = HDC ไม่มีข้อมูลระดับอำเภอ/หน่วยบริการของรายงานนั้น: ขอแบบ provider แล้ว HDC ตอบ 502
+// พร้อม message ของตัวรายงานเอง (เช่น SQL GROUP BY error, "Cannot read properties of undefined") ทุกวัน
+// แต่ขอระดับจังหวัดได้ 200 — ไม่ใช่ error ชั่วคราว จึงไม่นับเป็น error และไม่ retry
 //
 // system/subcatalog/reports ตอบเป็นต้นไม้ (node กลุ่มมี children ซ้อนรายงานอยู่ข้างใน) — เดิมโค้ด
 // อ่านแค่แถวบนสุด ทำให้รายงานที่ซ้อนอยู่ใต้กลุ่มหลุดไปทั้งหมด (พบจาก audit สาขา Service Plan,
@@ -44,9 +48,10 @@ const UPSTREAM_HEADERS = {
 };
 
 // ---- path builders (ต้องตรงกับ script.js เป๊ะ เพื่อให้ key ตรงกัน) ----
-function buildProviderDataPath(reportCode, year) {
+// tableDisplay อื่นนอกจาก "provider" ใช้แค่ตรวจ province_only — หน้าเว็บไม่ได้เรียก
+function buildProviderDataPath(reportCode, year, tableDisplay = "provider") {
   const params = new URLSearchParams({
-    table_display: "provider",
+    table_display: tableDisplay,
     year,
     month: "ALL",
     zone: HDC_CONFIG.zone,
@@ -83,20 +88,35 @@ const UPSTREAM_5XX_BACKOFF_MS = [2000, 5000, 10000];
 const FETCH_TIMEOUT_MS = 15000; // ตัด request ที่ค้าง/ไม่ตอบ ไม่ให้รอบ snapshot ค้างนาน (fail เร็ว -> retry เร็ว)
 // รอบ retry ท้ายสุด: รายงานที่ยัง error หลังรอบแรก ลองใหม่อีกครั้งหลังพักให้ HDC ฟื้น
 // (retry ใน snap() ห่างกันไม่กี่วินาที ช่วยไม่ได้ถ้า HDC ล่มเป็นช่วง ๆ)
-// ~190 จาก ~204 รายงานที่ error ต่อปี ตอบ 502 ซ้ำทุกวัน (เสียที่ต้นทาง) จึงลองแค่ครั้งเดียว ไม่ backoff ซ้ำอีกชั่วโมง
+// รายงานที่ HDC ตอบ error ของตัวรายงานเอง (permanent) ไม่เข้ารอบนี้ — ลองซ้ำก็ได้ผลเดิม
 // ปิดได้ด้วย HDC_RETRY_PASS_DELAY_MS=-1
 const RETRY_PASS_DELAY_MS = process.env.HDC_RETRY_PASS_DELAY_MS ? Number(process.env.HDC_RETRY_PASS_DELAY_MS) : 60000;
+
+// HDC ตอบ 502 พร้อม JSON {ok:false, message} เมื่อ query ของตัวรายงานพังที่ต้นทาง (SQL error, ตารางไม่มี ฯลฯ)
+// ซึ่งตอบแบบเดิมทุกครั้ง — ต่างจาก 502 ของ gateway/ล่มชั่วคราวที่ไม่มี message (message "undefined" ก็ถือว่าไม่มี)
+async function readUpstreamMessage(res) {
+  try {
+    const body = await res.json();
+    const message = body?.ok === false ? String(body.message ?? "").trim() : "";
+    return message && message !== "undefined" ? message : "";
+  } catch (_err) {
+    return "";
+  }
+}
 
 async function snap(kind, path, { maxTries = MAX_TRIES } = {}) {
   const key = `${kind} ${path}`;
   if (manifest.entries[key]) return dataCache.get(key) ?? null; // กันซ้ำ แต่คืนข้อมูลที่เคยดึงได้ในรอบนี้
   const target = baseFor(kind) + path;
   let lastErr = "";
+  let upstreamMessage = "";
   for (let attempt = 1; attempt <= maxTries; attempt += 1) {
     try {
       const res = await fetch(target, { headers: UPSTREAM_HEADERS, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
       if (!res.ok) {
         lastErr = `HTTP ${res.status}`;
+        upstreamMessage = res.status === 502 ? await readUpstreamMessage(res) : "";
+        if (upstreamMessage) break; // permanent — ไม่ต้อง backoff
         if (res.status >= 500 && attempt < maxTries) {
           const delay = (res.status === 500 || res.status === 502)
             ? UPSTREAM_5XX_BACKOFF_MS[attempt - 1]
@@ -118,9 +138,30 @@ async function snap(kind, path, { maxTries = MAX_TRIES } = {}) {
       if (attempt < maxTries) { await sleep(600 * attempt); continue; }
     }
   }
-  errors.push({ key, error: lastErr });
-  console.error(`  ✗ ${key.split("?")[0]} -> ${lastErr} (หลัง ${maxTries} ครั้ง)`);
+  if (upstreamMessage) {
+    errors.push({ key, error: lastErr, upstreamMessage, permanent: true });
+    console.error(`  ✗ ${key.split("?")[0]} -> ${lastErr}: ${upstreamMessage}`);
+  } else {
+    errors.push({ key, error: lastErr });
+    console.error(`  ✗ ${key.split("?")[0]} -> ${lastErr} (หลัง ${maxTries} ครั้ง)`);
+  }
   return null;
+}
+
+// ใช้หลังรายงานตอบ error ถาวรระดับ provider: ถ้าระดับจังหวัดดึงได้ = HDC ไม่มีข้อมูลระดับอำเภอ (province_only)
+// ไม่เก็บลง snapshot เพราะหน้าเว็บไม่ได้ใช้ข้อมูลระดับจังหวัด
+async function hasProvinceLevelData(reportCode, year) {
+  try {
+    const res = await fetch(HDC_BASE + buildProviderDataPath(reportCode, year, "province"), {
+      headers: UPSTREAM_HEADERS,
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+    if (!res.ok) return false;
+    const body = await res.json();
+    return body?.ok !== false && Array.isArray(body?.rows);
+  } catch (_err) {
+    return false;
+  }
 }
 
 // ---- flatten: ต้นไม้ system/subcatalog/reports มี node กลุ่ม (children) ซ้อนรายงานอยู่ข้างใน
@@ -152,16 +193,16 @@ function dedupeByReportCode(reports) {
   });
 }
 
-// ---- coverage: สถานะ success/no_data/error ต่อรายงาน (ครบทุกหมวด ไม่ใช่แค่ Service Plan) ----
+// ---- coverage: สถานะ success/no_data/province_only/error ต่อรายงาน (ครบทุกหมวด ไม่ใช่แค่ Service Plan) ----
 const coverageByYear = new Map(YEARS.map((y) => [y, []]));
 
-const failedReportJobs = []; // งานที่ error ในรอบแรก -> ลองใหม่ใน retryFailedReports()
+const failedReportJobs = []; // งานที่ error ชั่วคราวในรอบแรก -> ลองใหม่ใน retryFailedReports()
 
 async function snapReportAndTrackCoverage(category, sub, report, year) {
-  const entry = await measureReport(category, sub, report, year);
+  const { entry, retryable } = await measureReport(category, sub, report, year);
   const coverageReports = coverageByYear.get(year);
   coverageReports.push(entry);
-  if (entry.status === "error") failedReportJobs.push({ category, sub, report, year, index: coverageReports.length - 1 });
+  if (retryable) failedReportJobs.push({ category, sub, report, year, index: coverageReports.length - 1 });
 }
 
 async function retryFailedReports() {
@@ -173,9 +214,9 @@ async function retryFailedReports() {
     const key = `hdc ${buildProviderDataPath(String(job.report.report_code).trim(), job.year)}`;
     // ลบ error รอบแรกออก — ถ้ายังพังอีก snap() จะใส่ error ใหม่กลับเข้าไปเอง (manifest.errorCount จะได้ไม่นับซ้ำ)
     for (let i = errors.length - 1; i >= 0; i -= 1) if (errors[i].key === key) errors.splice(i, 1);
-    const entry = await measureReport(job.category, job.sub, job.report, job.year, { maxTries: 1 });
+    const { entry } = await measureReport(job.category, job.sub, job.report, job.year, { maxTries: 1 });
     coverageByYear.get(job.year)[job.index] = entry;
-    if (entry.status !== "error") recovered += 1;
+    if (entry.status !== "error") recovered += 1; // รวม province_only ที่รอบแรกตอบ 502 แบบไม่มี message
   }
   console.log(`[snapshot] รอบ retry: ดึงสำเร็จเพิ่ม ${recovered}/${failedReportJobs.length} รายงาน`);
   return recovered;
@@ -193,8 +234,19 @@ async function measureReport(category, sub, report, year, snapOptions) {
   let rowCount = 0;
   let hasResult = false;
   let error;
+  let upstreamMessage;
+  let retryable = false;
   if (failed) {
-    error = errors[errors.length - 1]?.error;
+    const failure = errors[errors.length - 1];
+    error = failure?.error;
+    upstreamMessage = failure?.upstreamMessage;
+    retryable = !failure?.permanent;
+    if (failure?.permanent && await hasProvinceLevelData(reportCode, year)) {
+      // ไม่ใช่ error — เอาออกจาก errors (manifest.errorCount) แต่เก็บ message ไว้อธิบายใน coverage
+      errors.splice(errors.lastIndexOf(failure), 1);
+      status = "province_only";
+      error = undefined;
+    }
   } else {
     const rows = normalizePakchongRows(data?.rows);
     rowCount = rows.length;
@@ -203,7 +255,7 @@ async function measureReport(category, sub, report, year, snapOptions) {
     status = rowCount > 0 ? "success" : "no_data";
   }
 
-  return {
+  const entry = {
     category: category.name,
     subcategory: optionText(sub),
     subcatalogId: sub.code,
@@ -215,8 +267,10 @@ async function measureReport(category, sub, report, year, snapOptions) {
     rowCount,
     hasResult,
     error,
+    upstreamMessage,
     durationMs,
   };
+  return { entry, retryable: status === "error" && retryable };
 }
 
 function buildCoverageSummary(reports) {
@@ -224,6 +278,7 @@ function buildCoverageSummary(reports) {
     total: reports.length,
     success: reports.filter((r) => r.status === "success").length,
     noData: reports.filter((r) => r.status === "no_data").length,
+    provinceOnly: reports.filter((r) => r.status === "province_only").length,
     error: reports.filter((r) => r.status === "error").length,
   };
 }
@@ -250,7 +305,10 @@ async function writeCoverageFile(year, fileName) {
     groups: buildCoverageGroups(coverageReports),
     errors: coverageReports
       .filter((r) => r.status === "error")
-      .map((r) => ({ reportCode: r.reportCode, title: r.title, category: r.category, error: r.error })),
+      .map((r) => ({ reportCode: r.reportCode, title: r.title, category: r.category, error: r.error, upstreamMessage: r.upstreamMessage })),
+    provinceOnly: coverageReports
+      .filter((r) => r.status === "province_only")
+      .map((r) => ({ reportCode: r.reportCode, title: r.title, category: r.category, upstreamMessage: r.upstreamMessage })),
     reports: coverageReports,
   };
   await writeFile(join(OUT_DIR, fileName), JSON.stringify(coverage), "utf8");
@@ -295,7 +353,7 @@ async function main() {
     }
   }
 
-  // 3) ลองรายงานที่ error ใหม่อีกรอบ ก่อนสรุป yearsWithData/coverage
+  // 3) ลองรายงานที่ error ชั่วคราวใหม่อีกรอบ ก่อนสรุป yearsWithData/coverage
   await retryFailedReports();
 
   // ปีที่ HDC ประมวลผลแล้ว = จำนวนรายงานที่มีผลงาน > 0 ได้ >= ครึ่งหนึ่งของปีที่มากที่สุด
@@ -317,7 +375,7 @@ async function main() {
   console.log(
     `[snapshot] เสร็จ: ${counter} ไฟล์, ${categories.length} หมวด, ${reportTotal} รายงาน × ${YEARS.length} ปี, lookup error ${errors.length}` +
       ` | ปีที่มีข้อมูล: ${manifest.yearsWithData.join(", ") || "-"} | default ${manifest.defaultYear}` +
-      ` | coverage ${manifest.defaultYear}: สำเร็จ ${coverage.summary.success}, ไม่มีข้อมูล ${coverage.summary.noData}, error ${coverage.summary.error}`,
+      ` | coverage ${manifest.defaultYear}: สำเร็จ ${coverage.summary.success}, ไม่มีข้อมูล ${coverage.summary.noData}, ไม่มีข้อมูลระดับอำเภอ ${coverage.summary.provinceOnly}, error ${coverage.summary.error}`,
   );
 
   // ถ้าดึง lookup เริ่มต้นไม่ได้เลย = upstream ใช้ไม่ได้ -> exit 1 (กัน push ของเสีย)
