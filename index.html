@@ -317,10 +317,46 @@
           <span class="youtube-play" data-icon="play"></span>
         </a>
         <div class="side-links">
-          <a href="#"><span data-icon="chart"></span>รายงานยอดนิยม</a>
-          <a href="#"><span data-icon="shield"></span>ติดตามคุณภาพข้อมูล</a>
-          <a href="#"><span data-icon="file"></span>เอกสารประกอบ KPI</a>
+          <a href="#reportShortcuts"><span data-icon="chart"></span>รายงานยอดนิยม</a>
+          <a href="#backgroundSyncCoverage"><span data-icon="shield"></span>ติดตามคุณภาพข้อมูล</a>
+          <a href="#kpiCrosswalk"><span data-icon="file"></span>เอกสารประกอบ KPI</a>
         </div>
+
+        <!-- เติมโดย coverage.js จาก data/snapshot/coverage.json + data/sync-audit.json (ไฟล์ static ไม่เรียก live) -->
+        <section class="data-status-card" id="dataStatusCard" aria-label="สถานะข้อมูล HDC">
+          <div class="data-status-head">
+            <span class="brief-icon" data-icon="pulse"></span>
+            <div>
+              <h3>สถานะข้อมูล HDC</h3>
+              <small id="dataStatusSnapshot">กำลังโหลด...</small>
+            </div>
+            <span class="data-status-badge" id="dataStatusBadge">-</span>
+          </div>
+          <dl class="data-status-list">
+            <div>
+              <dt>HDC ประมวลผลถึง</dt>
+              <dd id="dataStatusDateCom">-</dd>
+            </div>
+            <div>
+              <dt>HDC ตอบได้</dt>
+              <dd id="dataStatusFetched">-</dd>
+            </div>
+            <div id="dataStatusProvinceOnlyRow" hidden>
+              <dt>ไม่มีข้อมูลระดับอำเภอ</dt>
+              <dd id="dataStatusProvinceOnly">-</dd>
+            </div>
+            <div>
+              <dt>HDC ตอบ error</dt>
+              <dd id="dataStatusError">-</dd>
+            </div>
+            <div>
+              <dt>เทียบ HDC live</dt>
+              <dd id="dataStatusAudit">-</dd>
+            </div>
+          </dl>
+          <div class="data-status-meter" aria-hidden="true"><span id="dataStatusMeter"></span></div>
+          <a class="brief-link" href="#backgroundSyncCoverage">ดูรายละเอียดการดึงข้อมูล →</a>
+        </section>
       </aside>
     </section>
 
@@ -654,7 +690,7 @@
       </div>
     </section>
 
-    <section class="report-shortcuts">
+    <section class="report-shortcuts" id="reportShortcuts">
       <div class="shortcut-title">
         <h2>กลุ่มรายงานมาตรฐาน</h2>
         <p>รายงานสำคัญสำหรับติดตามข้อมูลสุขภาพระดับอำเภอปากช่อง</p>
